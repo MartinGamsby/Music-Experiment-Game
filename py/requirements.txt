@@ -1,0 +1,3 @@
+mingus
+MIDIUtil
+pygame
