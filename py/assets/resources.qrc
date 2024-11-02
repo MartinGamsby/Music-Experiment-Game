@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file alias="bg">bg.jpeg</file>
+    <file alias="logo">reshot-icon-musical.svg</file> <!-- https://www.reshot.com/free-svg-icons/item/musical-Y2JFZR8X7D/ -->
+</qresource>
+</RCC>
