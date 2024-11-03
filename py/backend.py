@@ -37,8 +37,8 @@ class Backend(QObject):
 #------------------------------------------------------------------------------
     @Slot(str)
     def ok_pressed(self, value: str):
-        print(f"OK PRESSED: {value}")
-        self.model.play_async()
+        print(f"BUTTON PRESSED: {value}")
+        self.model.play_async(value)
         
 #------------------------------------------------------------------------------
     def run(self) -> int:

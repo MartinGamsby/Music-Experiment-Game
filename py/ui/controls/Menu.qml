@@ -6,19 +6,28 @@ import QtQuick.Controls.Material
 // For State and MusicState enums
 import com.martingamsby.music 1.0
 
-Item {
+Column {
     id: menuRoot
-    implicitWidth: buttons.width
-    implicitHeight: buttons.height
     readonly property color backgroundColor: "#222222"
     
-    Button {
-        id: buttons
-        text: "test"
-        
+    component MusicButton: Button {        
         enabled: model ? model.p_music_state_id != MusicStateEnum.GENERATING : false // TODO: Not enough ...
         onClicked: {
-            backend.ok_pressed(buttons.text)
+            backend.ok_pressed(text)
         }
+    }
+	
+    
+    MusicButton {
+        text: ""
+    }
+    MusicButton {
+        text: "assets/town.mid"
+    }
+    MusicButton {
+        text: "assets/onestop.mid"
+    }
+    MusicButton {
+        text: "assets/flourish.mid"
     }
 }

@@ -58,7 +58,9 @@ class Model(QObject):
         pygame_midi.stop_music()
         
 #------------------------------------------------------------------------------
-    def play_async(self):
+    def play_async(self, filename=""):
+        self.filename = filename # TODO: Start the actual model, move things to the backend, too much in model already.
+        
         # TODO: Actually kill the thread, don't do nothing!
         #if (not self.t or not self.t.is_alive()) and self.music_state != MusicState.GENERATING:
         if self.music_state != MusicState.GENERATING and self.music_state != MusicState.PREPARING:
@@ -74,12 +76,11 @@ class Model(QObject):
         pygame_midi.stop_music()
         self.set_music_state(MusicState.GENERATING)       
         
-        
-        
-        filename = "output.mid"
-        midi_builder.make_midi(filename)
-        
-        #debug: filename = "assets/onestop.mid"#
+        if not self.filename:        
+            filename = "output.mid"
+            midi_builder.make_midi(filename)
+        else:
+            filename = self.filename
         if self.generate_mp3:       
             symusic_midi.midi_to_wav_worker(self.worker, self.thread, filename)
         else:

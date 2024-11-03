@@ -1,8 +1,11 @@
 import helpers.midi_helper as mid
 from mingus.core import chords
+import random
 
 #------------------------------------------------------------------------------
-def add_chord_progression(chord_progression, measure_duration=4, note_duration=1, octave_start=4, group_chord=False):    
+def add_chord_progression(chord_progression, measure_duration=4, note_duration=1, 
+    octave_start=4, group_chord=False, skip_random=False):
+    
     beats = []
     for chord in chord_progression:
         sub_notes = chords.from_shorthand(chord)
@@ -25,7 +28,10 @@ def add_chord_progression(chord_progression, measure_duration=4, note_duration=1
         last_note = 0
         for name in sub_notes:
             note = mid.Note(note=name, octave=octave)
-            
+            if skip_random:
+                if random.random() > 0.33:
+                    continue
+                
             notes = [note]#Only one note
             if last_note > note.number:
                 octave += 1
@@ -53,17 +59,17 @@ def add_chord_progression(chord_progression, measure_duration=4, note_duration=1
 #------------------------------------------------------------------------------
 def make_midi(filename):
 
-    chord_progression = ["Cmaj", "Fmaj", "Cmaj", "Cmaj7", "Fmaj", "Gmin", "Dmaj7", "Fmaj", "Cmaj"]
+    chord_progression = ["Cmaj", "Fmaj", "Cmaj", "Cmaj7", "Fmaj", "Gmin", "Fmaj", "Gmin", "Cmaj7", "Fmaj", "Cmaj", "Fmaj", "Gmin", "Cmaj", "Cmaj7", "Cmaj"]
     
     channels = []
 
 
     
     # TODO: Notes with the octave. Return Note() here, and make sure we go up if we go over G.
-    beats = add_chord_progression(chord_progression, octave_start=8, note_duration=3)
+    beats = add_chord_progression(chord_progression, octave_start=6, note_duration=3, skip_random=True, group_chord=False)
     channels.append(mid.Channel(beats=beats, instrument=115)) 
-    beats = add_chord_progression(chord_progression, octave_start=8, note_duration=3)
-    beats.insert(0,mid.Beat(duration=0.25, notes=[mid.Note("C", octave=1)]))
+    beats = add_chord_progression(chord_progression, octave_start=8, note_duration=3, skip_random=True, group_chord=False)
+    beats.insert(0,mid.Beat(duration=0.25, notes=[mid.Note("", octave=1)]))
     channels.append(mid.Channel(beats=beats, instrument=113)) 
     
     
