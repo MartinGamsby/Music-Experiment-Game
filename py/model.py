@@ -5,18 +5,9 @@ from time import sleep, time
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QObject, Slot, Signal, Property, QTimer
-from enum import Enum
 import threading
 
-#------------------------------------------------------------------------------
-State = Enum(
-    'State',
-    [
-        ('INIT',1),
-        ('WELCOME',2),
-    ]
-)
-
+from state import State
 
 #------------------------------------------------------------------------------
 class Model(QObject):
@@ -28,23 +19,50 @@ class Model(QObject):
         self.start_time = time()
         self.set_state(State.INIT)
         
-        # Fake init async for now.
-        t = threading.Thread(target=self.fake_init)
+        t = threading.Thread(target=self.async_init)
         t.start()
         
 #------------------------------------------------------------------------------
-    def fake_init(self):
-        sleep(1)
+    def init(self):
+        self.state_updated.emit()
+        
+#------------------------------------------------------------------------------
+    def shutdown(self):
+        import pygame_midi
+        pygame_midi.stop_music()
+        
+#------------------------------------------------------------------------------
+    def play_async(self):
+        self.t = threading.Thread(target=self._play)
+        self.t.start()
+        
+#------------------------------------------------------------------------------
+    def _play(self):
+        import midi_builder
+        import pygame_midi
+        
+        pygame_midi.stop_music()
+        
+        
+        
+        filename = "output.mid"
+        midi_builder.make_midi(filename)
+        
+        pygame_midi.init(2)
+        print("Play!")
+        
+        # Return music state from here?
+        pygame_midi.play(filename)
+
+#------------------------------------------------------------------------------
+    def async_init(self):
+        self.play_async()
         self.set_state(State.WELCOME)
         
     
 #------------------------------------------------------------------------------
     def set_state(self, state):
         self.state = state
-        self.state_updated.emit()
-        
-#------------------------------------------------------------------------------
-    def init(self):
         self.state_updated.emit()
         
 #------------------------------------------------------------------------------

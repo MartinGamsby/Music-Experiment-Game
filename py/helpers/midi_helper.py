@@ -83,9 +83,9 @@ def make_file(filename, channels, tempo):
         MyMIDI.addProgramChange(0, channel_id, 0, channel.instrument)        
         time = 0
         for beat in channel.beats:
-            print(beat)
             for note in beat.notes:
-                MyMIDI.addNote(track, channel_id, note.number, time, beat.duration, channel.volume)
+                if note.note != "":
+                    MyMIDI.addNote(track, channel_id, note.number, time, beat.duration, channel.volume)
                 #TODO: change_note_tuning?
             time += beat.duration
             

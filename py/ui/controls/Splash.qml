@@ -4,6 +4,8 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
+// For State enum
+import com.martingamsby.music 1.0
 
 Item {
     id: splashRoot
@@ -109,7 +111,7 @@ Item {
         target: model
     
         function onState_updated() {
-            if( model.p_state_id == 2 ) {// WELCOME: TODO: Add that in qml (the enum)   
+            if( model.p_state_id == Enums.State.WELCOME ) {
                 splashTimer.start()
             }
         }

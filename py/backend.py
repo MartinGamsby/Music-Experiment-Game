@@ -7,6 +7,7 @@ from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QObject, Slot, Signal, Property
 
 import model
+import state
 
 #------------------------------------------------------------------------------
 class Backend(QObject):
@@ -16,6 +17,9 @@ class Backend(QObject):
         self.model = model
         
         self.app = QGuiApplication(sys.argv)
+        
+        state.register_for_qml(self.app)
+        
         self.engine = QQmlApplicationEngine()
         self.engine.load(os.path.join(pathlib.Path(__file__).parent.resolve(), "ui", qml_file))
         
@@ -34,11 +38,14 @@ class Backend(QObject):
     @Slot(str)
     def ok_pressed(self, value: str):
         print(f"OK PRESSED: {value}")
+        self.model.play_async()
         
 #------------------------------------------------------------------------------
     def run(self) -> int:
         self.model.start()
         retval = self.app.exec()
         print("Shutting down...")
+        self.model.shutdown()
+                
         sys.exit(retval)
         
