@@ -14,9 +14,10 @@ class Model(QObject):
     appExiting = Signal()
 
 #------------------------------------------------------------------------------
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         self.start_time = time()
+        self.generate_mp3 = False# TODO: Settings?
         
         self.set_state(State.INIT)
         self.set_music_state(State.INIT)
@@ -48,10 +49,16 @@ class Model(QObject):
         
         
         
-        self.set_music_state(MusicState.GENERATING)
         filename = "output.mid"
         midi_builder.make_midi(filename)
-        #sleep(1)
+        
+        #debug: filename = "assets/onestop.mid"#
+        if self.generate_mp3:
+            self.set_music_state(MusicState.GENERATING)
+            print("generate_mp3")
+            import symusic_midi
+            filename = symusic_midi.midi_to_wav(filename)#_async(filename)
+            
         
         pygame_midi.init(2)
         #After init. In class? Make another class that can be either pygame or something else?

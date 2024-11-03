@@ -4,6 +4,7 @@ import pygame
 def stop_music():
     if is_init():
         pygame.mixer.music.stop()
+        pygame.mixer.music.unload()
     
 #------------------------------------------------------------------------------
 def play_music(music_file):

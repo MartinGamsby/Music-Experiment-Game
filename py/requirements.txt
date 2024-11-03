@@ -1,3 +1,5 @@
 mingus
 MIDIUtil
 pygame
+symusic
+pyside6

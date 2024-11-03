@@ -12,11 +12,11 @@ import state
 #------------------------------------------------------------------------------
 class Backend(QObject):
     
-    def __init__(self, qml_file, model: model.Model):
+    def __init__(self, qml_file, app, model: model.Model):
         super().__init__()        
         self.model = model
         
-        self.app = QGuiApplication(sys.argv)
+        self.app = app
         
         state.register_for_qml(self.app)
         
