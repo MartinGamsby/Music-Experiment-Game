@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
-// For State enum
+// For State and MusicState enums
 import com.martingamsby.music 1.0
 
 Item {
@@ -97,7 +97,7 @@ Item {
     
     Timer {
         id: splashTimer
-        interval: 500//1000 // Show splash screen for at least this duration
+        interval: 1000 // Show splash screen for at least this duration
         repeat: false
         running: false
     

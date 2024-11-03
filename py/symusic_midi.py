@@ -7,16 +7,49 @@ from PySide6.QtCore import QObject, Signal, QThread
 
 #------------------------------------------------------------------------------
 class Worker(QObject):
+
     finished = Signal()
     progress = Signal(int)
 
 #------------------------------------------------------------------------------
-    def __init__(self, filename):
+    def __init__(self, thread, filename=""):
         super().__init__()
         self.filename = filename
+        self.thread = thread
         
 #------------------------------------------------------------------------------
-    def midi_to_wav(self):
+    def debug_audio(self, audio):        
+        for i, p in enumerate(audio):                
+            if p:
+                print(i, p)
+            if i == 100:
+                break
+                
+#------------------------------------------------------------------------------
+    def normalize_stereo_audio(self, audio, verbose):      
+        left = audio[0]
+        right = audio[1]
+        if verbose:
+            self.debug_audio(left)
+        max_value = 0.0
+
+        for t in range(len(left)):
+            if abs(left[t]) > max_value:
+                max_value = abs(left[t])
+
+            if abs(right[t]) > max_value:
+                max_value = abs(right[t])
+
+        a = 0.99 / max_value
+        print("Normalizing audio by amplifying %.01fx" % a)
+        audio *= a
+        if verbose:
+            print(a, max_value)
+            self.debug_audio(left)  
+                
+                
+#------------------------------------------------------------------------------
+    def midi_to_wav(self, normalize=True, verbose=False):
         self.out_filename = "out.wav"
         filename = self.filename
         
@@ -36,7 +69,10 @@ class Worker(QObject):
 
         # audio is a 2D numpy array of float32, [channels, time]
         audio = synth.render(s, stereo=True) # stereo is True by default, which means you will get a stereo wave
-
+        
+        if normalize:
+            self.normalize_stereo_audio(audio, verbose)
+        
         # you could also dump the wave to a file
         # use_int16 is True by default, which means the output wave is int16, otherwise float32
         dump_wav(self.out_filename, audio, sample_rate=44100, use_int16=True)
@@ -50,22 +86,14 @@ class Worker(QObject):
         
 #------------------------------------------------------------------------------
 def midi_to_wav(filename):
-    return Worker(filename).midi_to_wav()
+    return Worker(filename, thread=None).midi_to_wav()
 
 #------------------------------------------------------------------------------
-def midi_to_wav_async(filename):
-    worker = Worker(filename)
-    thread = QThread()
-    worker.moveToThread(thread)
-    thread.started.connect(worker.run)
-    worker.finished.connect(thread.quit)
-    worker.finished.connect(worker.deleteLater)
-    thread.finished.connect(thread.deleteLater)
+def midi_to_wav_worker(worker, thread, filename, parent=None):
+    worker.filename = filename
     thread.start()
-    thread.wait()
-    return worker.out_filename
 
 #------------------------------------------------------------------------------
-#if __name__ == "__main__":
-#    midi_to_wav()
-
+def midi_to_wav_async(filename, parent):
+    worker = Worker(filename)
+    midi_to_wav_worker(worker, filename, parent=parent)

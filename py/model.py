@@ -4,8 +4,9 @@ import pathlib
 from time import sleep, time
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
-from PySide6.QtCore import QObject, Slot, Signal, Property, QTimer
+from PySide6.QtCore import QObject, Slot, Signal, Property, QTimer, QThread
 import threading
+import symusic_midi
 
 from state import State, MusicState
 
@@ -17,18 +18,39 @@ class Model(QObject):
     def __init__(self, parent):
         super().__init__(parent)
         self.start_time = time()
-        self.generate_mp3 = False# TODO: Settings?
+        self.generate_mp3 = True# TODO: Settings?
+        self.t = None
         
         self.set_state(State.INIT)
         self.set_music_state(State.INIT)
+        
+    def __del__(self):
+        self.thread.deleteLater() #TODO: stop the thread
+    
+#------------------------------------------------------------------------------
+    def init(self):
+        self.state_updated.emit()
+        self.music_state_updated.emit()
+        
+        self.thread_init()
         
         t = threading.Thread(target=self.async_init)
         t.start()
         
 #------------------------------------------------------------------------------
-    def init(self):
-        self.state_updated.emit()
-        self.music_state_updated.emit()
+    def thread_init(self):
+        self.thread = QThread(self)
+        self.worker = symusic_midi.Worker(thread=self.thread)
+        self.worker.moveToThread(self.thread)
+        self.worker.finished.connect(self.worker_finished)
+        
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        
+#------------------------------------------------------------------------------
+    def async_init(self):        
+        ###TODO::: not first? Or only generate?
+        self.play_async()
         
 #------------------------------------------------------------------------------
     def shutdown(self):
@@ -37,15 +59,20 @@ class Model(QObject):
         
 #------------------------------------------------------------------------------
     def play_async(self):
-        self.t = threading.Thread(target=self._play)
-        self.t.start()
+        # TODO: Actually kill the thread, don't do nothing!
+        #if (not self.t or not self.t.is_alive()) and self.music_state != MusicState.GENERATING:
+        if self.music_state != MusicState.GENERATING and self.music_state != MusicState.PREPARING:
+            self.set_music_state(MusicState.PREPARING) # TODO: Prep state?
+            self.t = threading.Thread(target=self._play_prepare)
+            self.t.start()
         
 #------------------------------------------------------------------------------
-    def _play(self):
+    def _play_prepare(self):
         import midi_builder
         import pygame_midi
         
         pygame_midi.stop_music()
+        self.set_music_state(MusicState.GENERATING)       
         
         
         
@@ -53,16 +80,28 @@ class Model(QObject):
         midi_builder.make_midi(filename)
         
         #debug: filename = "assets/onestop.mid"#
-        if self.generate_mp3:
-            self.set_music_state(MusicState.GENERATING)
-            print("generate_mp3")
-            import symusic_midi
-            filename = symusic_midi.midi_to_wav(filename)#_async(filename)
-            
+        if self.generate_mp3:       
+            symusic_midi.midi_to_wav_worker(self.worker, self.thread, filename)
+        else:
+            self.out_filename = filename
+            self.worker_finished()
         
+#------------------------------------------------------------------------------
+    def worker_finished(self):
+        self.set_music_state(MusicState.PREPARING)
+        if self.generate_mp3:
+            self.out_filename = self.worker.out_filename
+            print("finished", self.out_filename)
+        
+        self.t = threading.Thread(target=self._play)
+        self.t.start()
+        
+#------------------------------------------------------------------------------
+    def _play(self):
+        import pygame_midi
         pygame_midi.init(2)
         #After init. In class? Make another class that can be either pygame or something else?
-        self.set_music_state(MusicState.IDLE)
+        self.set_music_state(MusicState.PREPARING)
         print("Play!")
         
         if self.state == State.INIT:
@@ -70,13 +109,9 @@ class Model(QObject):
             
         # Return music state from here?
         self.set_music_state(MusicState.PLAYING)
-        pygame_midi.play(filename)
-        self.set_music_state(MusicState.IDLE)
-        
-
-#------------------------------------------------------------------------------
-    def async_init(self):
-        self.play_async()        
+        print(self.out_filename)
+        pygame_midi.play(self.out_filename)
+        self.set_music_state(MusicState.IDLE) #
     
 #------------------------------------------------------------------------------
     def get_time(self):
@@ -138,6 +173,8 @@ class Model(QObject):
             return "Initializing"
         elif self.music_state == MusicState.IDLE:
             return "Idle"
+        elif self.music_state == MusicState.PREPARING:
+            return "Preparing"
         elif self.music_state == MusicState.GENERATING:
             return "Generating"
         elif self.music_state == MusicState.PLAYING:

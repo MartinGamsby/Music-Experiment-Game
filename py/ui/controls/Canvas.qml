@@ -23,7 +23,7 @@ Rectangle {
         anchors.right: parent.right
         anchors.margins: 9
     
-        text: model ? model.p_music_state_pretty_name : "" //p_music_state_id
+        text: model ? model.p_music_state_pretty_name : ""
         
     }
 }

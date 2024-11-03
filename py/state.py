@@ -24,7 +24,7 @@ class StateEnum(QObject):
 
 #------------------------------------------------------------------------------
 class MusicState(Enum):
-    NONE, INIT, IDLE, GENERATING, PLAYING = range(5)
+    NONE, INIT, IDLE, PREPARING, GENERATING, PLAYING = range(6)
 @QmlElement
 class MusicStateEnum(QObject):
     QEnum(MusicState)
