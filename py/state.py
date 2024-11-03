@@ -17,13 +17,18 @@ QML_IMPORT_MAJOR_VERSION = 1
 
 #------------------------------------------------------------------------------
 class State(Enum):
-    INIT, WELCOME = range(2)
-
-#------------------------------------------------------------------------------
+    NONE, INIT, WELCOME = range(3)
 @QmlElement
-class Enums(QObject):
+class StateEnum(QObject):
     QEnum(State)
 
+#------------------------------------------------------------------------------
+class MusicState(Enum):
+    NONE, INIT, IDLE, GENERATING, PLAYING = range(5)
+@QmlElement
+class MusicStateEnum(QObject):
+    QEnum(MusicState)
+    
 #------------------------------------------------------------------------------
 def register_for_qml(app):
     qmlRegisterSingletonInstance(QObject, "com.example.app", 1, 0, "App", app)

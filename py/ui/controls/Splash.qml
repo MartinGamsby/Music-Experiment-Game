@@ -111,7 +111,7 @@ Item {
         target: model
     
         function onState_updated() {
-            if( model.p_state_id == Enums.State.WELCOME ) {
+            if( model.p_state_id == StateEnum.WELCOME ) {
                 splashTimer.start()
             }
         }
