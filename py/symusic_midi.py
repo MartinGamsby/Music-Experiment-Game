@@ -40,13 +40,13 @@ class Worker(QObject):
             if abs(right[t]) > max_value:
                 max_value = abs(right[t])
 
-        if max_value < 1.0:
-            a = 0.99 / max_value
-            print("Normalizing audio by amplifying %.01fx" % a)
-            audio *= a
-            if verbose:
-                print(a, max_value)
-                self.debug_audio(left)  
+        #if max_value < 1.0:
+        a = 0.99 / max_value
+        print("Normalizing audio by amplifying %.01fx" % a)
+        audio *= a
+        if verbose:
+            print(a, max_value)
+            self.debug_audio(left)  
                 
                 
 #------------------------------------------------------------------------------

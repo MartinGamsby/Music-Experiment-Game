@@ -62,6 +62,20 @@ Item {
                 width: 300
                 fillMode: Image.PreserveAspectFit
                 anchors.horizontalCenter: parent.horizontalCenter
+                            
+                SequentialAnimation {
+                    running: true
+                    ScaleAnimator {
+                        duration: 800; target: logo
+                        from: 0.8; to: 1.2
+                        easing.type: Easing.OutBack;//Elastic;
+                    }
+                    ScaleAnimator {
+                        duration: 1500; target: logo
+                        from: 1.2; to: 1.0
+                        easing.type: Easing.InQuad;                 
+                    }
+                }
             }
     
             Title {

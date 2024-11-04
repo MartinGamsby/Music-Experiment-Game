@@ -3,3 +3,5 @@ MIDIUtil
 pygame
 symusic
 pyside6
+pydub
+mido

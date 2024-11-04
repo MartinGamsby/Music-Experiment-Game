@@ -18,8 +18,14 @@ class Model(QObject):
     def __init__(self, parent):
         super().__init__(parent)
         self.start_time = time()
-        self.generate_mp3 = True# TODO: Settings?
+        self.generate_mp3 = True#True# TODO: Save settings
         self.t = None
+        
+        self.state = State.NONE
+        self.music_state = MusicState.NONE
+        self.title = ""
+        self.music_progress = 0.0
+        
         
         self.set_state(State.INIT)
         self.set_music_state(State.INIT)
@@ -31,6 +37,7 @@ class Model(QObject):
     def init(self):
         self.state_updated.emit()
         self.music_state_updated.emit()
+        self.title_updated.emit()
         
         self.thread_init()
         
@@ -82,8 +89,10 @@ class Model(QObject):
         else:
             filename = self.filename
         if self.generate_mp3:       
+            print("GENERATE WAV FROM MIDI")
             symusic_midi.midi_to_wav_worker(self.worker, self.thread, filename)
         else:
+            print("DON'T Generate wav from midi")
             self.out_filename = filename
             self.worker_finished()
         
@@ -93,6 +102,13 @@ class Model(QObject):
         if self.generate_mp3:
             self.out_filename = self.worker.out_filename
             print("finished", self.out_filename)
+            
+            # NOTE: Does it need ffmpeg installed? Use ffmpeg pythong instead?
+            import pydub
+            sound = pydub.AudioSegment.from_wav(self.out_filename)
+            self.out_filename = self.out_filename.replace(".wav",".mp3") # TODO: Cleaner than that
+            sound.export(self.out_filename, format="mp3")
+            print("converted", self.out_filename)
         
         self.t = threading.Thread(target=self._play)
         self.t.start()
@@ -111,8 +127,15 @@ class Model(QObject):
         # Return music state from here?
         self.set_music_state(MusicState.PLAYING)
         print(self.out_filename)
-        pygame_midi.play(self.out_filename)
+        pygame_midi.play(self.out_filename, self.music_cb)
         self.set_music_state(MusicState.IDLE) #
+    
+#------------------------------------------------------------------------------
+    def music_cb(self, at_ms, to_ms):
+        progress_pc = (at_ms/to_ms)
+        self.set_music_progress(progress_pc)
+        
+        
     
 #------------------------------------------------------------------------------
     def get_time(self):
@@ -123,10 +146,13 @@ class Model(QObject):
         # TODO?
         pass
         
+        
+        
 #------------------------------------------------------------------------------
     def set_state(self, state):
-        self.state = state
-        self.state_updated.emit()
+        if self.state != state:
+            self.state = state
+            self.state_updated.emit()
         
     state_updated = Signal()
     
@@ -155,8 +181,16 @@ class Model(QObject):
     
 #------------------------------------------------------------------------------
     def set_music_state(self, state):
-        self.music_state = state
-        self.music_state_updated.emit()
+        if self.music_state != state:
+            self.music_state = state
+            self.music_state_updated.emit()
+            if self.music_state == MusicState.PLAYING:
+                try:
+                    self.set_title(os.path.splitext(os.path.basename(self.filename))[0])
+                except:
+                    self.set_title("Unnamed")                    
+            else:
+                self.set_title("")
     
     music_state_updated = Signal()
         
@@ -183,3 +217,47 @@ class Model(QObject):
         return self.music_state.name
     p_music_state_pretty_name = Property(str, get_music_state_pretty_name, notify=music_state_updated)
 
+#------------------------------------------------------------------------------
+    # -------------- str property title --------------
+    def set_title(self, title):
+        if self.title != title:
+            self.title = title
+            self.title_updated.emit()
+        
+    title_updated = Signal()
+    
+    @Slot()
+    def get_title(self):
+        return self.title
+    p_title = Property(str, get_title, notify=title_updated)
+    
+#------------------------------------------------------------------------------
+    # -------------- bool property generate_mp3 --------------
+    @Slot(bool)
+    def set_generate_mp3(self, generate_mp3: bool):
+        if self.generate_mp3 != generate_mp3:
+            self.generate_mp3 = generate_mp3
+            self.generate_mp3_updated.emit()
+        
+    generate_mp3_updated = Signal()
+    
+    @Slot()
+    def get_generate_mp3(self):
+        return self.generate_mp3
+    p_generate_mp3 = Property(bool, get_generate_mp3, notify=generate_mp3_updated)
+    
+#------------------------------------------------------------------------------
+    # -------------- float property music_progress --------------
+    @Slot(float)
+    def set_music_progress(self, music_progress: float):
+        if self.music_progress != music_progress:
+            self.music_progress = music_progress
+            self.music_progress_updated.emit()
+        
+    music_progress_updated = Signal()
+    
+    @Slot()
+    def get_music_progress(self):
+        return self.music_progress
+    p_music_progress = Property(float, get_music_progress, notify=music_progress_updated)
+    

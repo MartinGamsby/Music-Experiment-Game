@@ -21,6 +21,7 @@ ApplicationWindow {
     property QtObject model    
     
     Material.theme: Material.Dark
+    Material.accent: Material.Cyan
 
     NumberAnimation on opacity {
         from: 0
