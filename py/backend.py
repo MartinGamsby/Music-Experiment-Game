@@ -41,6 +41,24 @@ class Backend(QObject):
         self.model.play_async(value)
         
 #------------------------------------------------------------------------------
+    @Slot(None)
+    def playMidis(self):
+        print(f"PLAY MIDIS")
+        self.model.set_state(state.State.PLAY_MIDIS)
+        
+#------------------------------------------------------------------------------
+    @Slot(None)
+    def newGame(self):
+        print(f"NEW GAME")
+        self.model.play_async("")
+        self.model.set_state(state.State.GAME)
+        
+#------------------------------------------------------------------------------
+    @Slot(None, result=str)
+    def get_media_folder(self):
+        return "file:///" + os.path.join(os.environ['SystemRoot'], "Media")
+        
+#------------------------------------------------------------------------------
     def run(self) -> int:
         self.model.start()
         retval = self.app.exec()

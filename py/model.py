@@ -57,7 +57,8 @@ class Model(QObject):
 #------------------------------------------------------------------------------
     def async_init(self):        
         ###TODO::: not first? Or only generate?
-        self.play_async()
+        sleep(0.5)#Let the UI open or something?
+        self.play_async("assets/town.mid")#
         
 #------------------------------------------------------------------------------
     def shutdown(self):
@@ -84,7 +85,7 @@ class Model(QObject):
         self.set_music_state(MusicState.GENERATING)       
         
         if not self.filename:        
-            filename = "output.mid"
+            filename = "__DefaultOutput.mid"
             midi_builder.make_midi(filename)
         else:
             filename = self.filename
@@ -101,14 +102,7 @@ class Model(QObject):
         self.set_music_state(MusicState.PREPARING)
         if self.generate_mp3:
             self.out_filename = self.worker.out_filename
-            print("finished", self.out_filename)
-            
-            # NOTE: Does it need ffmpeg installed? Use ffmpeg pythong instead?
-            import pydub
-            sound = pydub.AudioSegment.from_wav(self.out_filename)
-            self.out_filename = self.out_filename.replace(".wav",".mp3") # TODO: Cleaner than that
-            sound.export(self.out_filename, format="mp3")
-            print("converted", self.out_filename)
+            print("finished", self.out_filename)            
         
         self.t = threading.Thread(target=self._play)
         self.t.start()
@@ -126,14 +120,15 @@ class Model(QObject):
             
         # Return music state from here?
         self.set_music_state(MusicState.PLAYING)
-        print(self.out_filename)
         pygame_midi.play(self.out_filename, self.music_cb)
-        self.set_music_state(MusicState.IDLE) #
     
 #------------------------------------------------------------------------------
     def music_cb(self, at_ms, to_ms):
         progress_pc = (at_ms/to_ms)
         self.set_music_progress(progress_pc)
+        
+        if at_ms >= to_ms:
+            self.set_music_state(MusicState.IDLE)
         
         
     

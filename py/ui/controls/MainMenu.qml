@@ -8,23 +8,20 @@ import QtQuick.Controls.Material
 import com.martingamsby.music 1.0
 
 Item {
-    id: splashRoot
-
-    property alias titleText: title.text
-    property alias statusText: statusLine1.text
-    property alias statusText2: statusLine2.text
-    property alias statusText3: statusLine3.text
-    
-    property bool finished: false
-
-    signal timeout()
+    id: mainMenu
 
     component Title: Text {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
         anchors.horizontalCenter: parent.horizontalCenter
+        font.pixelSize: 32
         color: "white"
     }
+    component TitleButton: Button {
+        anchors.horizontalCenter: parent.horizontalCenter
+        font.pixelSize: 32
+    }
+	
 	
     Image {
         id: image
@@ -39,9 +36,9 @@ Item {
     
         anchors.leftMargin: 0
         anchors.rightMargin: 0
-        anchors.topMargin: parent.height * .3
-        anchors.bottomMargin: parent.height * .3
-        z: 2
+        anchors.topMargin: parent.height * .2
+        anchors.bottomMargin: parent.height * .4
+        z: 3
     
         Rectangle {
             anchors.fill: parent
@@ -55,6 +52,7 @@ Item {
             anchors.rightMargin: 100
             anchors.topMargin: 100
             anchors.bottomMargin: 100
+            z: 4
     
             Image {
                 id: logo
@@ -65,75 +63,60 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 mipmap: true
                 smooth: true
-                z: 3 // over everything
+                z: 5 // over everything
                             
                 SequentialAnimation {
-                    running: true
+                    running: mainMenu.visible
                     ScaleAnimator {
-                        duration: 800; target: logo
-                        from: 0.8; to: 1.2
-                        easing.type: Easing.OutBack;//Elastic;
+                        duration: 500; target: logo
+                        from: 20.0; to: 1.2
+                        easing.type: Easing.InQuad;//Elastic;
                     }
                     ScaleAnimator {
-                        duration: 800; target: logo
+                        duration: 500; target: logo
                         from: 1.2; to: 1.0
                         easing.type: Easing.InQuad;                 
                     }
                 }
-                ScaleAnimator {
-                    id: scaleTFUp
-                    duration: splashTimer.interval; target: logo
-                    from: 1.0; to: 20.0
-                    easing.type: Easing.InExpo;
-                    running: model ? model.p_state_id == StateEnum.WELCOME : false
-                }
-            }
-    
+            }    
             Title {
                 id: title
                 font.pixelSize: 64
                 text: "Music Experiment Game"
             }
-    
             Title {
                 id: statusLine0
-                font.pixelSize: 32
-                text: "Loading, please wait"
-            }
-    
-            Title {
-                id: statusLine1
-                font.pixelSize: 32
                 text: " "
             }
             
-            Title {
-                id: statusLine2
-                font.pixelSize: 32
-                text: " "
+        }
+    }
+        
+    Column {
+        z: 2
+        anchors.bottom: parent.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottomMargin: 100
+        
+        TitleButton {
+            text: "New Game"
+            onClicked: {
+                backend.newGame()
             }
-            Title {
-                id: statusLine3
-                font.pixelSize: 32
-                text: " "
+        }
+        Title {
+            text: "~"
+        }
+        TitleButton {
+            text: "Play MIDIs"
+            onClicked: {
+                backend.playMidis()
             }
         }
     }
-    GamesByLogoAnimated {
+    GamesByLogo {
         z: 1
         anchors.bottom: parent.bottom
         anchors.right: parent.right
-    }
-    
-    Timer {
-        id: splashTimer
-        interval: 1000 // Show splash screen for at least this duration
-        repeat: false
-        running: model ? model.p_state_id == StateEnum.WELCOME : false
-    
-        onTriggered: {
-            splashRoot.finished = true
-            splashRoot.timeout()
-        }
     }
 }

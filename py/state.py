@@ -17,7 +17,7 @@ QML_IMPORT_MAJOR_VERSION = 1
 
 #------------------------------------------------------------------------------
 class State(Enum):
-    NONE, INIT, WELCOME = range(3)
+    NONE, INIT, WELCOME, PLAY_MIDIS, GAME = range(5)
 @QmlElement
 class StateEnum(QObject):
     QEnum(State)

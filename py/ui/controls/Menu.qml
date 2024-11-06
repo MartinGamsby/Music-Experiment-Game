@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls.Basic
 import QtQuick.Controls.Material
+import QtQuick.Dialogs
 
 // For State and MusicState enums
 import com.martingamsby.music 1.0
@@ -9,42 +10,44 @@ import com.martingamsby.music 1.0
 ColumnLayout {
     id: menuRoot
     readonly property color backgroundColor: "#222222"
-    
     component MusicButton: Button {        
-        enabled: model ? model.p_music_state_id != MusicStateEnum.GENERATING : false // TODO: Not enough ...
-        onClicked: {
-            backend.ok_pressed(text)
-        }
+        implicitWidth: 150
+        Layout.rightMargin: 10
+        enabled: model ? model.p_music_state_id != MusicStateEnum.GENERATING : false // TODO: Not enough ... ?
     }
 	
     
     MusicButton {
-        text: ""
+        text: "Drops of water"
+        onClicked: {
+            backend.ok_pressed("")
+        }
     }
     MusicButton {
-        text: "assets/town.mid"
+        text: "1812 Overture"
+        onClicked: {
+            backend.ok_pressed("assets/1812 Overture.mid")
+        }
     }
     MusicButton {
-        text: "assets/onestop.mid"
+        text: "Select MIDI file ..."
+        onClicked: {
+            fileDialog.open()
+        }
     }
-    MusicButton {
-        text: "assets/flourish.mid"
+    
+    FileDialog {
+        id: fileDialog
+        currentFolder: backend ? backend.get_media_folder() : ""// StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
+        nameFilters: ["MIDI files (*.mid)"]
+        onAccepted: {
+            backend.ok_pressed(selectedFile)
+        }
     }
-    MusicButton {
-        text: "assets/AMEDLEY.MID"
-    }
-    MusicButton {
-        text: "assets/cssamp1.mid"
-    }
-    MusicButton {
-        text: "assets/test.mid"
-    }
-    MusicButton {
-        text: "assets/ALMAR11-2016_09-10-04.mid"
-    }
+    
     CheckBox {
         id: cbGenerate
-        text: "Generate Beautiful Midi files\n(Slower, might lag)"
+        text: "Generate Beautiful\nMidi files\n(Slower, might lag)"
         checked: model ? model.p_generate_mp3 : false
         onClicked: {
             model.set_generate_mp3(checked)
@@ -57,8 +60,10 @@ ColumnLayout {
         id: image
         Layout.maximumWidth: 100
         Layout.maximumHeight: 100
-         Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
+        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
         source: "qrc:/logo"
         fillMode: Image.PreserveAspectFit
+        mipmap: true
+        smooth: true
     }
 }

@@ -6,6 +6,8 @@ import QtQuick.Controls.Material
 
 import "controls"
 
+// For State and MusicState enums
+import com.martingamsby.music 1.0
 
 ApplicationWindow {
     id: rootWindow
@@ -48,8 +50,16 @@ ApplicationWindow {
             id: splashScreen
             titleText: "Music Experiment Game"
             statusText: model ? model.p_state_pretty_name : "..."
+            
+            onTimeout: {
+                screens.switchTo(mainMenuView)
+            }
         }
 
+        MainMenu {
+            id: mainMenuView
+        }
+        
         RowLayout {
             id: menuView
             spacing: 9
@@ -65,18 +75,39 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
         }
+        RowLayout {
+            id: menuView2
+            spacing: 9
+            anchors.margins: 9
+
+            LayoutItemProxy {
+                target: canvas
+            }
+            Text {
+                anchors.centerIn: parent
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                text: "That's it!\nThe game is\nbeing developed\nright now,\nhopefully..."
+                color: "white"
+                font.pointSize: 40
+            }
+        }
         
         Rectangle {
             id: init1
         }
-    }	
-
-    Connections {
-        target: splashScreen
+    }
     
-        function onTimeout()
-        {
-            screens.switchTo(menuView)
+    Connections {
+        target: model
+    
+        function onState_updated() {
+            if( model.p_state_id == StateEnum.PLAY_MIDIS ) {
+                screens.switchTo(menuView)
+            }
+            if( model.p_state_id == StateEnum.GAME ) {
+                screens.switchTo(menuView2)
+            }
         }
     }
 }
