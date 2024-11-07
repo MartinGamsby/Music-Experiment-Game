@@ -12,7 +12,7 @@ import com.martingamsby.music 1.0
 ApplicationWindow {
     id: rootWindow
     visible: true
-	title: qsTr("Music Experiment Game")
+	title: qsTr("GAME_TITLE")
     visibility: Window.Maximized
     color: menu.backgroundColor
     
@@ -48,7 +48,7 @@ ApplicationWindow {
 
         Splash {
             id: splashScreen
-            titleText: "Music Experiment Game"
+            titleText: qsTr("GAME_TITLE")
             statusText: model ? model.p_state_pretty_name : "..."
             
             onTimeout: {

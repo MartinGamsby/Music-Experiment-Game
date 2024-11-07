@@ -90,7 +90,7 @@ Item {
             Title {
                 id: title
                 font.pixelSize: 64
-                text: "Music Experiment Game"
+                text: qsTr("GAME_TITLE")
             }
             Title {
                 id: statusLine0

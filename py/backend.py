@@ -10,11 +10,15 @@ import model
 import state
 import midi_builder
 
+import helpers.translator as translator
+
 #------------------------------------------------------------------------------
 class Backend(QObject):
     
     def __init__(self, qml_file, app, model: model.Model):
-        super().__init__()        
+        super().__init__()
+
+        self.translator = translator.Translation(app)
         self.model = model
         
         self.app = app
@@ -25,7 +29,8 @@ class Backend(QObject):
         self.engine.load(os.path.join(pathlib.Path(__file__).parent.resolve(), "ui", qml_file))
         
         self.engine.quit.connect(self.app.quit)
-            
+         
+
         # Pass self and add accessors instead?
         self.engine.rootObjects()[0].setProperty("model", self.model)
         self.engine.rootObjects()[0].setProperty("backend", self)

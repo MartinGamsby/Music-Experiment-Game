@@ -18,6 +18,17 @@ And instead of finding the perfect way to do that, just bundle the qml files in 
 
 Same thing for the mp3 file, but it's because Qt doesn't play sounds in Qt apparently.
 
+# translation
+
+pyside6-lupdate ui/main.qml ui/controls/Splash.qml ui/controls/MainMenu.qml -ts lang/t1_fr.ts lang/t1_en.ts
+...
+(TODO: for all qml files?)
+
+pyside6-linguist lang/t1_fr.ts lang/t1_en.ts
+
+pyside6-lrelease lang/t1_fr.ts lang/t1_en.ts
+
+
 ## Installer
 pyinstaller MusicExperimentGame.spec
 -> onefile exe in dist folder
