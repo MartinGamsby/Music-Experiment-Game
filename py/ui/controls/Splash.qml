@@ -83,7 +83,7 @@ Item {
                 ScaleAnimator {
                     id: scaleTFUp
                     duration: splashTimer.interval; target: logo
-                    from: 1.0; to: 20.0
+                    from: 1.0; to: 13.0
                     easing.type: Easing.InExpo;
                     running: model ? model.p_state_id == StateEnum.WELCOME : false
                 }

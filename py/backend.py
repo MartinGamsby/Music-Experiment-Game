@@ -45,6 +45,14 @@ class Backend(QObject):
             self.model.play_async(value, type=midi_builder.MusicBuildType.DROPS)
         
 #------------------------------------------------------------------------------
+    @Slot(bool)
+    def toMainMenu(self, play: bool):
+        print(f"TO MAIN MENU")
+        if play:
+            self.model.play_async("assets/town.mid")
+        self.model.set_state(state.State.MAIN_MENU)
+        
+#------------------------------------------------------------------------------
     @Slot(None)
     def playMidis(self):
         print(f"PLAY MIDIS")

@@ -52,7 +52,7 @@ ApplicationWindow {
             statusText: model ? model.p_state_pretty_name : "..."
             
             onTimeout: {
-                screens.switchTo(mainMenuView)
+                backend.toMainMenu(false)
             }
         }
 
@@ -90,6 +90,8 @@ ApplicationWindow {
                 color: "white"
                 font.pointSize: 40
             }
+            GameLogo {
+            }
         }
         
         Rectangle {
@@ -106,6 +108,9 @@ ApplicationWindow {
             }
             if( model.p_state_id == StateEnum.GAME ) {
                 screens.switchTo(menuView2)
+            }
+            if( model.p_state_id == StateEnum.MAIN_MENU ) {
+                screens.switchTo(mainMenuView)
             }
         }
     }

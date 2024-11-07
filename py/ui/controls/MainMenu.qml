@@ -69,7 +69,7 @@ Item {
                     running: mainMenu.visible
                     ScaleAnimator {
                         duration: 250; target: logo
-                        from: 20.0; to: 1.1
+                        from: 13.0; to: 1.1
                         easing.type: Easing.InQuad;//Elastic;
                     }
                     SequentialAnimation {

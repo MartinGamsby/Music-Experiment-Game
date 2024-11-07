@@ -75,14 +75,7 @@ ColumnLayout {
     Item {
         Layout.fillHeight: true
     }
-    Image {
-        id: image
-        Layout.maximumWidth: 100
-        Layout.maximumHeight: 100
-        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-        source: "qrc:/logo"
-        fillMode: Image.PreserveAspectFit
-        mipmap: true
-        smooth: true
+    
+    GameLogo {
     }
 }

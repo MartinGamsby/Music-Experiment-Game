@@ -59,7 +59,7 @@ class Model(QObject):
     def async_init(self):        
         ###TODO::: not first? Or only generate?
         sleep(0.5)#Let the UI open or something?
-        self.play_async("assets/town.mid")#
+        self.play_async("assets/town.mid")
         
 #------------------------------------------------------------------------------
     def shutdown(self):
