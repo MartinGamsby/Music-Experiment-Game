@@ -18,8 +18,10 @@ def get_appdata_folder(subfolder=""):
         
 #------------------------------------------------------------------------------
 def replace_extension(filename, new_extension):
-    p, ext = os.path.splitext(filename)
-    return p + new_extension
+    if new_extension:
+        p, ext = os.path.splitext(filename)
+        return p + new_extension
+    return filename
     
 #------------------------------------------------------------------------------
 def tempfile_path(filename, extension, subfolder="Music"):

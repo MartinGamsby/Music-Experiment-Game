@@ -4,10 +4,11 @@ import pathlib
 from time import sleep, time
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
-from PySide6.QtCore import QObject, Slot, Signal, Property
+from PySide6.QtCore import QObject, Slot, Signal, Property, QStandardPaths
 
 import model
 import state
+import midi_builder
 
 #------------------------------------------------------------------------------
 class Backend(QObject):
@@ -38,7 +39,10 @@ class Backend(QObject):
     @Slot(str)
     def ok_pressed(self, value: str):
         print(f"BUTTON PRESSED: {value}")
-        self.model.play_async(value)
+        if value:
+            self.model.play_async(value, type=midi_builder.MusicBuildType.FILE)
+        else:
+            self.model.play_async(value, type=midi_builder.MusicBuildType.DROPS)
         
 #------------------------------------------------------------------------------
     @Slot(None)
@@ -50,13 +54,13 @@ class Backend(QObject):
     @Slot(None)
     def newGame(self):
         print(f"NEW GAME")
-        self.model.play_async("")
+        self.model.play_async(type=midi_builder.MusicBuildType.GAME)
         self.model.set_state(state.State.GAME)
         
 #------------------------------------------------------------------------------
     @Slot(None, result=str)
     def get_media_folder(self):
-        return "file:///" + os.path.join(os.environ['SystemRoot'], "Media")
+        return "file:///" + QStandardPaths.writableLocation(QStandardPaths.MusicLocation)
         
 #------------------------------------------------------------------------------
     def run(self) -> int:

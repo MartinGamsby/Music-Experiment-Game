@@ -1,4 +1,7 @@
 import pygame
+from threading import Thread, Lock
+
+mutex = Lock()
 
 # TODO: Better than that...
 music = None
@@ -12,9 +15,12 @@ def stop_music():
         global music
         if music:
             music.stop()
+
+        with mutex:
+            pass # Wait for _play_music to end
     
 #------------------------------------------------------------------------------
-def play_music(music_file, cb, use_sound=False):#True):#Ugh, with sound it's still lagging? Why??. I can get the length, but not play mid files...
+def _play_music(music_file, cb, use_sound=False):#True):#Ugh, with sound it's still lagging? Why??. I can get the length, but not play mid files...
     """
     stream music with mixer.music module in blocking manner
     this will stream the sound from disk while playing
@@ -79,12 +85,13 @@ def play_music(music_file, cb, use_sound=False):#True):#Ugh, with sound it's sti
 
 #------------------------------------------------------------------------------
 def init(channels=2):# 1 is mono, 2 is stereo
-    if not is_init():
-        freq = 44100    # audio CD quality
-        bitsize = -16   # unsigned 16 bit
-        buffer = 1024    # number of samples
-        pygame.mixer.init(freq, bitsize, channels, buffer)
-        
+    with mutex:
+        if not is_init():
+            freq = 44100    # audio CD quality
+            bitsize = -16   # unsigned 16 bit
+            buffer = 1024    # number of samples
+            pygame.mixer.init(freq, bitsize, channels, buffer)
+            
 #------------------------------------------------------------------------------
 def is_init():
     return pygame.mixer.get_init() != None
@@ -95,7 +102,8 @@ def play(midi_file, cb, volume=1.0):
     # optional volume 0 to 1.0
     pygame.mixer.music.set_volume(volume)
     try:
-        play_music(midi_file, cb)
+        with mutex:
+            _play_music(midi_file, cb)
     except KeyboardInterrupt:
         # if user hits Ctrl/C then exit
         # (works only in console mode)

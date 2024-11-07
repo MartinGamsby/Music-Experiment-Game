@@ -68,14 +68,22 @@ Item {
                 SequentialAnimation {
                     running: mainMenu.visible
                     ScaleAnimator {
-                        duration: 500; target: logo
-                        from: 20.0; to: 1.2
+                        duration: 250; target: logo
+                        from: 20.0; to: 1.1
                         easing.type: Easing.InQuad;//Elastic;
                     }
-                    ScaleAnimator {
-                        duration: 500; target: logo
-                        from: 1.2; to: 1.0
-                        easing.type: Easing.InQuad;                 
+                    SequentialAnimation {
+                        loops: -1
+                        ScaleAnimator {
+                            duration: 500; target: logo
+                            from: 1.13; to: 1.0
+                            easing.type: Easing.InQuad;                 
+                        }
+                        ScaleAnimator {
+                            duration: 500; target: logo
+                            from: 1.0; to: 1.13
+                            easing.type: Easing.InQuad;                 
+                        }
                     }
                 }
             }    

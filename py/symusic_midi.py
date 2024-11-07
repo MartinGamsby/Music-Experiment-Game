@@ -1,4 +1,5 @@
 import os
+import shutil
 import helpers.file_helper as fh
 from symusic import Score, Synthesizer, dump_wav#, BuiltInSF3
     
@@ -16,6 +17,7 @@ class Worker(QObject):
     def __init__(self, thread, filename=""):
         super().__init__()
         self.filename = filename
+        self.force_gen = False
         self.thread = thread
         
 #------------------------------------------------------------------------------
@@ -86,14 +88,14 @@ class Worker(QObject):
         wav_filename = fh.tempfile_path(filename, ".wav")
         
         
-        if os.path.isfile(mp3_filename):
+        if os.path.isfile(mp3_filename) and not self.force_gen:
             self.out_filename = mp3_filename
             print("-- Using mp3", mp3_filename)
             return self.out_filename
             
         
         self.out_filename = wav_filename
-        if os.path.isfile(wav_filename):
+        if os.path.isfile(wav_filename) and not self.force_gen:
             if to_mp3:
                 self.out_filename = self.wav_to_mp3(wav_filename, mp3_filename)
             print("-- Using existing ", self.out_filename)
@@ -126,14 +128,17 @@ class Worker(QObject):
         audio = None
         
         
-        if to_mp3:
+        if to_mp3 and not self.force_gen:
             self.out_filename = self.wav_to_mp3(wav_filename, mp3_filename)    
         
         return self.out_filename
     
 #------------------------------------------------------------------------------
     def run(self):
-        self.midi_to_wav()        
+        try:
+            self.midi_to_wav()
+        except:
+            self.out_filename = ""
         self.finished.emit()
         
         
@@ -142,8 +147,9 @@ def midi_to_wav(filename):
     return Worker(filename, thread=None).midi_to_wav()
 
 #------------------------------------------------------------------------------
-def midi_to_wav_worker(worker, thread, filename, parent=None):
+def midi_to_wav_worker(worker, thread, filename, parent=None, force_gen=False):
     worker.filename = filename
+    worker.force_gen = force_gen
     thread.start()
 
 #------------------------------------------------------------------------------

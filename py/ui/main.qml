@@ -12,7 +12,7 @@ import com.martingamsby.music 1.0
 ApplicationWindow {
     id: rootWindow
     visible: true
-	title: "Music Experiment Game"
+	title: qsTr("Music Experiment Game")
     visibility: Window.Maximized
     color: menu.backgroundColor
     
@@ -84,7 +84,6 @@ ApplicationWindow {
                 target: canvas
             }
             Text {
-                anchors.centerIn: parent
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 text: "That's it!\nThe game is\nbeing developed\nright now,\nhopefully..."

@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 import QtQuick.Controls.Basic
 import QtQuick.Controls.Material
 import QtQuick.Dialogs
@@ -24,6 +25,24 @@ ColumnLayout {
         }
     }
     MusicButton {
+        text: "town"
+        onClicked: {
+            backend.ok_pressed("assets/town.mid")
+        }
+    }
+    MusicButton {
+        text: "flourish"
+        onClicked: {
+            backend.ok_pressed("assets/flourish.mid")
+        }
+    }
+    MusicButton {
+        text: "onestop"
+        onClicked: {
+            backend.ok_pressed("assets/onestop.mid")
+        }
+    }
+    MusicButton {
         text: "1812 Overture"
         onClicked: {
             backend.ok_pressed("assets/1812 Overture.mid")
@@ -38,7 +57,7 @@ ColumnLayout {
     
     FileDialog {
         id: fileDialog
-        currentFolder: backend ? backend.get_media_folder() : ""// StandardPaths.standardLocations(StandardPaths.PicturesLocation)[0]
+        currentFolder: backend ? backend.get_media_folder() : ""
         nameFilters: ["MIDI files (*.mid)"]
         onAccepted: {
             backend.ok_pressed(selectedFile)

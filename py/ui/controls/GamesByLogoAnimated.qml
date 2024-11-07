@@ -6,13 +6,15 @@ import QtQuick.Controls.Material
 
 
 AnimatedImage {
+    property bool loop: true
+    
     fillMode: Image.PreserveAspectCrop
     width: 300
     height: width/2
     source: "qrc:/GamesByGamsby.gif"
     playing: true
     onFrameChanged: {
-        if(currentFrame==(frameCount-1)) {
+        if(!loop && currentFrame==(frameCount-1)) {
             playing = false
             //currentFrame = 25
         }

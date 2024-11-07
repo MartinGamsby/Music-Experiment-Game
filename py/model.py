@@ -7,6 +7,7 @@ from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QObject, Slot, Signal, Property, QTimer, QThread
 import threading
 import symusic_midi
+import midi_builder
 
 from state import State, MusicState
 
@@ -66,42 +67,52 @@ class Model(QObject):
         pygame_midi.stop_music()
         
 #------------------------------------------------------------------------------
-    def play_async(self, filename=""):
+    def play_async(self, filename="", type=midi_builder.MusicBuildType.FILE):
         self.filename = filename # TODO: Start the actual model, move things to the backend, too much in model already.
         
         # TODO: Actually kill the thread, don't do nothing!
         #if (not self.t or not self.t.is_alive()) and self.music_state != MusicState.GENERATING:
         if self.music_state != MusicState.GENERATING and self.music_state != MusicState.PREPARING:
             self.set_music_state(MusicState.PREPARING) # TODO: Prep state?
-            self.t = threading.Thread(target=self._play_prepare)
+            self.t = threading.Thread(target=self._play_prepare, args=(type,))
             self.t.start()
         
 #------------------------------------------------------------------------------
-    def _play_prepare(self):
-        import midi_builder
-        import pygame_midi
-        
-        pygame_midi.stop_music()
-        self.set_music_state(MusicState.GENERATING)       
-        
-        if not self.filename:        
-            filename = "__DefaultOutput.mid"
-            midi_builder.make_midi(filename)
-        else:
-            filename = self.filename
-        if self.generate_mp3:       
-            print("GENERATE WAV FROM MIDI")
-            symusic_midi.midi_to_wav_worker(self.worker, self.thread, filename)
-        else:
-            print("DON'T Generate wav from midi")
-            self.out_filename = filename
-            self.worker_finished()
+    def _play_prepare(self, type):
+        try:
+            import midi_builder
+            import pygame_midi
+            
+            pygame_midi.stop_music()
+            self.set_music_state(MusicState.GENERATING)       
+            
+            if not self.filename:        
+                filename = "__DefaultOutput.mid"
+                midi_builder.make_midi(filename, type=type)
+            else:
+                filename = self.filename
+            if self.generate_mp3:       
+                print("GENERATE WAV FROM MIDI")
+                symusic_midi.midi_to_wav_worker(self.worker, self.thread, filename, force_gen=not self.filename)
+            else:
+                print("DON'T Generate wav from midi")
+                self.out_filename = filename
+                self.worker_finished()        
+        except:
+            # TODO: Print/Log the error
+            self.out_filename = ""
+            self.set_music_state(MusicState.ERROR)            
+            
         
 #------------------------------------------------------------------------------
     def worker_finished(self):
         self.set_music_state(MusicState.PREPARING)
         if self.generate_mp3:
             self.out_filename = self.worker.out_filename
+            
+            if self.worker.out_filename == "":#TODO: better error handling?            
+                self.set_music_state(MusicState.ERROR)
+                return #ERROR, notify the user better?
             print("finished", self.out_filename)            
         
         self.t = threading.Thread(target=self._play)
