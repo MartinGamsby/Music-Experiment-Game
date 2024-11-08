@@ -7,6 +7,7 @@ from typing import List
 NOTES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B']
 OCTAVES = list(range(11))
 NOTES_IN_OCTAVE = len(NOTES)
+SILENCE = ""
 
 errors = {
     'notes': 'Bad input, please refer this spec-\n'
@@ -34,6 +35,9 @@ def swap_accidentals(note):
 #------------------------------------------------------------------------------
 def note_to_number(note: str, octave: int) -> int:
     note = swap_accidentals(note)
+    if note is SILENCE:
+        return 0
+        
     assert note in NOTES, errors['notes']
     assert octave in OCTAVES, errors['notes']
 
@@ -41,14 +45,14 @@ def note_to_number(note: str, octave: int) -> int:
     note += (NOTES_IN_OCTAVE * octave)
 
     assert 0 <= note <= 127, errors['notes']
-
+    
     return note
 
 #------------------------------------------------------------------------------
 @dataclass
 class Note:
-    note: str
-    octave: int
+    note: str = SILENCE
+    octave: int = -1
     
     @property
     def number(self):
@@ -59,7 +63,7 @@ class Note:
 class Beat:
     duration: int
     notes: List[Note]
-    name: str = ""
+    name: str = SILENCE
         
 #------------------------------------------------------------------------------
 @dataclass
@@ -84,9 +88,10 @@ def make_file(filename, channels, tempo):
         time = 0
         for beat in channel.beats:
             for note in beat.notes:
-                if note.note != "":
+                if note.note != SILENCE:
                     MyMIDI.addNote(track, channel_id, note.number, time, beat.duration, channel.volume)
                 #TODO: change_note_tuning?
+            print(time, beat)
             time += beat.duration
             
             

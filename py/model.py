@@ -1,6 +1,7 @@
 import sys
 import os
 import pathlib
+import logging
 from time import sleep, time
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
@@ -60,7 +61,16 @@ class Model(QObject):
     def async_init(self):        
         ###TODO::: not first? Or only generate?
         sleep(0.5)#Let the UI open or something?
-        self.play_async("assets/town.mid")
+        self.play_main_menu()
+        
+#------------------------------------------------------------------------------
+    def play_main_menu(self):
+        #TODO: setting for one of these:
+        #self.play_async("assets/town.mid")
+        self.play_async("")
+        #self.play_async("", type=midi_builder.MusicBuildType.DROPS)
+        
+        # TODO: Repeat? 
         
 #------------------------------------------------------------------------------
     def shutdown(self):
@@ -101,7 +111,7 @@ class Model(QObject):
                 self.out_filename = filename
                 self.worker_finished()        
         except:
-            # TODO: Print/Log the error
+            logging.exception("_play_prepare")
             self.out_filename = ""
             self.set_music_state(MusicState.ERROR)            
             

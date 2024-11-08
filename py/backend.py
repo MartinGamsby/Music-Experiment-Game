@@ -55,7 +55,7 @@ class Backend(QObject):
     def toMainMenu(self, play: bool):
         print(f"TO MAIN MENU")
         if play:
-            self.model.play_async("assets/town.mid")
+            self.model.play_main_menu()
         self.model.set_state(state.State.MAIN_MENU)
         
 #------------------------------------------------------------------------------
