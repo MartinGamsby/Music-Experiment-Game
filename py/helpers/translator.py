@@ -19,7 +19,11 @@ class Translation(QObject):
 #------------------------------------------------------------------------------
     def selectLanguage(self, hl):
         print(hl)
+        self.app.removeTranslator(self.translator1)
+        
+        self.app.installTranslator(self.translatorEn)
         if hl.startswith("fr"):
             self.translator1.load("t1_fr", "lang")
             self.app.installTranslator(self.translator1)
+        
         

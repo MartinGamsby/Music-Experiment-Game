@@ -92,13 +92,13 @@ Item {
             Title {
                 id: title
                 font.pixelSize: 64
-                text: qsTr("GAME_TITLE")
+                text: tr("GAME_TITLE")
             }
     
             Title {
                 id: statusLine0
                 font.pixelSize: 32
-                text: "Loading, please wait"
+                text: tr("LOADING")
             }
     
             Title {

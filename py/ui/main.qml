@@ -12,7 +12,7 @@ import com.martingamsby.music 1.0
 ApplicationWindow {
     id: rootWindow
     visible: true
-	title: qsTr("GAME_TITLE")
+	title: tr("GAME_TITLE")
     visibility: Window.Maximized
     color: menu.backgroundColor
     
@@ -24,6 +24,10 @@ ApplicationWindow {
     
     Material.theme: Material.Dark
     Material.accent: Material.Cyan
+    
+    function tr(key) {
+        return backend ? ( backend.tr(key) + backend.p_) : ""
+    }
 
     NumberAnimation on opacity {
         from: 0
@@ -48,7 +52,7 @@ ApplicationWindow {
 
         Splash {
             id: splashScreen
-            titleText: qsTr("GAME_TITLE")
+            titleText: tr("GAME_TITLE")
             statusText: model ? model.p_state_pretty_name : "..."
             
             onTimeout: {
@@ -86,7 +90,7 @@ ApplicationWindow {
             Text {
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
-                text: "That's it!\nThe game is\nbeing developed\nright now,\nhopefully..."
+                text: tr("NEW_GAME_1")
                 color: "white"
                 font.pointSize: 40
             }

@@ -50,6 +50,7 @@ class Worker(QObject):
                 
 #------------------------------------------------------------------------------
     def _synth_from_path(self, score_filename, sf_path="assets/MuseScore_General.sf3"):#BuiltInSF3.MuseScoreGeneral().path(download=True)
+        score_filename = score_filename.replace("file:///","")#TODO: This is weird ... is there a better way?
         score = Score(score_filename)
         
         synth = Synthesizer(
@@ -77,7 +78,7 @@ class Worker(QObject):
             os.remove(wav_filename)
             return mp3_filename
         except:
-            pass
+            print("Failed to convert to mp3")
         return wav_filename
     
 #------------------------------------------------------------------------------
@@ -138,6 +139,7 @@ class Worker(QObject):
         try:
             self.midi_to_wav()
         except:
+            print("failed to convert midi to wav")
             self.out_filename = ""
         self.finished.emit()
         

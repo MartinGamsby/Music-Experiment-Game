@@ -21,6 +21,19 @@ Item {
         anchors.horizontalCenter: parent.horizontalCenter
         font.pixelSize: 32
     }
+    component FlagButton: Button {
+        font.pixelSize: 32
+        required property string hl
+        icon.color: "transparent"
+        icon.width: 64
+        icon.height: 32
+        
+        icon.source: "qrc:/flag_" + hl
+        
+        onClicked: {
+            backend.selectLanguage(hl)
+        }
+    }
 	
 	
     Image {
@@ -90,7 +103,7 @@ Item {
             Title {
                 id: title
                 font.pixelSize: 64
-                text: qsTr("GAME_TITLE")
+                text: tr("GAME_TITLE")
             }
             Title {
                 id: statusLine0
@@ -104,23 +117,37 @@ Item {
         z: 2
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottomMargin: 100
+        anchors.bottomMargin: 50
         
         TitleButton {
-            text: "New Game"
+            text: tr("NEW_GAME")
             onClicked: {
                 backend.newGame()
+            }
+        }
+        //Title {
+        //    text: "~"
+        //}
+        TitleButton {
+            text: tr("PLAY_MIDIS")
+            onClicked: {
+                backend.playMidis()
             }
         }
         Title {
             text: "~"
         }
-        TitleButton {
-            text: "Play MIDIs"
-            onClicked: {
-                backend.playMidis()
+        RowLayout {
+            FlagButton {
+                text: "English"
+                hl: "en"
+            }
+            FlagButton {
+                text: "Français"
+                hl: "fr"
             }
         }
+        
     }
     GamesByLogo {
         z: 1

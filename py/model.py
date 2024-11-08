@@ -16,8 +16,9 @@ class Model(QObject):
     appExiting = Signal()
 
 #------------------------------------------------------------------------------
-    def __init__(self, parent):
-        super().__init__(parent)
+    def __init__(self, app):
+        super().__init__(app)
+        self.app = app
         self.start_time = time()
         self.generate_mp3 = True#True# TODO: Save settings
         self.t = None
@@ -68,7 +69,8 @@ class Model(QObject):
         
 #------------------------------------------------------------------------------
     def play_async(self, filename="", type=midi_builder.MusicBuildType.FILE):
-        self.filename = filename # TODO: Start the actual model, move things to the backend, too much in model already.
+        self.filename = filename.replace("file:///","")#TODO: This is weird ... is there a better way?
+        # TODO: Start the actual model, move things to the backend, too much in model already.
         
         # TODO: Actually kill the thread, don't do nothing!
         #if (not self.t or not self.t.is_alive()) and self.music_state != MusicState.GENERATING:
@@ -177,11 +179,10 @@ class Model(QObject):
     # -------------- str property --------------
     @Slot()
     def get_state_pretty_name(self):
-        # TODO: Translate mechanism instead.
         if self.state == State.INIT:
-            return "Initializing"
+            return self.app.tr("MESSAGE_INITIALIZING")
         elif self.state == State.WELCOME:
-            return "Welcome"
+            return self.app.tr("MESSAGE_WELCOME")
         return self.state.name
     p_state_pretty_name = Property(str, get_state_pretty_name, notify=state_updated)
     
@@ -192,7 +193,7 @@ class Model(QObject):
             self.music_state_updated.emit()
             if self.music_state == MusicState.PLAYING:
                 try:
-                    self.set_title(os.path.splitext(os.path.basename(self.filename))[0])
+                    self.set_title(os.path.splitext(os.path.basename(self.filename))[0])# TODO: Add a way to know if it's converted to mp3 or not? (say that the quality might be lower..)
                 except:
                     self.set_title("Unnamed")                    
             else:
@@ -209,17 +210,16 @@ class Model(QObject):
     # -------------- str property --------------
     @Slot()
     def get_music_state_pretty_name(self):
-        # TODO: Translate mechanism instead.
         if self.music_state == MusicState.INIT:
-            return "Initializing"
+            return self.app.tr("STATE_INITIALIZING")
         elif self.music_state == MusicState.IDLE:
-            return "Idle"
+            return self.app.tr("STATE_IDLE")
         elif self.music_state == MusicState.PREPARING:
-            return "Preparing"
+            return self.app.tr("STATE_PREPARING")
         elif self.music_state == MusicState.GENERATING:
-            return "Generating"
+            return self.app.tr("STATE_GENERATING")
         elif self.music_state == MusicState.PLAYING:
-            return "Playing"
+            return self.app.tr("STATE_PLAYING")
         return self.music_state.name
     p_music_state_pretty_name = Property(str, get_music_state_pretty_name, notify=music_state_updated)
 

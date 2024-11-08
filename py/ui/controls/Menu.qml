@@ -17,9 +17,8 @@ ColumnLayout {
         enabled: model ? model.p_music_state_id != MusicStateEnum.GENERATING : false // TODO: Not enough ... ?
     }
 	
-    
     MusicButton {
-        text: "Drops of water"
+        text: tr("DROPS_OF_WATER")
         onClicked: {
             backend.ok_pressed("")
         }
@@ -49,7 +48,7 @@ ColumnLayout {
         }
     }
     MusicButton {
-        text: "Select MIDI file ..."
+        text: tr("SELECT_MIDI_FILE")
         onClicked: {
             fileDialog.open()
         }
@@ -58,7 +57,7 @@ ColumnLayout {
     FileDialog {
         id: fileDialog
         currentFolder: backend ? backend.get_media_folder() : ""
-        nameFilters: ["MIDI files (*.mid)"]
+        nameFilters: [tr("MIDI_FILES_FILTER")]
         onAccepted: {
             backend.ok_pressed(selectedFile)
         }
@@ -66,7 +65,7 @@ ColumnLayout {
     
     CheckBox {
         id: cbGenerate
-        text: "Generate Beautiful\nMidi files\n(Slower, might lag)"
+        text: tr("SETTING_GENERATE_MP3")
         checked: model ? model.p_generate_mp3 : false
         onClicked: {
             model.set_generate_mp3(checked)

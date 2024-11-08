@@ -1,6 +1,7 @@
 import sys
 import os
 import pathlib
+#import flagpy
 from time import sleep, time
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
@@ -24,7 +25,7 @@ class Backend(QObject):
         self.app = app
         
         state.register_for_qml(self.app)
-        
+                
         self.engine = QQmlApplicationEngine()
         self.engine.load(os.path.join(pathlib.Path(__file__).parent.resolve(), "ui", qml_file))
         
@@ -73,8 +74,27 @@ class Backend(QObject):
 #------------------------------------------------------------------------------
     @Slot(None, result=str)
     def get_media_folder(self):
-        return "file:///" + QStandardPaths.writableLocation(QStandardPaths.MusicLocation)
+        return os.path.join(os.environ["SystemRoot"], "Media")
         
+#------------------------------------------------------------------------------
+    @Slot(str, result=str)
+    def tr(self, key):
+        return self.app.tr(key)
+    
+#------------------------------------------------------------------------------
+    @Slot(str, result=None)
+    def selectLanguage(self, hl):
+        # TODO: Save the user's choice!
+        self.translator.selectLanguage(hl)
+        self.languageChanged.emit()
+        
+# -------------- int property --------------
+    @Slot()
+    def get_empty_string(self):
+        return ""
+    languageChanged = Signal()
+    p_ = Property(str, get_empty_string, notify=languageChanged)
+    
 #------------------------------------------------------------------------------
     def run(self) -> int:
         self.model.start()
