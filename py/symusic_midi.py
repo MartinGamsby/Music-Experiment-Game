@@ -1,5 +1,6 @@
 import os
 import shutil
+import logging
 import helpers.file_helper as fh
 from symusic import Score, Synthesizer, dump_wav#, BuiltInSF3
     
@@ -49,7 +50,7 @@ class Worker(QObject):
                 
                 
 #------------------------------------------------------------------------------
-    def _synth_from_path(self, score_filename, sf_path="assets/MuseScore_General.sf3"):#BuiltInSF3.MuseScoreGeneral().path(download=True)
+    def _synth_from_path(self, score_filename, sf_path=fh.abspath("assets/MuseScore_General.sf3")):#BuiltInSF3.MuseScoreGeneral().path(download=True)
         score_filename = score_filename.replace("file:///","")#TODO: This is weird ... is there a better way?
         score = Score(score_filename)
         
@@ -139,6 +140,7 @@ class Worker(QObject):
         try:
             self.midi_to_wav()
         except:
+            logging.exception("run")
             print("failed to convert midi to wav")
             self.out_filename = ""
         self.finished.emit()

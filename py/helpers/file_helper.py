@@ -1,9 +1,12 @@
 import os
+import pathlib
+
+from PySide6.QtCore import QUrl
 
 #------------------------------------------------------------------------------
 def get_appdata_folder(subfolder=""):
     
-    folder="GamesByGamsby"
+    folder= os.path.join("GamesByGamsby", "MusicExperiment")
     
     appdata_main_folder = os.path.join( os.getenv('LOCALAPPDATA'), folder)
     if not os.path.isdir(appdata_main_folder):
@@ -27,3 +30,22 @@ def replace_extension(filename, new_extension):
 def tempfile_path(filename, extension, subfolder="Music"):
     appdata_sub_folder = get_appdata_folder(subfolder)
     return os.path.join( appdata_sub_folder, replace_extension(os.path.basename(filename), extension))
+    
+#------------------------------------------------------------------------------
+def abspath(filename): 
+    """ This makes it work for both running .py and pyinstaller (and Qt stuff) """
+    if not filename:
+        return filename
+    if os.path.isfile(filename):
+        return filename    
+    possible_filename = QUrl(filename).toLocalFile()
+    
+    if os.path.isfile(possible_filename):
+        return possible_filename
+    
+    path = pathlib.Path(filename).resolve()
+    path = path.resolve()
+    if path.exists():
+        return str(path)
+    return os.path.join(pathlib.Path(__file__).parent.parent.resolve(), filename)
+        

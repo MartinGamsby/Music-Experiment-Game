@@ -5,3 +5,4 @@ symusic
 pyside6
 pydub
 mido
+pyinstaller>=3.12

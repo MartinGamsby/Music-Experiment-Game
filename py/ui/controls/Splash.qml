@@ -119,6 +119,18 @@ Item {
             }
         }
     }
+    RowLayout {
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        FlagButton {
+            text: "English" // Don't translate, use language's own wording
+            hl: "en"
+        }
+        FlagButton {
+            text: "Français" // Don't translate, use language's own wording
+            hl: "fr"
+        }
+    }
     GamesByLogoAnimated {
         z: 1
         anchors.bottom: parent.bottom

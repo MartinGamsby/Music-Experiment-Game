@@ -1,4 +1,7 @@
-from PySide6.QtCore import QObject, QTranslator, QLocale
+import os
+from helpers.file_helper import abspath
+
+from PySide6.QtCore import QObject, QTranslator, QLocale, QUrl
 
 #------------------------------------------------------------------------------        
 class Translation(QObject):
@@ -10,12 +13,17 @@ class Translation(QObject):
         self.translator1 = QTranslator(self)
 
         
-        self.translatorEn.load("t1_en", "lang")
+        self.load(self.translatorEn, "t1_en")
         self.app.installTranslator(self.translatorEn)
          
         # TODO: allow override without locale, save, etc.
         self.selectLanguage(QLocale().name())# like en_US
     
+#------------------------------------------------------------------------------
+    def load(self, translator, path):
+        lang_path = abspath("lang")
+        translator.load(path, lang_path)
+
 #------------------------------------------------------------------------------
     def selectLanguage(self, hl):
         print(hl)
@@ -23,7 +31,7 @@ class Translation(QObject):
         
         self.app.installTranslator(self.translatorEn)
         if hl.startswith("fr"):
-            self.translator1.load("t1_fr", "lang")
+            self.load(self.translator1, "t1_fr")
             self.app.installTranslator(self.translator1)
         
         

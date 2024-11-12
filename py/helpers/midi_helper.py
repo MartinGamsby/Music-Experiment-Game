@@ -30,6 +30,19 @@ def swap_accidentals(note):
     if note == 'B#':
         return 'C'
 
+    if note == 'A##':
+        return 'B'
+    if note == 'B##':
+        return 'C'
+    if note == 'C##':
+        return 'D'
+    if note == 'D##':
+        return 'E'
+    if note == 'F##':
+        return 'G'
+    if note == 'G##':
+        return 'A'
+        
     return note
 
 #------------------------------------------------------------------------------

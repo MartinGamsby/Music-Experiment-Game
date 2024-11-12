@@ -20,31 +20,31 @@ ColumnLayout {
     MusicButton {
         text: tr("DROPS_OF_WATER")
         onClicked: {
-            backend.ok_pressed("")
+            backend.play_mid_pressed("")
         }
     }
     MusicButton {
         text: "town"
         onClicked: {
-            backend.ok_pressed("assets/town.mid")
+            backend.play_mid_pressed("assets/town.mid")
         }
     }
     MusicButton {
         text: "flourish"
         onClicked: {
-            backend.ok_pressed("assets/flourish.mid")
+            backend.play_mid_pressed("assets/flourish.mid")
         }
     }
     MusicButton {
         text: "onestop"
         onClicked: {
-            backend.ok_pressed("assets/onestop.mid")
+            backend.play_mid_pressed("assets/onestop.mid")
         }
     }
     MusicButton {
         text: "1812 Overture"
         onClicked: {
-            backend.ok_pressed("assets/1812 Overture.mid")
+            backend.play_mid_pressed("assets/1812 Overture.mid")
         }
     }
     MusicButton {
@@ -59,7 +59,7 @@ ColumnLayout {
         currentFolder: backend ? backend.get_media_folder() : ""
         nameFilters: [tr("MIDI_FILES_FILTER")]
         onAccepted: {
-            backend.ok_pressed(selectedFile)
+            backend.play_mid_pressed(selectedFile)
         }
     }
     

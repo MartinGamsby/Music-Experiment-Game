@@ -9,7 +9,13 @@
     </message>
     <message>
         <source>NEW_GAME_1</source>
-        <translation>That's it!
+        <translation>ALMOST random 1st
+music generation.
+
+It'll be better soon!
+
+But for now,
+that's it!
 The game is
 being developed
 right now,

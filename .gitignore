@@ -10,3 +10,5 @@ py/output.mid
 * - Copy*
 *.qm
 rc_resources.py
+/py/build
+/py/dist

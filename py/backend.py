@@ -2,10 +2,11 @@ import sys
 import os
 import pathlib
 #import flagpy
+from helpers.file_helper import abspath
 from time import sleep, time
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine
-from PySide6.QtCore import QObject, Slot, Signal, Property, QStandardPaths
+from PySide6.QtCore import QObject, Slot, Signal, Property, QStandardPaths, QUrl
 
 import model
 import state
@@ -43,8 +44,9 @@ class Backend(QObject):
     
 #------------------------------------------------------------------------------
     @Slot(str)
-    def ok_pressed(self, value: str):
-        print(f"BUTTON PRESSED: {value}")
+    def play_mid_pressed(self, value: str):
+        print(f"PLAY MID PRESSED: {value}")
+        value = abspath(value)
         if value:
             self.model.play_async(value, type=midi_builder.MusicBuildType.FILE)
         else:
@@ -74,7 +76,7 @@ class Backend(QObject):
 #------------------------------------------------------------------------------
     @Slot(None, result=str)
     def get_media_folder(self):
-        return os.path.join(os.environ["SystemRoot"], "Media")
+        return QUrl.fromLocalFile(os.path.join(os.environ["SystemRoot"], "Media")).toString()
         
 #------------------------------------------------------------------------------
     @Slot(str, result=str)
@@ -102,5 +104,5 @@ class Backend(QObject):
         print("Shutting down...")
         self.model.shutdown()
                 
-        sys.exit(retval)
+        return retval
         

@@ -9,7 +9,14 @@
     </message>
     <message>
         <source>NEW_GAME_1</source>
-        <translation>C'est tout !
+        <translation>Première génération 
+de musique 
+PRESQUE aléatoire.
+
+Ce sera bientôt mieux !
+
+Mais pour l'instant,
+c'est tout !
 Le jeu est
 en cours de 
 développement

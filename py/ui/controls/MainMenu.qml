@@ -20,21 +20,7 @@ Item {
     component TitleButton: Button {
         anchors.horizontalCenter: parent.horizontalCenter
         font.pixelSize: 32
-    }
-    component FlagButton: Button {
-        font.pixelSize: 32
-        required property string hl
-        icon.color: "transparent"
-        icon.width: 64
-        icon.height: 32
-        
-        icon.source: "qrc:/flag_" + hl
-        
-        onClicked: {
-            backend.selectLanguage(hl)
-        }
-    }
-	
+    }	
 	
     Image {
         id: image
@@ -139,11 +125,11 @@ Item {
         }
         RowLayout {
             FlagButton {
-                text: "English"
+                text: "English" // Don't translate, use language's own wording
                 hl: "en"
             }
             FlagButton {
-                text: "Français"
+                text: "Français" // Don't translate, use language's own wording
                 hl: "fr"
             }
         }

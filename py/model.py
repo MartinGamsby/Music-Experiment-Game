@@ -2,6 +2,7 @@ import sys
 import os
 import pathlib
 import logging
+from helpers.file_helper import abspath
 from time import sleep, time
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
@@ -66,8 +67,8 @@ class Model(QObject):
 #------------------------------------------------------------------------------
     def play_main_menu(self):
         #TODO: setting for one of these:
-        #self.play_async("assets/town.mid")
-        self.play_async("")
+        self.play_async(abspath("assets/town.mid"))
+        #self.play_async("")
         #self.play_async("", type=midi_builder.MusicBuildType.DROPS)
         
         # TODO: Repeat? 
@@ -79,7 +80,7 @@ class Model(QObject):
         
 #------------------------------------------------------------------------------
     def play_async(self, filename="", type=midi_builder.MusicBuildType.FILE):
-        self.filename = filename.replace("file:///","")#TODO: This is weird ... is there a better way?
+        self.filename = abspath(filename)
         # TODO: Start the actual model, move things to the backend, too much in model already.
         
         # TODO: Actually kill the thread, don't do nothing!
