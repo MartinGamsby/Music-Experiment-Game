@@ -3,6 +3,7 @@ import os
 import pathlib
 #import flagpy
 from helpers.file_helper import abspath
+from helpers.setting import Setting
 from time import sleep, time
 from PySide6.QtGui import QGuiApplication, QIcon
 from PySide6.QtQml import QQmlApplicationEngine

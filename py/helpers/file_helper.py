@@ -8,7 +8,7 @@ def get_appdata_folder(subfolder=""):
     
     folder= os.path.join("GamesByGamsby", "MusicExperiment")
     
-    appdata_main_folder = os.path.join( os.getenv('LOCALAPPDATA'), folder)
+    appdata_main_folder = os.path.join( os.getenv('APPDATA'), folder)
     if not os.path.isdir(appdata_main_folder):
         os.makedirs(appdata_main_folder)
     
@@ -19,6 +19,10 @@ def get_appdata_folder(subfolder=""):
         return appdata_sub_folder
     return appdata_main_folder
         
+#------------------------------------------------------------------------------
+def get_appdata_file(filename, subfolder=""):
+    return os.path.join( get_appdata_folder(subfolder), filename)
+
 #------------------------------------------------------------------------------
 def replace_extension(filename, new_extension):
     if new_extension:
