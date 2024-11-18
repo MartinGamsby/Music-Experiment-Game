@@ -15,14 +15,18 @@ import midi_builder
 
 import helpers.translator as translator
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 #------------------------------------------------------------------------------
 class Backend(QObject):
     
     def __init__(self, qml_file, app, model: model.Model):
         super().__init__()
 
-        self.translator = translator.Translation(app)
         self.model = model
+        self.translator = translator.Translation(app, self.model._language.s)
         
         self.app = app
         
@@ -46,7 +50,7 @@ class Backend(QObject):
 #------------------------------------------------------------------------------
     @Slot(str)
     def play_mid_pressed(self, value: str):
-        print(f"PLAY MID PRESSED: {value}")
+        logger.info(f"PLAY MID PRESSED: {value}")
         value = abspath(value)
         if value:
             self.model.play_async(value, type=midi_builder.MusicBuildType.FILE)
@@ -56,7 +60,7 @@ class Backend(QObject):
 #------------------------------------------------------------------------------
     @Slot(bool)
     def toMainMenu(self, play: bool):
-        print(f"TO MAIN MENU")
+        logger.info(f"TO MAIN MENU")
         if play:
             self.model.play_main_menu()
         self.model.set_state(state.State.MAIN_MENU)
@@ -64,13 +68,13 @@ class Backend(QObject):
 #------------------------------------------------------------------------------
     @Slot(None)
     def playMidis(self):
-        print(f"PLAY MIDIS")
+        logger.info(f"PLAY MIDIS")
         self.model.set_state(state.State.PLAY_MIDIS)
         
 #------------------------------------------------------------------------------
     @Slot(None)
     def newGame(self):
-        print(f"NEW GAME")
+        logger.info(f"NEW GAME")
         self.model.play_async(type=midi_builder.MusicBuildType.GAME)
         self.model.set_state(state.State.GAME)
         
@@ -88,10 +92,13 @@ class Backend(QObject):
     @Slot(str, result=None)
     def selectLanguage(self, hl):
         # TODO: Save the user's choice!
+        self.model._language.set(hl)
         self.translator.selectLanguage(hl)
         self.languageChanged.emit()
         
-# -------------- int property --------------
+# -------------- str property --------------
+# This is needed to update string in qml, it's weird, but it's what they do in Qt's doc.
+# (See tr() in main.qml)
     @Slot()
     def get_empty_string(self):
         return ""
@@ -102,7 +109,7 @@ class Backend(QObject):
     def run(self) -> int:
         self.model.start()
         retval = self.app.exec()
-        print("Shutting down...")
+        logger.info("Shutting down...")
         self.model.shutdown()
                 
         return retval

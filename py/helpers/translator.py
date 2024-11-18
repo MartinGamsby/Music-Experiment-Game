@@ -1,11 +1,15 @@
 import os
 from helpers.file_helper import abspath
 
-from PySide6.QtCore import QObject, QTranslator, QLocale, QUrl
+from PySide6.QtCore import QObject, QTranslator, QUrl
+
+import logging
+logger = logging.getLogger(__name__)
+
 
 #------------------------------------------------------------------------------        
 class Translation(QObject):
-    def __init__(self, app):
+    def __init__(self, app, language):
         super().__init__()
         
         self.app = app
@@ -17,7 +21,7 @@ class Translation(QObject):
         self.app.installTranslator(self.translatorEn)
          
         # TODO: allow override without locale, save, etc.
-        self.selectLanguage(QLocale().name())# like en_US
+        self.selectLanguage(language)# like en_US
     
 #------------------------------------------------------------------------------
     def load(self, translator, path):
@@ -26,7 +30,7 @@ class Translation(QObject):
 
 #------------------------------------------------------------------------------
     def selectLanguage(self, hl):
-        print(hl)
+        logger.info(f"Using language {hl}")
         self.app.removeTranslator(self.translator1)
         
         self.app.installTranslator(self.translatorEn)

@@ -7,6 +7,9 @@ from symusic import Score, Synthesizer, dump_wav#, BuiltInSF3
 from PySide6.QtCore import QObject, Signal, QThread
 # https://stackoverflow.com/questions/72737506/pyside6-qthread-still-freezing-main-gui
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 #------------------------------------------------------------------------------
 class Worker(QObject):
@@ -25,7 +28,7 @@ class Worker(QObject):
     def debug_audio(self, audio):        
         for i, p in enumerate(audio):                
             if p:
-                print(i, p)
+                logger.debug(f"{i}, {p}")
             if i == 100:
                 break
                 
@@ -39,12 +42,12 @@ class Worker(QObject):
 
         a = 0.99 / max_value
         if a < 0.1:
-            print("Could not normalize audio by amplifying %fx" % a, max_value)
+            logger.warning(f"Could not normalize audio by amplifying %.02fx (%.02f max)" % (a, max_value))
             return False
-        print("Normalizing audio by amplifying %fx" % a, max_value)
+        logger.info(f"Normalizing audio by amplifying %.02fx (%.02f max)" % (a, max_value))
         audio *= a
         if verbose:
-            print(a, max_value)
+            logger.debug(f"{a}, {max_value}")
             self.debug_audio(left)  
         return True
                 
@@ -75,11 +78,11 @@ class Worker(QObject):
             import pydub
             sound = pydub.AudioSegment.from_wav(wav_filename)            
             sound.export(mp3_filename, format="mp3")
-            print("converted", mp3_filename)
+            logger.info(f"converted {mp3_filename}")
             os.remove(wav_filename)
             return mp3_filename
         except:
-            print("Failed to convert to mp3")
+            logger.warning("Failed to convert to mp3")
         return wav_filename
     
 #------------------------------------------------------------------------------
@@ -92,7 +95,7 @@ class Worker(QObject):
         
         if os.path.isfile(mp3_filename) and not self.force_gen:
             self.out_filename = mp3_filename
-            print("-- Using mp3", mp3_filename)
+            logger.info(f"-- Using mp3 {mp3_filename}")
             return self.out_filename
             
         
@@ -100,7 +103,7 @@ class Worker(QObject):
         if os.path.isfile(wav_filename) and not self.force_gen:
             if to_mp3:
                 self.out_filename = self.wav_to_mp3(wav_filename, mp3_filename)
-            print("-- Using existing ", self.out_filename)
+            logger.info(f"-- Using existing {self.out_filename}")
             return self.out_filename
         
         
@@ -115,7 +118,7 @@ class Worker(QObject):
                 i += 1
                 del audio
                 if i >= 1: #TODO: Always same results when it fails? why??
-                    print("FAILED, fallback to mid")
+                    logger.warning("FAILED, fallback to mid")
                     self.out_filename = self.filename
                     return self.out_filename
                 audio = self._synth_from_path(filename)
@@ -141,7 +144,7 @@ class Worker(QObject):
             self.midi_to_wav()
         except:
             logging.exception("run")
-            print("failed to convert midi to wav")
+            logger.warning("failed to convert midi to wav")
             self.out_filename = ""
         self.finished.emit()
         

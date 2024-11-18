@@ -3,6 +3,10 @@ from mingus.core import chords
 from dataclasses import dataclass
 from typing import List
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 #------------------------------------------------------------------------------
 NOTES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B']
 OCTAVES = list(range(11))
@@ -104,7 +108,7 @@ def make_file(filename, channels, tempo):
                 if note.note != SILENCE:
                     MyMIDI.addNote(track, channel_id, note.number, time, beat.duration, channel.volume)
                 #TODO: change_note_tuning?
-            print(time, beat)
+            logger.debug(f"{time}, {beat}")
             time += beat.duration
             
             

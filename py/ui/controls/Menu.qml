@@ -66,9 +66,9 @@ ColumnLayout {
     CheckBox {
         id: cbGenerate
         text: tr("SETTING_GENERATE_MP3")
-        checked: model ? model.p_generate_mp3 : false
+        checked: model ? model.p_generate_mp3.b : false
         onClicked: {
-            model.set_generate_mp3(checked)
+            model.p_generate_mp3.b = checked
         }
     }
     Item {

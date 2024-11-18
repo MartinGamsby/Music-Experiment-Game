@@ -1,47 +1,56 @@
 import sys
 import os
 import pathlib
-import logging
-from helpers.file_helper import abspath
+from helpers.file_helper import abspath, tempfile_path, get_appdata_file
+from helpers.setting import Setting
+from helpers.save import Save
 from time import sleep, time
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
-from PySide6.QtCore import QObject, Slot, Signal, Property, QTimer, QThread
+from PySide6.QtCore import QObject, Slot, Signal, Property, QTimer, QThread, QLocale
 import threading
 import symusic_midi
 import midi_builder
 
 from state import State, MusicState
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 #------------------------------------------------------------------------------
 class Model(QObject):
     appExiting = Signal()
+    model_changed = Signal()
+    save = Save()
 
 #------------------------------------------------------------------------------
     def __init__(self, app):
         super().__init__(app)
+        self.save.init(get_appdata_file("default.sav", subfolder="Save"))
+        
         self.app = app
         self.start_time = time()
-        self.generate_mp3 = True#True# TODO: Save settings
         self.t = None
         
         self.state = State.NONE
         self.music_state = MusicState.NONE
-        self.title = ""
+        #self._title = ""#Setting("DEFAULT TITLE")
+        
         self.music_progress = 0.0
-        
-        
+                
         self.set_state(State.INIT)
         self.set_music_state(State.INIT)
         
+        
     def __del__(self):
+        self.save.write_config() # TODO: More often than that...
         self.thread.deleteLater() #TODO: stop the thread
     
 #------------------------------------------------------------------------------
     def init(self):
         self.state_updated.emit()
         self.music_state_updated.emit()
-        self.title_updated.emit()
         
         self.thread_init()
         
@@ -100,15 +109,16 @@ class Model(QObject):
             self.set_music_state(MusicState.GENERATING)       
             
             if not self.filename:        
-                filename = "__DefaultOutput.mid"
+                
+                filename = get_appdata_file("__DefaultOutput.mid", subfolder="Music")# "Midi"?
                 midi_builder.make_midi(filename, type=type)
             else:
                 filename = self.filename
-            if self.generate_mp3:       
-                print("GENERATE WAV FROM MIDI")
+            if self._generate_mp3.get():
+                logger.info("GENERATE WAV FROM MIDI")
                 symusic_midi.midi_to_wav_worker(self.worker, self.thread, filename, force_gen=not self.filename)
             else:
-                print("DON'T Generate wav from midi")
+                logger.info("DON'T Generate wav from midi")
                 self.out_filename = filename
                 self.worker_finished()        
         except:
@@ -120,13 +130,14 @@ class Model(QObject):
 #------------------------------------------------------------------------------
     def worker_finished(self):
         self.set_music_state(MusicState.PREPARING)
-        if self.generate_mp3:
+        logger.info(f"_generate_mp3: {self._generate_mp3.get()}")
+        if self._generate_mp3.get():
             self.out_filename = self.worker.out_filename
             
             if self.worker.out_filename == "":#TODO: better error handling?            
                 self.set_music_state(MusicState.ERROR)
                 return #ERROR, notify the user better?
-            print("finished", self.out_filename)            
+            logger.info(f"finished {self.out_filename}")
         
         self.t = threading.Thread(target=self._play)
         self.t.start()
@@ -137,7 +148,7 @@ class Model(QObject):
         pygame_midi.init(2)
         #After init. In class? Make another class that can be either pygame or something else?
         self.set_music_state(MusicState.PREPARING)
-        print("Play!")
+        logger.info("Play!")
         
         if self.state == State.INIT:
             self.set_state(State.WELCOME)
@@ -149,8 +160,8 @@ class Model(QObject):
 #------------------------------------------------------------------------------
     def music_cb(self, at_ms, to_ms):
         progress_pc = (at_ms/to_ms)
-        self.set_music_progress(progress_pc)
-        
+        self._music_progress.set(progress_pc)
+        logger.debug(at_ms)
         if at_ms >= to_ms:
             self.set_music_state(MusicState.IDLE)
         
@@ -175,6 +186,7 @@ class Model(QObject):
         
     state_updated = Signal()
     
+    # TODO: Bundle to enum type?
     # -------------- str property --------------
     @Slot()
     def get_state_name(self):
@@ -204,11 +216,13 @@ class Model(QObject):
             self.music_state_updated.emit()
             if self.music_state == MusicState.PLAYING:
                 try:
-                    self.set_title(os.path.splitext(os.path.basename(self.filename))[0])# TODO: Add a way to know if it's converted to mp3 or not? (say that the quality might be lower..)
+                    # TODO: Add a way to know if it's converted to mp3 or not? (say that the quality might be lower..)
+                    self._title.set(os.path.splitext(os.path.basename(self.filename))[0])
                 except:
-                    self.set_title("Unnamed")                    
+                    self._title.set("Unnamed")
             else:
-                self.set_title("")
+                self._title.set("")
+            #self.title_updated.emit()
     
     music_state_updated = Signal()
         
@@ -235,46 +249,22 @@ class Model(QObject):
     p_music_state_pretty_name = Property(str, get_music_state_pretty_name, notify=music_state_updated)
 
 #------------------------------------------------------------------------------
-    # -------------- str property title --------------
-    def set_title(self, title):
-        if self.title != title:
-            self.title = title
-            self.title_updated.emit()
-        
-    title_updated = Signal()
-    
-    @Slot()
-    def get_title(self):
-        return self.title
-    p_title = Property(str, get_title, notify=title_updated)
+    _title = Setting("DEFAULT TITLE", "title", save=None)
+    def get_title(self): return self._title # TODO: Move that inside Setting() class??
+    p_title = Property(QObject, get_title, notify=model_changed)
     
 #------------------------------------------------------------------------------
-    # -------------- bool property generate_mp3 --------------
-    @Slot(bool)
-    def set_generate_mp3(self, generate_mp3: bool):
-        if self.generate_mp3 != generate_mp3:
-            self.generate_mp3 = generate_mp3
-            self.generate_mp3_updated.emit()
-        
-    generate_mp3_updated = Signal()
-    
-    @Slot()
-    def get_generate_mp3(self):
-        return self.generate_mp3
-    p_generate_mp3 = Property(bool, get_generate_mp3, notify=generate_mp3_updated)
+    _music_progress = Setting(True, "music_progress", save=None)
+    def get_music_progress(self): return self._music_progress
+    p_music_progress = Property(QObject, get_music_progress, notify=model_changed)
     
 #------------------------------------------------------------------------------
-    # -------------- float property music_progress --------------
-    @Slot(float)
-    def set_music_progress(self, music_progress: float):
-        if self.music_progress != music_progress:
-            self.music_progress = music_progress
-            self.music_progress_updated.emit()
-        
-    music_progress_updated = Signal()
+    _language = Setting(QLocale().name(), "Config/language", save=save)
+    def get_language(self): return self._language
+    p_language = Property(QObject, get_language, notify=model_changed)
     
-    @Slot()
-    def get_music_progress(self):
-        return self.music_progress
-    p_music_progress = Property(float, get_music_progress, notify=music_progress_updated)
+#------------------------------------------------------------------------------
+    _generate_mp3 = Setting(True, "Config/generate_mp3", save=save)
+    def get_generate_mp3(self): return self._generate_mp3
+    p_generate_mp3 = Property(QObject, get_generate_mp3, notify=model_changed)
     

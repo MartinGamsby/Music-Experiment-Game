@@ -10,9 +10,9 @@ import rc_resources
 #------------------------------------------------------------------------------
 def main() -> None:
 
-    log.init_log('default.log')
+    log.init_log('default.log', level=logging.INFO)#DEBUG
     logger = logging.getLogger(__name__)
-    logger.info("Logger intiialized")
+    logger.info("Logger intitialized")
 
     import backend as bak
     import model

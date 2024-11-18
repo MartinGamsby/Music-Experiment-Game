@@ -1,6 +1,10 @@
 import pygame
 from threading import Thread, Lock
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 mutex = Lock()
 
 # TODO: Better than that...
@@ -32,11 +36,11 @@ def _play_music(music_file, cb, use_sound=False):#True):#Ugh, with sound it's st
         music = pygame.mixer.Sound(music_file)
         length = music.get_length()
         length_ms = length*1000.
-        print("length", length)
+        logger.debug(f"length: {length}")
         c = music.play()
-        print(c, c.get_busy())
+        logger.debug(f"{c} {c.get_busy()}")
         
-        #print(dir(pygame.mixer.Sound))
+        #logger.debug(dir(pygame.mixer.Sound))
         
         total_ms = 0
         cb(0,length_ms)
@@ -53,9 +57,9 @@ def _play_music(music_file, cb, use_sound=False):#True):#Ugh, with sound it's st
         
     try:
         pygame.mixer.music.load(music_file)
-        print( "Music file %s loaded!" % music_file )
+        logger.info( f"Music file {music_file} loaded!" )
     except pygame.error:
-        print( "File %s not found! (%s)" % (music_file, pygame.get_error()) )
+        logger.error( f"File {music_file} not found! ({pygame.get_error()})" )
         return        
         
     try:
@@ -72,10 +76,10 @@ def _play_music(music_file, cb, use_sound=False):#True):#Ugh, with sound it's st
         
     total_ms = 0
     while pygame.mixer.music.get_busy():
-        clock.tick(30)
+        clock.tick(60)
         t = clock.get_time() + clock.tick_busy_loop()
         total_ms += t
-        cb(total_ms,length_ms)
+        cb(total_ms, length_ms)
         if total_ms > length_ms:
             break
         

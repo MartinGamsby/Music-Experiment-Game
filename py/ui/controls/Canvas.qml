@@ -15,7 +15,7 @@ Rectangle {
     
     Title {            
         anchors.centerIn: parent
-        text: model ? model.p_title : ""
+        text: model ? model.p_title.s : ""
     }
     Title {
         font.pointSize: 40
@@ -32,7 +32,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.margins: 0
         height: 10
-        width: model ? (model.p_music_progress * parent.width) : 0
+        width: model ? (model.p_music_progress.f * parent.width) : 0
     }
     
 }

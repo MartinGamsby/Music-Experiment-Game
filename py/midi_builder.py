@@ -3,6 +3,9 @@ from mingus.core import chords
 import random
 from enum import Enum
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 #------------------------------------------------------------------------------
 class MusicBuildType(Enum):
@@ -16,7 +19,7 @@ def add_chord_progression(chord_progression, measure_duration=4, note_duration=[
     for chord in chord_progression:
         for i in range(repeat_chord): #TODO: repeat_chord depending on measure_duration instead... 
             sub_notes = chords.from_shorthand(chord)
-            print( chord, sub_notes )
+            logger.debug( f"{chord}, {sub_notes}" )
             octave = octave_start
             
             # TODO: different if note_duration is not 1.
@@ -42,10 +45,10 @@ def add_chord_progression(chord_progression, measure_duration=4, note_duration=[
                         if random.random() > skip_over_silence:# TODO:
                             # Add silence
                             note.note = mid.SILENCE
-                            print("SILENCE")
+                            logger.debug("SILENCE")
                         else:
                             #Skip to next note
-                            print("SKIP")
+                            logger.debug("SKIP")
                             continue
                         
                         

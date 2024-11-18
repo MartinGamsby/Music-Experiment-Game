@@ -31,4 +31,4 @@ class MusicStateEnum(QObject):
     
 #------------------------------------------------------------------------------
 def register_for_qml(app):
-    qmlRegisterSingletonInstance(QObject, "com.example.app", 1, 0, "App", app)
+    qmlRegisterSingletonInstance(QObject, QML_IMPORT_NAME, QML_IMPORT_MAJOR_VERSION, 0, "App", app)
