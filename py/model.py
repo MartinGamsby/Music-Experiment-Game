@@ -10,7 +10,7 @@ from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QObject, Slot, Signal, Property, QTimer, QThread, QLocale
 import threading
 import symusic_midi
-import midi_builder
+from music import midi_builder
 
 from state import State, MusicState
 
@@ -102,7 +102,6 @@ class Model(QObject):
 #------------------------------------------------------------------------------
     def _play_prepare(self, type):
         try:
-            import midi_builder
             import pygame_midi
             
             pygame_midi.stop_music()

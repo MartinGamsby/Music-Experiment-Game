@@ -122,18 +122,11 @@ Item {
         }
         Title {
             text: "~"
-        }
-        RowLayout {
-            FlagButton {
-                text: "English" // Don't translate, use language's own wording
-                hl: "en"
-            }
-            FlagButton {
-                text: "Français" // Don't translate, use language's own wording
-                hl: "fr"
-            }
+            visible: false
         }
         
+    }
+    FlagButtons {
     }
     GamesByLogo {
         z: 1

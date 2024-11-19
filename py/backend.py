@@ -11,7 +11,7 @@ from PySide6.QtCore import QObject, Slot, Signal, Property, QStandardPaths, QUrl
 
 import model
 import state
-import midi_builder
+from music import midi_builder
 
 import helpers.translator as translator
 

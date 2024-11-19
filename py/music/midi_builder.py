@@ -1,4 +1,4 @@
-import helpers.midi_helper as mid
+import music.midi_helper as mid
 from mingus.core import chords
 import random
 from enum import Enum
@@ -91,7 +91,7 @@ def make_midi(filename, type):
         # TODO: Notes with the octave. Return Note() here, and make sure we go up if we go over G.
         beats = add_chord_progression(chord_progression, octave_start=6, note_duration=[3], skip_random=0.33, group_chord=False)
         channels.append(mid.Channel(beats=beats, instrument=115)) 
-        beats = add_chord_progression(chord_progression, octave_start=8, note_duration=[3], skip_random=0.33, group_chord=False)
+        beats = add_chord_progression(chord_progression, octave_start=7, note_duration=[3], skip_random=0.33, group_chord=False)
         beats.insert(0,mid.Beat(duration=0.25, notes=[mid.Note("", octave=1)]))
         channels.append(mid.Channel(beats=beats, instrument=113)) 
     
@@ -131,4 +131,4 @@ def make_midi(filename, type):
     
     
         
-    mid.make_file(filename, channels, tempo=160)
+    mid.make_file(filename, channels, tempo=mid.TEMPO["VIVACE"])

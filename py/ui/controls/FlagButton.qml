@@ -15,8 +15,14 @@ Button {
     icon.height: 32
     
     icon.source: "qrc:/flag_" + hl
+    property bool isSelected: model ? (model.p_language.s.startsWith(hl)) : false
+        
+    implicitWidth: isSelected ? 240 : (hovered ? 240 : 96)
     
     onClicked: {
         backend.selectLanguage(hl)
+    }
+    Behavior on implicitWidth { 
+        PropertyAnimation { easing.type: Easing.InOutQuad } 
     }
 }
