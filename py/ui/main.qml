@@ -26,7 +26,7 @@ ApplicationWindow {
     Material.accent: Material.Cyan
     
     function tr(key) {
-        return backend ? ( backend.tr(key) + backend.p_) : ""
+        return backend ? ( backend.tr(key) + backend.p_ ) : ""
     }
 
     NumberAnimation on opacity {
@@ -97,6 +97,20 @@ ApplicationWindow {
             GameLogo {
             }
         }
+        RowLayout {
+            id: settingsView
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: 9
+
+            SettingsMenu {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+    
+            GameLogo {
+            }
+        }
         
         Rectangle {
             id: init1
@@ -115,6 +129,10 @@ ApplicationWindow {
             }
             if( model.p_state_id == StateEnum.MAIN_MENU ) {
                 screens.switchTo(mainMenuView)
+                //test1.text = model._title
+            }
+            if( model.p_state_id == StateEnum.SETTINGS ) {
+                screens.switchTo(settingsView)
             }
         }
     }

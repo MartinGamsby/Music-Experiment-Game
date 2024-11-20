@@ -38,6 +38,10 @@ espérons...</translation>
         <source>MESSAGE_WELCOME</source>
         <translation>Bienvenue</translation>
     </message>
+    <message>
+        <source>SETTINGS</source>
+        <translation>Paramètres</translation>
+    </message>
     
     
     <!-- Main menu -->
@@ -89,11 +93,7 @@ espérons...</translation>
     </message>
     <message>
         <source>SETTING_GENERATE_MP3</source>
-        <translation>Générer des
-fichiers MIDI
-plus beaux
-(plus lent,
- peut lagger)</translation>
+        <translation>Générer des fichiers MIDI plus beaux (plus lent, peut lagger)</translation>
     </message>
 </context>
 </TS>

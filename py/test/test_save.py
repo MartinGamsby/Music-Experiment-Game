@@ -29,11 +29,24 @@ class TestSave(unittest.TestCase):
         self.assertEqual(None, save.load("anything"))
         
         save.save("one", 1)
-        self.assertEqual('1', save.load("one"))
         save.save("two", 2)
+        self.assertEqual('1', save.load("one"))
         self.assertEqual('2', save.load("two"))
         
+        
+        # 2nd object (not only stored in memory, but on file too)
+        save2 = Save()
+        save2.init(save_filename)
+        self.assertEqual('1', save2.load("one"))
+        self.assertEqual('2', save2.load("two"))
+        
+        # 3rd object after deleting the file
         os.remove(save_filename)
+        
+        save3 = Save()
+        save3.init(save_filename)
+        self.assertEqual(None, save3.load("one"))
+        self.assertEqual(None, save3.load("two"))
         
 
 #------------------------------------------------------------------------------

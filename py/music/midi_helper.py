@@ -1,5 +1,4 @@
 from midiutil import MIDIFile
-from mingus.core import chords
 from dataclasses import dataclass
 from typing import List
 
@@ -70,7 +69,7 @@ def swap_accidentals(note):
 @dataclass
 class Note:
     note: str = SILENCE
-    octave: int = -1
+    octave: int = 5
     velocity: int = 100 # 0-127
     
     #------------------------------------------------------------------------------
@@ -142,6 +141,7 @@ class Channel:
     volume: int = 100 # 0-127, as per the MIDI standard
     
     instrument: int = 0
+    channel_id_override: int = -1
     
 #------------------------------------------------------------------------------
 def make_file(filename, channels, tempo):
@@ -153,7 +153,10 @@ def make_file(filename, channels, tempo):
     
 
     for channel_id, channel in enumerate(channels):
-        MyMIDI.addProgramChange(0, channel_id, 0, channel.instrument)        
+        if channel.channel_id_override >= 0:
+            channel_id = channel.channel_id_override
+        if channel.instrument > 0:
+            MyMIDI.addProgramChange(0, channel_id, 0, channel.instrument)        
         time = 0
         for beat in channel.beats:
             for note in beat.notes:

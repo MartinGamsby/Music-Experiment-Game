@@ -79,6 +79,12 @@ class Backend(QObject):
         self.model.set_state(state.State.GAME)
         
 #------------------------------------------------------------------------------
+    @Slot(None)
+    def toSettings(self):
+        logger.info(f"TO SETTINGS")
+        self.model.set_state(state.State.SETTINGS)
+        
+#------------------------------------------------------------------------------
     @Slot(None, result=str)
     def get_media_folder(self):
         return QUrl.fromLocalFile(os.path.join(os.environ["SystemRoot"], "Media")).toString()

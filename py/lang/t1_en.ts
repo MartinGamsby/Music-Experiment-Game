@@ -47,6 +47,10 @@ hopefully...</translation>
         <source>NEW_GAME</source>
         <translation>New Game</translation>
     </message>
+    <message>
+        <source>SETTINGS</source>
+        <translation>Settings</translation>
+    </message>
     
     
     <!-- Music states -->
@@ -87,9 +91,7 @@ hopefully...</translation>
     </message>
     <message>
         <source>SETTING_GENERATE_MP3</source>
-        <translation>Generate Beautiful
-Midi files
-(Slower, might lag)</translation>
+        <translation>Generate Beautiful Midi files (Slower, might lag)</translation>
     </message>
     
 </context>

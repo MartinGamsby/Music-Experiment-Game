@@ -13,9 +13,10 @@ QML_IMPORT_MAJOR_VERSION = 1
 @QmlElement
 class Setting(QObject):
     value_updated = Signal()
+    unlocked_updated = Signal()
     
 #------------------------------------------------------------------------------
-    def __init__(self, default_value, fullname="", save=None):#, type, name):
+    def __init__(self, default_value, fullname="", save=None, sub_unlock=True):#, type, name):
         super().__init__()
         
         try:
@@ -32,6 +33,12 @@ class Setting(QObject):
         self._save = save
         
         self._initialized = False
+        
+        # TODO: different save?
+        if sub_unlock:
+            self._unlocked = Setting(False, f"Unlocked/{self._name}", save=save, sub_unlock=False)
+        else:
+            self._unlocked = None
     
 #------------------------------------------------------------------------------
     @staticmethod
@@ -66,6 +73,8 @@ class Setting(QObject):
 #------------------------------------------------------------------------------
     def set(self, value):
         logger.debug(f"{self._name} set to: \"{value}\"")
+        if type(value) != self._type:
+            raise Exception(f"Wrong type for {self._name}: {type(value)} ({value}) is not {self._type} ({self._value})")
         try:
             if self._value != value:
                 self._value = value
@@ -81,7 +90,34 @@ class Setting(QObject):
             logger.error(f"Error setting property '{value}': {e}")
             
 #------------------------------------------------------------------------------
+    def unlocked(self):
+        if not self._unlocked:
+            raise Exception("Not unlockable")
+        return self._unlocked.get()
+        
+#------------------------------------------------------------------------------
+    #@Slot()
+    def unlock(self):
+        if not self._unlocked:
+            raise Exception("Not unlockable")
+            
+        if not self._unlocked.get():
+            self._unlocked.set(True)
+            self.unlocked_updated.emit()
+        
+#------------------------------------------------------------------------------
+    def lock(self):
+        if not self._unlocked:
+            raise Exception("Not lockable")
+        if self._unlocked.get():
+            self._unlocked.set(False)
+            self.unlocked_updated.emit()
+        
+#------------------------------------------------------------------------------
     s = Property(str, get, set, notify=value_updated)
     b = Property(bool, get, set, notify=value_updated)
     f = Property(float, get, set, notify=value_updated)
+    i = Property(int, get, set, notify=value_updated)
+    
+    p_locked = Property(int, unlocked, notify=value_updated)
     

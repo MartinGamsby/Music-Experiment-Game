@@ -111,13 +111,19 @@ Item {
                 backend.newGame()
             }
         }
-        //Title {
-        //    text: "~"
-        //}
+        Title {
+            text: "~"
+        }
         TitleButton {
             text: tr("PLAY_MIDIS")
             onClicked: {
                 backend.playMidis()
+            }
+        }
+        TitleButton {
+            text: tr("SETTINGS")
+            onClicked: {
+                backend.toSettings()
             }
         }
         Title {

@@ -1,6 +1,6 @@
 import music.midi_helper as mid
 from mingus.core import chords
-import random
+from random import random, choice, randrange, shuffle
 from enum import Enum
 
 import logging
@@ -9,16 +9,55 @@ logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------------------------
 class MusicBuildType(Enum):
-    FILE, DROPS, GAME = range(3)
+    FILE, DROPS, GAME, MINGUS = range(4)
 
 #------------------------------------------------------------------------------
+def tension_chord_going_to(to_chord):
+    # -5 semitones, add "7" if possible?
+    if type(to_chord) is not str:
+        raise Exception(f"to_chord ({to_chord}) should be a string")
+    to = mid.Note(to_chord).number    
+    from_chord = mid.Note.from_number(to-5).note
+    return from_chord+"7"
+    
+#------------------------------------------------------------------------------
+def clamp(minimum, x, maximum):
+    return max(minimum, min(x, maximum))
+    
+    
+#------------------------------------------------------------------------------
+TEST_JAZZ=False#True
+#------------------------------------------------------------------------------
+def jazz_chord(chord):
+    if type(chord) is not str:
+        raise Exception(f"chord ({chord}) should be a string")
+    if "7" in chord:
+        return chords.from_shorthand(chord)
+    
+    first = mid.Note(chord).number
+    n2  = mid.Note.from_number(first+2).note
+    nb3 = mid.Note.from_number(first+3).note
+    n3  = mid.Note.from_number(first+4).note
+    nb5  = mid.Note.from_number(first+7).note
+    n5   = mid.Note.from_number(first+9).note
+    #nb7   = mid.Note.from_number(first-2).note
+    scale = [chord,n2,nb3,n3,nb5,n5]#,nb7]
+    return scale
+    
+    
+    
+#------------------------------------------------------------------------------
 def add_chord_progression(chord_progression, measure_duration=4, note_duration=[1], 
-    octave_start=4, group_chord=False, skip_random=0.0, skip_over_silence=0, randomize=False, repeat_chord=1):
+    octave_start=4, group_chord=False, skip_random=0.0, skip_over_silence=0, randomize=0.5, repeat_chord=1):
     
     beats = []
+    velocity = 100
     for chord in chord_progression:
         for i in range(repeat_chord): #TODO: repeat_chord depending on measure_duration instead... 
-            sub_notes = chords.from_shorthand(chord)
+            if TEST_JAZZ:
+                sub_notes = jazz_chord(chord)            
+            else:
+                sub_notes = chords.from_shorthand(chord)
             logger.debug( f"{chord}, {sub_notes}" )
             octave = octave_start
             
@@ -36,13 +75,17 @@ def add_chord_progression(chord_progression, measure_duration=4, note_duration=[
             
             sub_beats = []
             last_note = 0
+            
             for name in sub_notes:
-                note = mid.Note(note=name, octave=octave)
+                velocity += randrange(-5,6)
+                velocity = clamp(25, velocity, 127)
+                note = mid.Note(note=name, octave=octave, velocity=velocity)
+                logger.debug(velocity)
                 
                 if skip_random > 0:
-                    if random.random() < skip_random:
+                    if random() < skip_random:
                         # Not always silence, perhaps?
-                        if random.random() > skip_over_silence:# TODO:
+                        if random() > skip_over_silence:# TODO:
                             # Add silence
                             note.note = mid.SILENCE
                             logger.debug("SILENCE")
@@ -56,13 +99,13 @@ def add_chord_progression(chord_progression, measure_duration=4, note_duration=[
                 if last_note > note.number:
                     octave += 1
                     note.octave = octave
-                beat = mid.Beat(duration=random.choice(note_duration), notes=notes, name=chord)
+                beat = mid.Beat(duration=choice(note_duration), notes=notes, name=chord)
                 sub_beats.append(beat)
                 
                 last_note = note.number
                 
-            if randomize:
-                random.shuffle(sub_beats)
+            if random() < randomize:
+                shuffle(sub_beats)
                 
             if group_chord:
             
@@ -70,7 +113,7 @@ def add_chord_progression(chord_progression, measure_duration=4, note_duration=[
                 for beat in sub_beats:
                     assert len(beat.notes) == 1
                     beat_notes.append(beat.notes[0])
-                common_beat = mid.Beat(random.choice(note_duration), beat_notes, name=chord)
+                common_beat = mid.Beat(choice(note_duration), beat_notes, name=chord)
                 beats.append(common_beat)
             else:
                 beats.extend(sub_beats)
@@ -78,14 +121,38 @@ def add_chord_progression(chord_progression, measure_duration=4, note_duration=[
     return beats
     
 #------------------------------------------------------------------------------
+def add_note(beats, note):
+    beats.append(mid.Beat(duration=1, notes=[mid.Note.from_number(int(note))], name=""))#duration?
+    
+#------------------------------------------------------------------------------
+def add_notes(beats, notes):
+    all_notes = []
+    for n in notes:
+        all_notes.append(mid.Note.from_number(int(n)))
+    beats.append(mid.Beat(duration=1, notes=all_notes, name=""))#duration?
+    
+#------------------------------------------------------------------------------
+def add_silence(beats):
+    beats.append(mid.Beat(duration=1, notes=[mid.Note()], name=""))#duration?   
+
+#------------------------------------------------------------------------------
 def make_midi(filename, type):
 
     #chord_progression = ["Cmaj", "Fmaj", "Cmaj", "Cmaj7", "Fmaj", "Gmin", "Fmaj", "Gmin", "Cmaj7", "Fmaj", "Cmaj", "Fmaj", "Gmin", "Cmaj", "Cmaj7", "Cmaj"]
     #chord_progression = ["Cmaj", "Fmaj", "Bmaj", "Emaj", "Amaj", "Dmaj", "Gmaj", "Cmaj"]
     chord_progression = ["C", "F", "A#", "D#", "G#", "C#", "F#", "B", "E", "A", "D", "G", "C"]
+    #chord_progression = ["C", "C7", "F", "F7", "A#", "A#7", "D#", "D#7", "G#", "G#7", "C#", "C#7", "F#", "F#7", "B", "B7", "E", "E7", "A", "A7", "D", "D7", "G", "G7", "C"]
     
-    channels = []
+    new_chord_progression = []
+    for i, c in enumerate(chord_progression):
+        if i != 0:
+            new_chord_progression.append(tension_chord_going_to(c))
+        new_chord_progression.append(c)
+        
+    logger.info(f"{chord_progression} to {new_chord_progression}")
+    chord_progression = new_chord_progression
 
+    channels = []
 
     if type == MusicBuildType.DROPS:
         # TODO: Notes with the octave. Return Note() here, and make sure we go up if we go over G.
@@ -95,13 +162,16 @@ def make_midi(filename, type):
         beats.insert(0,mid.Beat(duration=0.25, notes=[mid.Note("", octave=1)]))
         channels.append(mid.Channel(beats=beats, instrument=113)) 
     
+    #elif type == MusicBuildType.MINGUS:        
     else: # MusicBuildType.GAME
+        
+        piano = 0
+        
+        instrument1 = randrange(0,47)#piano#int(random_acoustic_bass)
+        instrument2 = randrange(0,47)#piano#int(random_guitar2)
+        instrument3 = randrange(0,47)#piano#int(random_acoustic_guitar)
     
-        instrument1 = int(random.random()*47)#119)
-        instrument2 = int(random.random()*47)#119)
-        instrument3 = int(random.random()*47)#119)
-    
-        OCTAVE = 4
+        OCTAVE = 3 # TODO: Get ovtace from instrument (use mingus?)
         beats = []
         #skip_random = 0.5#0.5 # 0 to 1
         #randomize = True
@@ -109,10 +179,13 @@ def make_midi(filename, type):
         #note_duration2 = [0.5,0.5,1,2]
         #skip_over_silence = 0.5
         #repeat_chord = 1
-        skip_random = 0.4
-        randomize = True#True#
-        note_duration1 = [2]# TODO: Should match. Go to my 8 years old code and start from that instead of doing nothing really useful here...
-        note_duration2 = [1]
+        skip_random = 0.4#67
+        skip_random2 = 0.2#42
+        randomize = 0.5#True#
+        #note_duration1 = [2]# TODO: Should match. Go to my 8 years old code and start from that instead of doing nothing really useful here...
+        #note_duration2 = [1]
+        note_duration1 = [1,1,2,4]#[1,1,2,2,2,2,2,4]
+        note_duration2 = [0.5,0.5,1,2]#[0.5,0.5,1,1,1,1,1,2]
         skip_over_silence = 0
         repeat_chord = 2
         
@@ -120,13 +193,18 @@ def make_midi(filename, type):
         #    beats.append(mid.Beat(duration=1, notes=[mid.Note(chords.from_shorthand(chord)[0], OCTAVE)]))
         beats = add_chord_progression(chord_progression, octave_start=OCTAVE, note_duration=note_duration1, skip_random=skip_random, group_chord=True, skip_over_silence=skip_over_silence, repeat_chord=repeat_chord)
         channels.append(mid.Channel(beats=beats, instrument=instrument1)) 
-        beats = add_chord_progression(chord_progression, octave_start=OCTAVE, note_duration=note_duration1, skip_random=skip_random, group_chord=True, skip_over_silence=skip_over_silence, repeat_chord=repeat_chord)
-        channels.append(mid.Channel(beats=beats, instrument=instrument2)) 
+        
+        #beats = add_chord_progression(chord_progression, octave_start=OCTAVE, note_duration=note_duration1, skip_random=skip_random, group_chord=True, skip_over_silence=skip_over_silence, repeat_chord=repeat_chord)
+        #channels.append(mid.Channel(beats=beats, instrument=instrument2)) 
         
         
-        OCTAVE = 5
-        beats = add_chord_progression(chord_progression, octave_start=OCTAVE, note_duration=note_duration2, skip_random=skip_random, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
+        OCTAVE = 4
+        beats = add_chord_progression(chord_progression, octave_start=OCTAVE, note_duration=note_duration2, skip_random=skip_random2, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
         channels.append(mid.Channel(beats=beats, instrument=instrument3)) 
+        
+        #OCTAVE = 4
+        #beats = add_chord_progression(chord_progression, octave_start=OCTAVE, note_duration=note_duration2, skip_random=skip_random2, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
+        #channels.append(mid.Channel(beats=beats, instrument=118, channel_id_override=9)) 
     
     
     

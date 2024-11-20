@@ -63,14 +63,6 @@ ColumnLayout {
         }
     }
     
-    CheckBox {
-        id: cbGenerate
-        text: tr("SETTING_GENERATE_MP3")
-        checked: model ? model.p_generate_mp3.b : false
-        onClicked: {
-            model.p_generate_mp3.b = checked
-        }
-    }
     Item {
         Layout.fillHeight: true
     }

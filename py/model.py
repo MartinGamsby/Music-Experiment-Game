@@ -10,7 +10,7 @@ from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QObject, Slot, Signal, Property, QTimer, QThread, QLocale
 import threading
 import symusic_midi
-from music import midi_builder
+from music import midi_builder, midi_helper
 
 from state import State, MusicState
 
@@ -42,7 +42,13 @@ class Model(QObject):
         self.set_state(State.INIT)
         self.set_music_state(State.INIT)
         
+        self.last_beat_ms = 0
         
+        self._language.unlock()
+        self._generate_mp3.unlock()
+        
+        
+#------------------------------------------------------------------------------
     def __del__(self):
         self.save.write_config() # TODO: More often than that...
         self.thread.deleteLater() #TODO: stop the thread
@@ -76,9 +82,11 @@ class Model(QObject):
 #------------------------------------------------------------------------------
     def play_main_menu(self):
         #TODO: setting for one of these:
-        self.play_async(abspath("assets/town.mid"))
+        #self.play_async(abspath("assets/town.mid"))
         #self.play_async("")
         #self.play_async("", type=midi_builder.MusicBuildType.DROPS)
+        self.play_async("", type=midi_builder.MusicBuildType.GAME)
+        #self.play_async("", type=midi_builder.MusicBuildType.MINGUS)
         
         # TODO: Repeat? 
         
@@ -160,8 +168,30 @@ class Model(QObject):
     def music_cb(self, at_ms, to_ms):
         progress_pc = (at_ms/to_ms)
         self._music_progress.set(progress_pc)
-        logger.debug(at_ms)
+        
+        #Let's assume that for now:
+        tempo = midi_helper.TEMPO["VIVACE"]
+        # b    b       b       60000/bps = ms per beat
+        # - = --- = ------- => 
+        # m   60s   60000ms
+        ms_per_beat = 60000/tempo
+        
+        if at_ms > self.last_beat_ms:
+            if self.last_beat_ms > 0:
+                logger.debug(f"at {at_ms}, beat={int(ms_per_beat)}ms")
+                self._music_beat.set(self._music_beat.get()+1)
+                self.last_beat_ms += ms_per_beat
+            else:            
+                self.last_beat_ms += 0.001#ms_per_beat/2 # TODO: Is this what midi to wav does?
+        elif at_ms < (self.last_beat_ms - ms_per_beat):
+            self.last_beat_ms = 0# TODO: This is sketchy...
+            self._music_beat.set(0)
+            
+        
+        
         if at_ms >= to_ms:
+            self.last_beat_ms = 0
+            self._music_beat.set(0)
             self.set_music_state(MusicState.IDLE)
         
         
@@ -253,9 +283,14 @@ class Model(QObject):
     p_title = Property(QObject, get_title, notify=model_changed)
     
 #------------------------------------------------------------------------------
-    _music_progress = Setting(True, "music_progress", save=None)
+    _music_progress = Setting(0.0, "music_progress", save=None)
     def get_music_progress(self): return self._music_progress
     p_music_progress = Property(QObject, get_music_progress, notify=model_changed)
+    
+#------------------------------------------------------------------------------
+    _music_beat = Setting(0, "music_beat", save=None)
+    def get_music_beat(self): return self._music_beat
+    p_music_beat = Property(QObject, get_music_beat, notify=model_changed)
     
 #------------------------------------------------------------------------------
     _language = Setting(QLocale().name(), "Config/language", save=save)

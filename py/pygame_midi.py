@@ -45,7 +45,7 @@ def _play_music(music_file, cb, use_sound=False):#True):#Ugh, with sound it's st
         total_ms = 0
         cb(0,length_ms)
         while pygame.mixer.get_busy():
-            clock.tick(30)
+            clock.tick(60)
             t = clock.get_time() + clock.tick_busy_loop()
             total_ms += t
             cb(total_ms,length_ms)
