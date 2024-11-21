@@ -4,16 +4,15 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
-
-Image {
-    fillMode: Image.PreserveAspectCrop
-    width: 300
-    height: width/2
+GrowingImage {
     source: "qrc:/GamesByGamsby.png"
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            Qt.openUrlExternally("http://linktr.ee/Gamsby")
-        }
+    maxSizeW: 300/shrinkFactor
+    maxSizeH: maxSizeW/2//TODO: Fix this200
+    width: maxSizeW
+    height: maxSizeH
+    fillMode: Image.PreserveAspectCrop
+        
+    function onClicked() {
+        Qt.openUrlExternally("http://linktr.ee/Gamsby")//TODO: translate
     }
 }

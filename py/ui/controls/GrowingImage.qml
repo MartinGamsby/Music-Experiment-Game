@@ -9,16 +9,21 @@ Item {
     id: imageContainer
     property bool isHovered: false
     property int maxSize: 100
-    property int size: isHovered ? maxSize : maxSize*0.9
+    property int maxSizeW: maxSize
+    property int maxSizeH: maxSize
+    property int sizeW: isHovered ? maxSizeW : maxSizeW*shrinkFactor
+    property int sizeH: isHovered ? maxSizeH : maxSizeH*shrinkFactor
+    property real shrinkFactor: 0.9
     
-    Layout.maximumWidth: maxSize
-    Layout.maximumHeight: maxSize
-    Layout.minimumWidth: maxSize
-    Layout.minimumHeight: maxSize
+    Layout.minimumWidth: maxSizeW
+    Layout.maximumWidth: maxSizeW
+    Layout.minimumHeight: maxSizeH
+    Layout.maximumHeight: maxSizeH
     Layout.alignment: Qt.AlignRight | Qt.AlignBottom
     
     
     property alias source: image.source
+    property alias fillMode: image.fillMode    
   
     function onClicked() {}
         
@@ -27,8 +32,8 @@ Item {
         
         anchors.centerIn: parent
         
-        width: size
-        height: size
+        width: sizeW
+        height: sizeH
         source: "qrc:/logo"
         fillMode: Image.PreserveAspectFit
         mipmap: true
@@ -49,7 +54,10 @@ Item {
             }
         }
     }
-    Behavior on size { 
+    Behavior on sizeW { 
+        PropertyAnimation { easing.type: Easing.InOutQuad } 
+    }
+    Behavior on sizeH { 
         PropertyAnimation { easing.type: Easing.InOutQuad } 
     }
 }

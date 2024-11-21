@@ -89,10 +89,10 @@ class Model(QObject):
 #------------------------------------------------------------------------------
     def play_main_menu(self):
         #TODO: setting for one of these:
-        #self.play_async(abspath("assets/town.mid"))
+        self.play_async(abspath("assets/town.mid"))
         #self.play_async("")
         #self.play_async("", type=midi_builder.MusicBuildType.DROPS)
-        self.play_async("", type=midi_builder.MusicBuildType.GAME)
+        #self.play_async("", type=midi_builder.MusicBuildType.GAME)
         #self.play_async("", type=midi_builder.MusicBuildType.MINGUS)
         
         # TODO: Repeat? 

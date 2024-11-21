@@ -126,8 +126,8 @@ ApplicationWindow {
                 id: gameLogo
                 anchors.right: parent.right
                 anchors.top: parent.top
-                width: size
-                height: size
+                width: maxSizeW
+                height: maxSizeH
             }
             RowLayout {
                 visible: model ? model.p_ideas.p_unlocked : false

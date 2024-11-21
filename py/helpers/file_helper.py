@@ -51,5 +51,12 @@ def abspath(filename):
     path = path.resolve()
     if path.exists():
         return str(path)
-    return os.path.join(pathlib.Path(__file__).parent.parent.resolve(), filename)
+            
+    import sys
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        bundle_dir = pathlib.Path(sys._MEIPASS).parent # To test
+    else:
+        bundle_dir = pathlib.Path(__file__).parent.parent
+        
+    return os.path.join(bundle_dir.resolve(), filename)
         
