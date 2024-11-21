@@ -31,7 +31,11 @@ class TestMidiHelper(unittest.TestCase):
         self.assertEqual(mb.tension_chord_going_to("C"), "G7")
         
         #self.assertEqual(mb.tension_chord_going_to("Fmin"), "??")
-        mb.jazz_chord("C")
+        
+        
+#------------------------------------------------------------------------------
+    def test_jazz_scale(self):
+        self.assertEqual(mb.jazz_scale("C"), ['C', 'D', 'Eb', 'E', 'G', 'A'])
 
         
 

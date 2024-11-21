@@ -1,4 +1,6 @@
 import music.midi_helper as mid
+import music.midi_instruments as instr
+
 from mingus.core import chords
 from random import random, choice, randrange, shuffle
 from enum import Enum
@@ -12,13 +14,17 @@ class MusicBuildType(Enum):
     FILE, DROPS, GAME, MINGUS = range(4)
 
 #------------------------------------------------------------------------------
+def add_semitones(chord, semitones):
+    if type(chord) is not str:
+        raise Exception(f"chord ({chord}) should be a string")
+    to = mid.Note(chord).number    
+    return mid.Note.from_number(to-5).note
+    
+
+#------------------------------------------------------------------------------
 def tension_chord_going_to(to_chord):
     # -5 semitones, add "7" if possible?
-    if type(to_chord) is not str:
-        raise Exception(f"to_chord ({to_chord}) should be a string")
-    to = mid.Note(to_chord).number    
-    from_chord = mid.Note.from_number(to-5).note
-    return from_chord+"7"
+    return add_semitones(to_chord, -5)+"7"
     
 #------------------------------------------------------------------------------
 def clamp(minimum, x, maximum):
@@ -28,7 +34,7 @@ def clamp(minimum, x, maximum):
 #------------------------------------------------------------------------------
 TEST_JAZZ=False#True
 #------------------------------------------------------------------------------
-def jazz_chord(chord):
+def jazz_scale(chord):
     if type(chord) is not str:
         raise Exception(f"chord ({chord}) should be a string")
     if "7" in chord:
@@ -55,7 +61,7 @@ def add_chord_progression(chord_progression, measure_duration=4, note_duration=[
     for chord in chord_progression:
         for i in range(repeat_chord): #TODO: repeat_chord depending on measure_duration instead... 
             if TEST_JAZZ:
-                sub_notes = jazz_chord(chord)            
+                sub_notes = jazz_scale(chord)            
             else:
                 sub_notes = chords.from_shorthand(chord)
             logger.debug( f"{chord}, {sub_notes}" )
@@ -77,7 +83,7 @@ def add_chord_progression(chord_progression, measure_duration=4, note_duration=[
             last_note = 0
             
             for name in sub_notes:
-                velocity += randrange(-5,6)
+                velocity += randrange(-20,22)
                 velocity = clamp(25, velocity, 127)
                 note = mid.Note(note=name, octave=octave, velocity=velocity)
                 logger.debug(velocity)
@@ -138,19 +144,23 @@ def add_silence(beats):
 #------------------------------------------------------------------------------
 def make_midi(filename, type):
 
-    #chord_progression = ["Cmaj", "Fmaj", "Cmaj", "Cmaj7", "Fmaj", "Gmin", "Fmaj", "Gmin", "Cmaj7", "Fmaj", "Cmaj", "Fmaj", "Gmin", "Cmaj", "Cmaj7", "Cmaj"]
-    #chord_progression = ["Cmaj", "Fmaj", "Bmaj", "Emaj", "Amaj", "Dmaj", "Gmaj", "Cmaj"]
-    chord_progression = ["C", "F", "A#", "D#", "G#", "C#", "F#", "B", "E", "A", "D", "G", "C"]
-    #chord_progression = ["C", "C7", "F", "F7", "A#", "A#7", "D#", "D#7", "G#", "G#7", "C#", "C#7", "F#", "F#7", "B", "B7", "E", "E7", "A", "A7", "D", "D7", "G", "G7", "C"]
+    chord = choice(mid.NOTES)
     
-    new_chord_progression = []
-    for i, c in enumerate(chord_progression):
-        if i != 0:
-            new_chord_progression.append(tension_chord_going_to(c))
-        new_chord_progression.append(c)
+    chord_progression = [chord]
+    
+    #if random() > 0.8:# sometimes start with tension?
+    #    chord_progression = [tension_chord_going_to(chord),chord]
         
-    logger.info(f"{chord_progression} to {new_chord_progression}")
-    chord_progression = new_chord_progression
+    
+    for i in range(randrange(4,13)):
+        if random() < 0.2:# sometimes keep the same
+            pass
+        else:
+            chord = add_semitones(chord, 5)
+        chord_progression.append(tension_chord_going_to(chord))
+        chord_progression.append(chord)
+        
+    logger.info(f"chord_progression: {chord_progression}")
 
     channels = []
 
@@ -164,12 +174,16 @@ def make_midi(filename, type):
     
     #elif type == MusicBuildType.MINGUS:        
     else: # MusicBuildType.GAME
+                
+        # bass, I think
+        instrument1 = instr.random_instrument(instr.acoustic_bass())#randrange(0,79)#47)#piano#int(random_acoustic_bass)
+        # 2nd bass, I think
+        instrument2 = instr.midi_instrument("Acoustic Bass")#instr.random_instrument(instr.acoustic_guitar())#randrange(0,79)#47)#piano#int(random_guitar2)
+        # +1 octave
+        instrument3 = 0#instr.random_instrument(instr.piano())#randrange(0,79)#47)#piano#int(random_acoustic_guitar)
         
-        piano = 0
-        
-        instrument1 = randrange(0,47)#piano#int(random_acoustic_bass)
-        instrument2 = randrange(0,47)#piano#int(random_guitar2)
-        instrument3 = randrange(0,47)#piano#int(random_acoustic_guitar)
+        #if random() < 0.3:
+        #    instrument1 = randrange(56, 79)
     
         OCTAVE = 3 # TODO: Get ovtace from instrument (use mingus?)
         beats = []
@@ -179,9 +193,9 @@ def make_midi(filename, type):
         #note_duration2 = [0.5,0.5,1,2]
         #skip_over_silence = 0.5
         #repeat_chord = 1
-        skip_random = 0.4#67
-        skip_random2 = 0.2#42
-        randomize = 0.5#True#
+        skip_random = 0.4 if TEST_JAZZ else 0.67
+        skip_random2 = 0.2 if TEST_JAZZ else 0.42
+        randomize = 0.2#True#
         #note_duration1 = [2]# TODO: Should match. Go to my 8 years old code and start from that instead of doing nothing really useful here...
         #note_duration2 = [1]
         note_duration1 = [1,1,2,4]#[1,1,2,2,2,2,2,4]
