@@ -2,6 +2,7 @@
 <qresource>
     <file alias="bg">bg.jpeg</file>
     <file alias="logo">reshot-icon-musical.svg</file> <!-- https://www.reshot.com/free-svg-icons/item/musical-Y2JFZR8X7D/ -->
+    <file alias="idea">reshot-icon-light-bulb.svg</file> <!-- https://www.reshot.com/free-svg-icons/item/light-bulb-VPGQA48SNU/ -->
     <file>GamesByGamsby.gif</file>
     <file>GamesByGamsby.png</file>
     <file alias="flag_en">united-states-of-america-flag-png-large.png</file>

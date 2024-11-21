@@ -22,12 +22,14 @@ logger = logging.getLogger(__name__)
 class Model(QObject):
     appExiting = Signal()
     model_changed = Signal()
-    save = Save()
+    save_config = Save()
+    save_progress = Save()
 
 #------------------------------------------------------------------------------
     def __init__(self, app):
         super().__init__(app)
-        self.save.init(get_appdata_file("default.sav", subfolder="Save"))
+        self.save_config.init(get_appdata_file("config.ini", subfolder="Config"))
+        self.save_progress.init(get_appdata_file("default.sav", subfolder="Save"))
         
         self.app = app
         self.start_time = time()
@@ -46,11 +48,16 @@ class Model(QObject):
         
         self._language.unlock()
         self._generate_mp3.unlock()
+        # TODO: When?
+        # After a few water drops?
+        # Is that in the backend?
+        # Save number of "songs", and time spent? (in music cb?)
+        #self._ideas.unlock() 
         
         
 #------------------------------------------------------------------------------
     def __del__(self):
-        self.save.write_config() # TODO: More often than that...
+        self.save_config.write_config() # TODO: More often than that...
         self.thread.deleteLater() #TODO: stop the thread
     
 #------------------------------------------------------------------------------
@@ -293,12 +300,17 @@ class Model(QObject):
     p_music_beat = Property(QObject, get_music_beat, notify=model_changed)
     
 #------------------------------------------------------------------------------
-    _language = Setting(QLocale().name(), "Config/language", save=save)
+    _language = Setting(QLocale().name(), "Config/language", save=save_config, save_progress=save_progress)
     def get_language(self): return self._language
     p_language = Property(QObject, get_language, notify=model_changed)
     
 #------------------------------------------------------------------------------
-    _generate_mp3 = Setting(True, "Config/generate_mp3", save=save)
+    _generate_mp3 = Setting(True, "Config/generate_mp3", save=save_config, save_progress=save_progress)
     def get_generate_mp3(self): return self._generate_mp3
     p_generate_mp3 = Property(QObject, get_generate_mp3, notify=model_changed)
+    
+#------------------------------------------------------------------------------
+    _ideas = Setting(0, "Progress/ideas", save=save_progress)
+    def get_ideas(self): return self._ideas
+    p_ideas = Property(QObject, get_ideas, notify=model_changed)
     

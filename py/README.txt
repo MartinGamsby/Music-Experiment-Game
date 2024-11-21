@@ -18,6 +18,8 @@ And instead of finding the perfect way to do that, just bundle the qml files in 
 
 Same thing for the mp3 file, but it's because Qt doesn't play sounds in Qt apparently.
 
+Some images downloaded on https://www.reshot.com/
+
 # translation
 
 pyside6-lupdate ui/main.qml ui/controls/Splash.qml ui/controls/MainMenu.qml -ts lang/t1_fr.ts lang/t1_en.ts

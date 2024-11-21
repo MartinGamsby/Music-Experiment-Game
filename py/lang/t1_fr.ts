@@ -92,8 +92,12 @@ espérons...</translation>
         <translation>fichiers MIDI (*.mid)</translation>
     </message>
     <message>
-        <source>SETTING_GENERATE_MP3</source>
+        <source>generate_mp3</source>
         <translation>Générer des fichiers MIDI plus beaux (plus lent, peut lagger)</translation>
+    </message>
+    <message>
+        <source>ideas</source>
+        <translation>Idées</translation>
     </message>
 </context>
 </TS>

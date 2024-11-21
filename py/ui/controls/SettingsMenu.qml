@@ -22,18 +22,12 @@ ColumnLayout {
         color: "white"
         text: tr("SETTINGS")
     }
-    CheckBox {
-        id: cbGenerate
-        Layout.fillWidth: true
-        Layout.fillHeight: false
-            
-        text: tr("SETTING_GENERATE_MP3")
-        checked: model ? model.p_generate_mp3.b : false
-        onClicked: {
-            model.p_generate_mp3.b = checked
-        }
-        enabled: model ? model.p_generate_mp3.p_locked : false
+    SettingBool {
+        setting: model ? model.p_generate_mp3 : null
     }
+    //SettingInt {
+    //    setting: model ? model.p_ideas : null
+    //}
     Item {
         Layout.fillHeight: true
     }

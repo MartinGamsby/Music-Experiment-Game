@@ -90,8 +90,12 @@ hopefully...</translation>
         <translation>MIDI files (*.mid)</translation>
     </message>
     <message>
-        <source>SETTING_GENERATE_MP3</source>
+        <source>generate_mp3</source>
         <translation>Generate Beautiful Midi files (Slower, might lag)</translation>
+    </message>
+    <message>
+        <source>ideas</source>
+        <translation>Ideas</translation>
     </message>
     
 </context>

@@ -12,13 +12,14 @@ QML_IMPORT_MAJOR_VERSION = 1
 #------------------------------------------------------------------------------
 @QmlElement
 class Setting(QObject):
+    name_updated = Signal()
     value_updated = Signal()
     unlocked_updated = Signal()
     
 #------------------------------------------------------------------------------
-    def __init__(self, default_value, fullname="", save=None, sub_unlock=True):#, type, name):
+    def __init__(self, default_value, fullname="", save=None, save_progress=None, sub_unlock=True):#, type, name):
         super().__init__()
-        
+                
         try:
             slash_index = fullname.index("/")
             self._section = fullname[:slash_index]
@@ -31,12 +32,16 @@ class Setting(QObject):
         self._type = type(self._value)
         self._notify_sig = None
         self._save = save
+        self._save_progress = save_progress
+        if save_progress == None and save is not None:
+            self._save_progress = save
+        
         
         self._initialized = False
         
         # TODO: different save?
         if sub_unlock:
-            self._unlocked = Setting(False, f"Unlocked/{self._name}", save=save, sub_unlock=False)
+            self._unlocked = Setting(False, f"Unlocked/{self._name}", save=self._save_progress, sub_unlock=False)
         else:
             self._unlocked = None
     
@@ -57,8 +62,10 @@ class Setting(QObject):
                     val = self.str2bool(val)
                 elif self._type == float:
                     val = float(val)
+                elif self._type == int:
+                    val = int(val)
                 else:
-                    assert False, f"TO IMPLEMENT {self._type}"
+                    raise Exception("TO IMPLEMENT {self._type}")
                 
                 self._value = val
         self._initialized = True
@@ -112,6 +119,13 @@ class Setting(QObject):
         if self._unlocked.get():
             self._unlocked.set(False)
             self.unlocked_updated.emit()
+            
+#------------------------------------------------------------------------------
+    def name(self):
+        if not self._unlocked:
+            raise Exception("Not unlockable")
+        return self._name
+        
         
 #------------------------------------------------------------------------------
     s = Property(str, get, set, notify=value_updated)
@@ -119,5 +133,6 @@ class Setting(QObject):
     f = Property(float, get, set, notify=value_updated)
     i = Property(int, get, set, notify=value_updated)
     
-    p_locked = Property(int, unlocked, notify=value_updated)
+    p_name = Property(str, name, notify=name_updated)
+    p_unlocked = Property(int, unlocked, notify=unlocked_updated)
     

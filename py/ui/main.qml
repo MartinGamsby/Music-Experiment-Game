@@ -84,17 +84,64 @@ ApplicationWindow {
             spacing: 9
             anchors.margins: 9
 
-            LayoutItemProxy {
+            LayoutItemProxy {                
                 target: canvas
             }
-            Text {
+            Item {
+                width: gameLogo.width/2                
+            }
+            Text {                
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter
                 text: tr("NEW_GAME_1")
                 color: "white"
                 font.pointSize: 40
+                
             }
             GameLogo {
+            }
+        }
+        Item {
+            id: menuView3
+            anchors.margins: 9
+
+            LayoutItemProxy {
+                anchors.fill:parent                
+                target: canvas
+            }
+            Item {
+                width: gameLogo.width/2                
+            }
+            Text {
+                anchors.fill:parent
+                
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                text: tr("NEW_GAME_1")
+                color: "white"
+                font.pointSize: 40
+                
+            }
+            GameLogo {
+                id: gameLogo
+                anchors.right: parent.right
+                anchors.top: parent.top
+                width: size
+                height: size
+            }
+            RowLayout {
+                visible: model ? model.p_ideas.p_unlocked : false
+                GrowingImage {
+                    source: "qrc:/idea"
+                    maxSize: 40
+                }
+                Text {
+                    z: 10
+                    text: (model ? model.p_ideas.i : 0)// + " ideas"
+                    color: "white"
+                    font.pointSize: 24
+                    x: 10
+                }
             }
         }
         RowLayout {
@@ -116,6 +163,36 @@ ApplicationWindow {
             id: init1
         }
     }
+    // TODO: Only visible if unlocked
+    //Text {
+    //    z: 10
+    //    id: test1
+    //    text: "debug:"
+    //    color: "white"
+    //    x: 10
+    //    y: 50
+    //}
+    //Text {
+    //    z: 10
+    //    text: model ? model.p_language.s : "language"
+    //    color: "white"
+    //    x: 60
+    //    y: 50
+    //}
+    //Text {
+    //    z: 10
+    //    text: model ? model.p_music_beat.i : 0
+    //    color: "white"
+    //    x: 90
+    //    y: 50
+    //}
+    //Text {
+    //    z: 10
+    //    text: model ? model.p_title.s : "title"
+    //    color: "white"
+    //    x: 120
+    //    y: 50
+    //}
     
     Connections {
         target: model
@@ -125,7 +202,7 @@ ApplicationWindow {
                 screens.switchTo(menuView)
             }
             if( model.p_state_id == StateEnum.GAME ) {
-                screens.switchTo(menuView2)
+                screens.switchTo(menuView3)
             }
             if( model.p_state_id == StateEnum.MAIN_MENU ) {
                 screens.switchTo(mainMenuView)
