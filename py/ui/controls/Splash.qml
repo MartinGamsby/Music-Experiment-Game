@@ -18,13 +18,6 @@ Item {
     property bool finished: false
 
     signal timeout()
-
-    component Title: Text {
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        anchors.horizontalCenter: parent.horizontalCenter
-        color: "white"
-    }
 	
     Image {
         id: image
@@ -89,30 +82,30 @@ Item {
                 }
             }
     
-            Title {
+            TitleAnchored {
                 id: title
                 font.pixelSize: 64
                 text: tr("GAME_TITLE")
             }
     
-            Title {
+            TitleAnchored {
                 id: statusLine0
                 font.pixelSize: 32
                 text: tr("LOADING")
             }
     
-            Title {
+            TitleAnchored {
                 id: statusLine1
                 font.pixelSize: 32
                 text: " "
             }
             
-            Title {
+            TitleAnchored {
                 id: statusLine2
                 font.pixelSize: 32
                 text: " "
             }
-            Title {
+            TitleAnchored {
                 id: statusLine3
                 font.pixelSize: 32
                 text: " "
@@ -120,6 +113,9 @@ Item {
         }
     }
     FlagButtons {
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.margins: 9
     }
     GamesByLogoAnimated {
         z: 1

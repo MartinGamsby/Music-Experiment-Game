@@ -6,19 +6,18 @@ import QtQuick.Controls.Material
 Rectangle {
     color: "black"
     
-    component Title: Text {
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        font.pointSize: 60
-        color: "white"
-    }
+    Ripple {
+        anchors.fill: parent
+        rippling: model ? (!((model.p_music_beat.i - 1) % 4)) : 0
+    }    
     
-    Title {            
+    TitleAnchored {            
         anchors.centerIn: parent
         text: model ? model.p_title.s : ""
+        font.pixelSize: 60
     }
     Title {
-        font.pointSize: 40
+        font.pixelSize: 20
         anchors.bottom: parent.bottom
         anchors.right: parent.right
         anchors.margins: 9
@@ -27,12 +26,11 @@ Rectangle {
         text: model ? model.p_music_state_pretty_name : ""        
     }
     Rectangle {
-        color: "white"
+        color: enabled ? Material.foreground : Material.hintTextColor
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.margins: 0
         height: 10
         width: model ? (model.p_music_progress.f * parent.width) : 0
     }
-    
 }

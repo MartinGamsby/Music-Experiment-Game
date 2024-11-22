@@ -51,6 +51,18 @@ hopefully...</translation>
         <source>SETTINGS</source>
         <translation>Settings</translation>
     </message>
+    <message>
+        <source>EXIT</source>
+        <translation>Exit</translation>
+    </message>
+    <message>
+        <source>STATS</source>
+        <translation>Stats</translation>
+    </message>
+    <message>
+        <source>STATS_INGAME</source>
+        <translation>In the game</translation>
+    </message>
     
     
     <!-- Music states -->
@@ -96,6 +108,10 @@ hopefully...</translation>
     <message>
         <source>ideas</source>
         <translation>Ideas</translation>
+    </message>
+    <message>
+        <source>time_listened</source>
+        <translation>Time listening to music</translation>
     </message>
     
 </context>

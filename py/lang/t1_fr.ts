@@ -38,10 +38,6 @@ espérons...</translation>
         <source>MESSAGE_WELCOME</source>
         <translation>Bienvenue</translation>
     </message>
-    <message>
-        <source>SETTINGS</source>
-        <translation>Paramètres</translation>
-    </message>
     
     
     <!-- Main menu -->
@@ -52,6 +48,22 @@ espérons...</translation>
     <message>
         <source>NEW_GAME</source>
         <translation>Nouvelle Partie</translation>
+    </message>
+    <message>
+        <source>SETTINGS</source>
+        <translation>Paramètres</translation>
+    </message>
+    <message>
+        <source>EXIT</source>
+        <translation>Quitter</translation>
+    </message>
+    <message>
+        <source>STATS</source>
+        <translation>Statistiques</translation>
+    </message>
+    <message>
+        <source>STATS_INGAME</source>
+        <translation>Dans le jeu</translation>
     </message>
     
     
@@ -98,6 +110,10 @@ espérons...</translation>
     <message>
         <source>ideas</source>
         <translation>Idées</translation>
+    </message>
+    <message>
+        <source>time_listened</source>
+        <translation>Temps à écouter de la musique</translation>
     </message>
 </context>
 </TS>

@@ -13,7 +13,7 @@ ApplicationWindow {
     id: rootWindow
     visible: true
 	title: tr("GAME_TITLE")
-    visibility: Window.Maximized
+    visibility: model ? (model.p_fullscreen.b ? Window.FullScreen : Window.Maximized) : Window.FullScreen
     color: menu.backgroundColor
     
     minimumWidth: 1280
@@ -90,13 +90,9 @@ ApplicationWindow {
             Item {
                 width: gameLogo.width/2                
             }
-            Text {                
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
+            Title {
                 text: tr("NEW_GAME_1")
-                color: "white"
-                font.pointSize: 40
-                
+                font.pointSize: 40                
             }
             GameLogo {
             }
@@ -112,15 +108,10 @@ ApplicationWindow {
             Item {
                 width: gameLogo.width/2                
             }
-            Text {
+            TitleAnchored {
                 anchors.fill:parent
-                
-                horizontalAlignment: Text.AlignHCenter
-                verticalAlignment: Text.AlignVCenter
                 text: tr("NEW_GAME_1")
-                color: "white"
-                font.pointSize: 40
-                
+                //font.pointSize: 40                
             }
             GameLogo {
                 id: gameLogo
@@ -138,7 +129,7 @@ ApplicationWindow {
                 Text {
                     z: 10
                     text: (model ? model.p_ideas.i : 0)// + " ideas"
-                    color: "white"
+                    color: enabled ? Material.foreground : Material.hintTextColor
                     font.pointSize: 24
                     x: 10
                 }
@@ -150,12 +141,20 @@ ApplicationWindow {
             Layout.fillHeight: true
             spacing: 9
 
-            SettingsMenu {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
+            ColumnLayout {
+                SettingsMenu {
+                    Layout.fillWidth: true
+                }                
+                FlagButtons {
+                    Layout.margins: 9
+                }
             }
-    
-            GameLogo {
+            ColumnLayout {
+                Stats {
+                    Layout.fillWidth: true
+                }    
+                GameLogo {
+                }
             }
         }
         

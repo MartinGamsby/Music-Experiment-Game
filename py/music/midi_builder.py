@@ -144,37 +144,44 @@ def add_silence(beats):
 #------------------------------------------------------------------------------
 def make_midi(filename, type):
 
-    chord = choice(mid.NOTES)
-    
+    chord = choice(mid.NOTES)    
     chord_progression = [chord]
+    
+    tempo = mid.TEMPO["ALLEGRO"]
     
     #if random() > 0.8:# sometimes start with tension?
     #    chord_progression = [tension_chord_going_to(chord),chord]
         
-    
-    for i in range(randrange(4,13)):
-        if random() < 0.2:# sometimes keep the same
-            pass
-        else:
-            chord = add_semitones(chord, 5)
-        chord_progression.append(tension_chord_going_to(chord))
-        chord_progression.append(chord)
-        
-    logger.info(f"chord_progression: {chord_progression}")
-
     channels = []
 
     if type == MusicBuildType.DROPS:
         # TODO: Notes with the octave. Return Note() here, and make sure we go up if we go over G.
-        beats = add_chord_progression(chord_progression, octave_start=6, note_duration=[3], skip_random=0.33, group_chord=False)
+        #skip_random = 0.33
+        skip_random = 0.0
+        chord_progression = [chord,chord,chord,chord]
+        beats = add_chord_progression(chord_progression, octave_start=6, note_duration=[4], skip_random=skip_random, group_chord=False)
         channels.append(mid.Channel(beats=beats, instrument=115)) 
-        beats = add_chord_progression(chord_progression, octave_start=7, note_duration=[3], skip_random=0.33, group_chord=False)
+        beats = add_chord_progression(chord_progression, octave_start=7, note_duration=[4], skip_random=skip_random, group_chord=False)
         beats.insert(0,mid.Beat(duration=0.25, notes=[mid.Note("", octave=1)]))
         channels.append(mid.Channel(beats=beats, instrument=113)) 
+        
+        tempo = mid.TEMPO["PRESTO"]
     
     #elif type == MusicBuildType.MINGUS:        
     else: # MusicBuildType.GAME
-                
+                  
+        
+        for i in range(randrange(4,13)):
+            if random() < 0.2:# sometimes keep the same
+                pass
+            else:
+                chord = add_semitones(chord, 5)
+            chord_progression.append(tension_chord_going_to(chord))
+            chord_progression.append(chord)
+            
+        logger.info(f"chord_progression: {chord_progression}")
+
+  
         # bass, I think
         instrument1 = instr.random_instrument(instr.acoustic_bass())#randrange(0,79)#47)#piano#int(random_acoustic_bass)
         # 2nd bass, I think
@@ -223,4 +230,5 @@ def make_midi(filename, type):
     
     
         
-    mid.make_file(filename, channels, tempo=mid.TEMPO["VIVACE"])
+    mid.make_file(filename, channels, tempo=tempo)
+    return tempo

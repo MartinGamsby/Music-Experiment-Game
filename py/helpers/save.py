@@ -17,7 +17,7 @@ class Save:
         if self._initialized:
             logger.critical("Cannot intitialize twice")
             return
-        logger.info("Initializing save")
+        logger.debug("Initializing save")
         self.filename = filename
         self.config = configparser.ConfigParser()
         self.__load_config()
@@ -32,7 +32,7 @@ class Save:
     def write_config(self):
         if not self._initialized:
             raise Exception("Cannot save unitialized save")
-        logger.info(f"Saving save {self.filename}")
+        logger.debug(f"Saving save {self.filename}")
         with open(self.filename, 'w') as configfile:
             #uh ... mutex?
             self.config.write(configfile)

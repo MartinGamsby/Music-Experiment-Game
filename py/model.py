@@ -17,6 +17,8 @@ from state import State, MusicState
 import logging
 logger = logging.getLogger(__name__)
 
+avg_half_frame_ms = 8#1000/60/2 (TODO: Get the actual framerate, or moving avg, or something..)
+
 
 #------------------------------------------------------------------------------
 class Model(QObject):
@@ -45,9 +47,8 @@ class Model(QObject):
         self.set_music_state(State.INIT)
         
         self.last_beat_ms = 0
-        
-        self._language.unlock()
-        self._generate_mp3.unlock()
+                
+        self._tempo = -1
         # TODO: When?
         # After a few water drops?
         # Is that in the backend?
@@ -120,12 +121,13 @@ class Model(QObject):
             import pygame_midi
             
             pygame_midi.stop_music()
-            self.set_music_state(MusicState.GENERATING)       
+            self._tempo = -1
+            self.set_music_state(MusicState.GENERATING)
             
             if not self.filename:        
                 
                 filename = get_appdata_file("__DefaultOutput.mid", subfolder="Music")# "Midi"?
-                midi_builder.make_midi(filename, type=type)
+                self._tempo = midi_builder.make_midi(filename, type=type)
             else:
                 filename = self.filename
             if self._generate_mp3.get():
@@ -177,16 +179,26 @@ class Model(QObject):
         self._music_progress.set(progress_pc)
         
         #Let's assume that for now:
-        tempo = midi_helper.TEMPO["VIVACE"]
+        if self._tempo > 0:
+            tempo = self._tempo
+        else:
+            tempo = midi_helper.TEMPO["VIVACE"]
         # b    b       b       60000/bps = ms per beat
         # - = --- = ------- => 
         # m   60s   60000ms
         ms_per_beat = 60000/tempo
         
-        if at_ms > self.last_beat_ms:
+        
+        if at_ms > (self.last_beat_ms-avg_half_frame_ms):
             if self.last_beat_ms > 0:
-                logger.debug(f"at {at_ms}, beat={int(ms_per_beat)}ms")
-                self._music_beat.set(self._music_beat.get()+1)
+                nb_beats = self._music_beat.get()
+                if nb_beats > 0 and not(nb_beats % 4):
+                    if self.state == State.GAME:
+                        self._time_listened.add(int(ms_per_beat*4))
+                        logger.info(f"at {at_ms} (beats#{nb_beats}, {int(ms_per_beat)}ms/beat (listened a total of: {int(self._time_listened.get()/1000)}s)")
+                        
+                self._music_beat.add(1)
+                
                 self.last_beat_ms += ms_per_beat
             else:            
                 self.last_beat_ms += 0.001#ms_per_beat/2 # TODO: Is this what midi to wav does?
@@ -300,17 +312,27 @@ class Model(QObject):
     p_music_beat = Property(QObject, get_music_beat, notify=model_changed)
     
 #------------------------------------------------------------------------------
-    _language = Setting(QLocale().name(), "Config/language", save=save_config, save_progress=save_progress)
+    _language = Setting(QLocale().name(), "Config/language", save=save_config, save_progress=save_progress, auto_unlock=True)
     def get_language(self): return self._language
     p_language = Property(QObject, get_language, notify=model_changed)
     
 #------------------------------------------------------------------------------
-    _generate_mp3 = Setting(True, "Config/generate_mp3", save=save_config, save_progress=save_progress)
+    _generate_mp3 = Setting(True, "Config/generate_mp3", save=save_config, save_progress=save_progress, auto_unlock=True)
     def get_generate_mp3(self): return self._generate_mp3
     p_generate_mp3 = Property(QObject, get_generate_mp3, notify=model_changed)
+    
+#------------------------------------------------------------------------------
+    _fullscreen = Setting(True, "Config/fullscreen", save=save_config, save_progress=save_progress, auto_unlock=True)
+    def get_fullscreen(self): return self._fullscreen
+    p_fullscreen = Property(QObject, get_fullscreen, notify=model_changed)
     
 #------------------------------------------------------------------------------
     _ideas = Setting(0, "Progress/ideas", save=save_progress)
     def get_ideas(self): return self._ideas
     p_ideas = Property(QObject, get_ideas, notify=model_changed)
+    
+#------------------------------------------------------------------------------
+    _time_listened = Setting(0, "Progress/time_listened", save=save_progress, auto_unlock=True)
+    def get_time_listened(self): return self._time_listened
+    p_time_listened = Property(QObject, get_time_listened, notify=model_changed)
     

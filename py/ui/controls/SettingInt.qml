@@ -9,17 +9,22 @@ import QtQuick.Dialogs
 import com.martingamsby.music 1.0
 
 RowLayout {
+    
     required property Setting setting
     implicitWidth: slider.implicitWidth
     Layout.margins: 9
     enabled: setting ? setting.p_unlocked : false
+    property bool readonly: !enabled
+    
+    function captionOperator(val) { return val }
     
     Text {
-        text: setting ? tr(setting.p_name) : ""
-        color: "white"
+        text: (setting ? tr(setting.p_name) : "") + (readonly ? ":" : "")
+        color: enabled ? Material.foreground : Material.hintTextColor
     }
     Slider {    
         id: slider
+        visible: !readonly
         Layout.fillWidth: true
         Layout.fillHeight: false
         Layout.maximumWidth: 200
@@ -27,9 +32,13 @@ RowLayout {
         value: setting ? setting.i : 0
         // TODO: from/to
         from: 0
-        to: 100
+        to: Math.max(100, setting ? setting.i : 0)
         onMoved: {
             setting.i = value
         }
+    }
+    Text {
+        text: captionOperator(setting ? setting.i : 0)
+        color: enabled ? Material.foreground : Material.hintTextColor
     }
 }

@@ -75,7 +75,9 @@ class Backend(QObject):
     @Slot(None)
     def newGame(self):
         logger.info(f"NEW GAME")
-        self.model.play_async(type=midi_builder.MusicBuildType.GAME)
+        # First time: drops.
+        # Check progress in self.model
+        self.model.play_async(type=midi_builder.MusicBuildType.DROPS)
         self.model.set_state(state.State.GAME)
         
 #------------------------------------------------------------------------------
@@ -83,6 +85,11 @@ class Backend(QObject):
     def toSettings(self):
         logger.info(f"TO SETTINGS")
         self.model.set_state(state.State.SETTINGS)
+        
+#------------------------------------------------------------------------------
+    @Slot(None)
+    def exit(self):
+        self.app.exit()
         
 #------------------------------------------------------------------------------
     @Slot(None, result=str)

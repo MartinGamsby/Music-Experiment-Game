@@ -17,7 +17,9 @@ class Setting(QObject):
     unlocked_updated = Signal()
     
 #------------------------------------------------------------------------------
-    def __init__(self, default_value, fullname="", save=None, save_progress=None, sub_unlock=True):#, type, name):
+    def __init__(self, default_value, fullname="", save=None, save_progress=None, 
+            sub_unlock=True, auto_unlock=False):
+        
         super().__init__()
                 
         try:
@@ -41,7 +43,7 @@ class Setting(QObject):
         
         # TODO: different save?
         if sub_unlock:
-            self._unlocked = Setting(False, f"Unlocked/{self._name}", save=self._save_progress, sub_unlock=False)
+            self._unlocked = Setting(auto_unlock, f"Unlocked/{self._name}", save=self._save_progress, sub_unlock=False)
         else:
             self._unlocked = None
     
@@ -95,6 +97,10 @@ class Setting(QObject):
         except (AttributeError, TypeError) as e:
             # Handle potential exceptions during attribute access or type mismatch
             logger.error(f"Error setting property '{value}': {e}")
+            
+#------------------------------------------------------------------------------
+    def add(self, add_value):
+        self.set(self.get()+add_value)
             
 #------------------------------------------------------------------------------
     def unlocked(self):

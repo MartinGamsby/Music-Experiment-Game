@@ -11,16 +11,16 @@ import com.martingamsby.music 1.0
 ColumnLayout {
     id: settingsMenuRoot
     
-    Text {
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
+    Title {
         Layout.fillWidth: true
-        font.pixelSize: 32
         
         Layout.margins: 9
         
-        color: "white"
+        color: enabled ? Material.foreground : Material.hintTextColor
         text: tr("SETTINGS")
+    }
+    SettingBool {
+        setting: model ? model.p_fullscreen : null
     }
     SettingBool {
         setting: model ? model.p_generate_mp3 : null

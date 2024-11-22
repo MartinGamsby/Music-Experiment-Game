@@ -10,16 +10,9 @@ import com.martingamsby.music 1.0
 Item {
     id: mainMenu
 
-    component Title: Text {
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        anchors.horizontalCenter: parent.horizontalCenter
-        font.pixelSize: 32
-        color: "white"
-    }
     component TitleButton: Button {
         anchors.horizontalCenter: parent.horizontalCenter
-        font.pixelSize: 32
+        font.pixelSize: 24
     }	
 	
     Image {
@@ -63,35 +56,18 @@ Item {
                 mipmap: true
                 smooth: true
                 z: 5 // over everything
-                            
-                SequentialAnimation {
-                    running: mainMenu.visible
-                    ScaleAnimator {
-                        duration: 250; target: logo
-                        from: 13.0; to: 1.1
-                        easing.type: Easing.InQuad;//Elastic;
-                    }
-                    SequentialAnimation {
-                        loops: -1
-                        ScaleAnimator {
-                            duration: 500; target: logo
-                            from: 1.13; to: 1.0
-                            easing.type: Easing.InQuad;                 
-                        }
-                        ScaleAnimator {
-                            duration: 500; target: logo
-                            from: 1.0; to: 1.13
-                            easing.type: Easing.InQuad;                 
-                        }
-                    }
+                
+                PulsingAnimation {
+                    running: mainMenu.visible && (model ? (model.p_music_state_id == MusicStateEnum.PLAYING) : false)
+                    target: logo
                 }
             }    
-            Title {
+            TitleAnchored {
                 id: title
                 font.pixelSize: 64
                 text: tr("GAME_TITLE")
             }
-            Title {
+            TitleAnchored {
                 id: statusLine0
                 text: " "
             }
@@ -106,13 +82,22 @@ Item {
         anchors.bottomMargin: 50
         
         TitleButton {
+            id: newGameButton
             text: tr("NEW_GAME")
+            font.pixelSize: 42
             onClicked: {
                 backend.newGame()
             }
+            PulsingAnimation {
+                running: mainMenu.visible
+                target: newGameButton
+                from: 1.0
+                to: 1.03
+                time: 1500
+            }
         }
-        Title {
-            text: "~"
+        TitleAnchored {
+            text: " "
         }
         TitleButton {
             text: tr("PLAY_MIDIS")
@@ -126,13 +111,22 @@ Item {
                 backend.toSettings()
             }
         }
-        Title {
-            text: "~"
-            visible: false
+        TitleAnchored {
+            text: " "
+        }
+        TitleButton {
+            text: tr("EXIT")
+            font.pixelSize: 16
+            onClicked: {
+                backend.exit()
+            }
         }
         
     }
     FlagButtons {
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.margins: 9
     }
     GamesByLogo {
         z: 1
