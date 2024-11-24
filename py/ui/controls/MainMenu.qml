@@ -11,8 +11,10 @@ Item {
     id: mainMenu
 
     component TitleButton: Button {
-        anchors.horizontalCenter: parent.horizontalCenter
         font.pixelSize: 24
+    }	
+    component TitleButtonCentered: TitleButton {
+        anchors.horizontalCenter: parent.horizontalCenter
     }	
 	
     Image {
@@ -80,42 +82,52 @@ Item {
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottomMargin: 50
+    
+        PulsingAnimation {
+            running: mainMenu.visible
+            target: loadGameButton.visible ? loadGameButton : newGameButton
+            from: 1.0
+            to: 1.03
+            time: 1500
+        }
         
+        TitleButtonCentered {
+            id: loadGameButton
+            visible: backend ? backend.p_has_save_files.b : false
+            text: tr("LOAD_GAME")
+            font.pixelSize: 42
+            onClicked: {
+                backend.loadGame()
+            }
+        }
         TitleButton {
             id: newGameButton
+            
+            anchors.right: loadGameButton.right
+            
             text: tr("NEW_GAME")
-            font.pixelSize: 42
+            font.pixelSize: loadGameButton.visible ? 14 : 42
             onClicked: {
                 backend.newGame()
             }
-            PulsingAnimation {
-                running: mainMenu.visible
-                target: newGameButton
-                from: 1.0
-                to: 1.03
-                time: 1500
-            }
         }
-        TitleAnchored {
-            text: " "
-        }
-        TitleButton {
+        TitleButtonCentered {
             text: tr("PLAY_MIDIS")
+            anchors.left: loadGameButton.left
             onClicked: {
                 backend.playMidis()
             }
         }
-        TitleButton {
+        TitleButtonCentered {
             text: tr("SETTINGS")
+            anchors.left: loadGameButton.left
             onClicked: {
                 backend.toSettings()
             }
         }
-        TitleAnchored {
-            text: " "
-        }
         TitleButton {
             text: tr("EXIT")
+            anchors.right: loadGameButton.right
             font.pixelSize: 16
             onClicked: {
                 backend.exit()

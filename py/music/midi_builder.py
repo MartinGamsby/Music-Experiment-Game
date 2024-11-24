@@ -147,7 +147,7 @@ def make_midi(filename, type):
     chord = choice(mid.NOTES)    
     chord_progression = [chord]
     
-    tempo = mid.TEMPO["ALLEGRO"]
+    tempo = mid.TEMPO["VIVACE"]
     
     #if random() > 0.8:# sometimes start with tension?
     #    chord_progression = [tension_chord_going_to(chord),chord]
@@ -158,7 +158,6 @@ def make_midi(filename, type):
         # TODO: Notes with the octave. Return Note() here, and make sure we go up if we go over G.
         #skip_random = 0.33
         skip_random = 0.0
-        chord_progression = [chord,chord,chord,chord]
         beats = add_chord_progression(chord_progression, octave_start=6, note_duration=[4], skip_random=skip_random, group_chord=False)
         channels.append(mid.Channel(beats=beats, instrument=115)) 
         beats = add_chord_progression(chord_progression, octave_start=7, note_duration=[4], skip_random=skip_random, group_chord=False)
@@ -171,7 +170,7 @@ def make_midi(filename, type):
     else: # MusicBuildType.GAME
                   
         
-        for i in range(randrange(4,13)):
+        for i in range(randrange(1,4)):#4,13)):
             if random() < 0.2:# sometimes keep the same
                 pass
             else:
@@ -183,11 +182,16 @@ def make_midi(filename, type):
 
   
         # bass, I think
-        instrument1 = instr.random_instrument(instr.acoustic_bass())#randrange(0,79)#47)#piano#int(random_acoustic_bass)
+        # instr.random_instrument(instr.acoustic_bass())
+        instrument1 = randrange(0,79)#47)#piano#int(random_acoustic_bass)
+        
         # 2nd bass, I think
-        instrument2 = instr.midi_instrument("Acoustic Bass")#instr.random_instrument(instr.acoustic_guitar())#randrange(0,79)#47)#piano#int(random_guitar2)
+        # instr.random_instrument(instr.acoustic_bass())
+        instrument2 = randrange(0,79)#47)#piano#int(random_guitar2)
+        
         # +1 octave
-        instrument3 = 0#instr.random_instrument(instr.piano())#randrange(0,79)#47)#piano#int(random_acoustic_guitar)
+        # instr.random_instrument(instr.acoustic_guitar())
+        instrument3 = randrange(0,79)#47)#piano#int(random_acoustic_guitar)
         
         #if random() < 0.3:
         #    instrument1 = randrange(56, 79)

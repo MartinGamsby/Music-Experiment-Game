@@ -7,22 +7,6 @@
         <source>GAME_TITLE</source>
         <translation>Expérience musicale : Le jeu</translation>
     </message>
-    <message>
-        <source>NEW_GAME_1</source>
-        <translation>Première génération 
-de musique 
-PRESQUE aléatoire.
-
-Ce sera bientôt mieux !
-
-Mais pour l'instant,
-c'est tout !
-Le jeu est
-en cours de 
-développement
-en ce moment,
-espérons...</translation>
-    </message>
     
     
     <!-- Splash messages -->
@@ -48,6 +32,10 @@ espérons...</translation>
     <message>
         <source>NEW_GAME</source>
         <translation>Nouvelle Partie</translation>
+    </message>
+    <message>
+        <source>LOAD_GAME</source>
+        <translation>Charger une Partie</translation>
     </message>
     <message>
         <source>SETTINGS</source>
@@ -114,6 +102,34 @@ espérons...</translation>
     <message>
         <source>time_listened</source>
         <translation>Temps à écouter de la musique</translation>
+    </message>
+    <message>
+        <source>gui_playback</source>
+        <translation>Afficher l'interface de Lecture de musique</translation>
+    </message>
+    
+    <!-- Game -->
+    <message>
+        <source>GAME_0</source>
+        <translation> </translation>
+    </message>
+    <message>
+        <source>GAME_1</source>
+        <translation>Vous entendez des gouttes d'eau</translation>
+    </message>
+    <message>
+        <source>GAME_2</source>
+        <translation>Ça vous donne une idée</translation>
+    </message>
+    <message>
+        <source>GAME_LAST</source>
+        <translation>Pour l'instant, c'est tout !
+
+Vous entendez: première génération de musique PRESQUE aléatoire.
+
+Ce sera bientôt mieux!
+
+Le jeu est en cours de développement en ce moment.</translation>
     </message>
 </context>
 </TS>

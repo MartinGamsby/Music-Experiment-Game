@@ -25,6 +25,9 @@ ColumnLayout {
     SettingBool {
         setting: model ? model.p_generate_mp3 : null
     }
+    SettingBool {
+        setting: model ? model.p_gui_playback : null
+    }
     //SettingInt {
     //    setting: model ? model.p_ideas : null
     //}

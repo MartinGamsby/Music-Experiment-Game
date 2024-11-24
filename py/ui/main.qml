@@ -79,24 +79,6 @@ ApplicationWindow {
                 Layout.fillHeight: true
             }
         }
-        RowLayout {
-            id: menuView2
-            spacing: 9
-            anchors.margins: 9
-
-            LayoutItemProxy {                
-                target: canvas
-            }
-            Item {
-                width: gameLogo.width/2                
-            }
-            Title {
-                text: tr("NEW_GAME_1")
-                font.pointSize: 40                
-            }
-            GameLogo {
-            }
-        }
         Item {
             id: menuView3
             anchors.margins: 9
@@ -110,7 +92,7 @@ ApplicationWindow {
             }
             TitleAnchored {
                 anchors.fill:parent
-                text: tr("NEW_GAME_1")
+                text: tr(model ? model.p_game_title.s : "")
                 //font.pointSize: 40                
             }
             GameLogo {
@@ -119,6 +101,8 @@ ApplicationWindow {
                 anchors.top: parent.top
                 width: maxSizeW
                 height: maxSizeH
+                // TODO: Make a method, like tr() ...
+                visible: model ? (model.p_gui_back_to_mainmenu.p_unlocked && model.p_gui_back_to_mainmenu.b) : false
             }
             RowLayout {
                 visible: model ? model.p_ideas.p_unlocked : false
@@ -128,10 +112,16 @@ ApplicationWindow {
                 }
                 Text {
                     z: 10
-                    text: (model ? model.p_ideas.i : 0)// + " ideas"
+                    text: (model ? model.p_ideas.i : "")
                     color: enabled ? Material.foreground : Material.hintTextColor
                     font.pointSize: 24
                     x: 10
+                }
+                NumberAnimation on opacity {
+                    from: 0
+                    to: 1
+                    duration: 1000
+                    running: visible
                 }
             }
         }

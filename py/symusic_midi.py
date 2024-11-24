@@ -44,7 +44,7 @@ class Worker(QObject):
         if a < 0.1:
             logger.warning(f"Could not normalize audio by amplifying %.02fx (%.02f max)" % (a, max_value))
             return False
-        logger.info(f"Normalizing audio by amplifying %.02fx (%.02f max)" % (a, max_value))
+        logger.debug(f"Normalizing audio by amplifying %.02fx (%.02f max)" % (a, max_value))
         audio *= a
         if verbose:
             logger.debug(f"{a}, {max_value}")

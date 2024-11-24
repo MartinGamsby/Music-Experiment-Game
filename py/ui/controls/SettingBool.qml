@@ -19,5 +19,5 @@ CheckBox {
     onClicked: {
         setting.b = checked
     }
-    enabled: setting ? setting.p_unlocked : false
+    visible: setting ? setting.p_unlocked : false
 }

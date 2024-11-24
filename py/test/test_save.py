@@ -41,7 +41,11 @@ class TestSave(unittest.TestCase):
         self.assertEqual('2', save2.load("two"))
         
         # 3rd object after deleting the file
-        os.remove(save_filename)
+        save2.reset() # equivalent of os.remove(save_filename)++
+        
+        
+        self.assertEqual(None, save2.load("one"))
+        self.assertEqual(None, save2.load("two"))
         
         save3 = Save()
         save3.init(save_filename)

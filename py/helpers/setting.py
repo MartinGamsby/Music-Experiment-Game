@@ -1,4 +1,4 @@
-from PySide6.QtCore import QObject, Property, Signal
+from PySide6.QtCore import QObject, Property, Signal, Slot
         
 from PySide6.QtQml import QmlElement
         
@@ -30,6 +30,7 @@ class Setting(QObject):
             self._name = fullname
             self._section = "Default"
         
+        self._default_value = default_value
         self._value = default_value
         self._type = type(self._value)
         self._notify_sig = None
@@ -37,6 +38,9 @@ class Setting(QObject):
         self._save_progress = save_progress
         if save_progress == None and save is not None:
             self._save_progress = save
+            
+        if self._save:
+            self._save.model_changed.connect(self.model_changed)
         
         
         self._initialized = False
@@ -71,6 +75,13 @@ class Setting(QObject):
                 
                 self._value = val
         self._initialized = True
+        
+#------------------------------------------------------------------------------
+    @Slot()
+    def model_changed(self):
+        self._value = self._default_value
+        if self._unlocked:
+            self._unlocked.model_changed()
         
 #------------------------------------------------------------------------------
     def get(self):

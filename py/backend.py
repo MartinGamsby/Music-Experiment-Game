@@ -26,6 +26,10 @@ class Backend(QObject):
         super().__init__()
 
         self.model = model
+        # TODO: Not the best way ... need to have real multiple save files.
+        logger.info(f"game progress: {self.model._game_progress.get()}")
+        self._has_save_files.set(self.model._game_progress.get() > 0)
+        
         self.translator = translator.Translation(app, self.model._language.s)
         
         self.app = app
@@ -50,7 +54,7 @@ class Backend(QObject):
 #------------------------------------------------------------------------------
     @Slot(str)
     def play_mid_pressed(self, value: str):
-        logger.info(f"PLAY MID PRESSED: {value}")
+        logger.info(f" [User pressed]  play_mid_pressed({value})")
         value = abspath(value)
         if value:
             self.model.play_async(value, type=midi_builder.MusicBuildType.FILE)
@@ -60,7 +64,7 @@ class Backend(QObject):
 #------------------------------------------------------------------------------
     @Slot(bool)
     def toMainMenu(self, play: bool):
-        logger.info(f"TO MAIN MENU")
+        logger.info(f" [User pressed]  toMainMenu({play})")
         if play:
             self.model.play_main_menu()
         self.model.set_state(state.State.MAIN_MENU)
@@ -68,22 +72,30 @@ class Backend(QObject):
 #------------------------------------------------------------------------------
     @Slot(None)
     def playMidis(self):
-        logger.info(f"PLAY MIDIS")
+        logger.info(f" [User pressed]  playMidis")
         self.model.set_state(state.State.PLAY_MIDIS)
         
 #------------------------------------------------------------------------------
     @Slot(None)
     def newGame(self):
-        logger.info(f"NEW GAME")
-        # First time: drops.
-        # Check progress in self.model
-        self.model.play_async(type=midi_builder.MusicBuildType.DROPS)
+        logger.info(f" [User pressed]  newGame")
+        self.model.newGame()
+        self._has_save_files.set(True) # TODO: Not the best way ... need to have real multiple save files.
+        
+        self.model.set_state(state.State.GAME)
+        
+#------------------------------------------------------------------------------
+    @Slot(None)
+    def loadGame(self):
+        logger.info(f" [User pressed]  loadGame")
+        self.model.loadGame()        
+        
         self.model.set_state(state.State.GAME)
         
 #------------------------------------------------------------------------------
     @Slot(None)
     def toSettings(self):
-        logger.info(f"TO SETTINGS")
+        logger.info(f" [User pressed]  toSettings")
         self.model.set_state(state.State.SETTINGS)
         
 #------------------------------------------------------------------------------
@@ -91,6 +103,12 @@ class Backend(QObject):
     def exit(self):
         self.app.exit()
         
+#------------------------------------------------------------------------------
+    model_changed = Signal()
+    _has_save_files = Setting(False, "has_save_files")
+    def get_has_save_files(self): return self._has_save_files
+    p_has_save_files = Property(QObject, get_has_save_files, notify=model_changed)
+    
 #------------------------------------------------------------------------------
     @Slot(None, result=str)
     def get_media_folder(self):

@@ -7,20 +7,6 @@
         <source>GAME_TITLE</source>
         <translation>The Music Experiment Game</translation>
     </message>
-    <message>
-        <source>NEW_GAME_1</source>
-        <translation>ALMOST random 1st
-music generation.
-
-It'll be better soon!
-
-But for now,
-that's it!
-The game is
-being developed
-right now,
-hopefully...</translation>
-    </message>
     
     
     <!-- Splash messages -->
@@ -46,6 +32,10 @@ hopefully...</translation>
     <message>
         <source>NEW_GAME</source>
         <translation>New Game</translation>
+    </message>
+    <message>
+        <source>LOAD_GAME</source>
+        <translation>Load Game</translation>
     </message>
     <message>
         <source>SETTINGS</source>
@@ -113,6 +103,33 @@ hopefully...</translation>
         <source>time_listened</source>
         <translation>Time listening to music</translation>
     </message>
-    
+    <message>
+        <source>gui_playback</source>
+        <translation>Show music playback UI</translation>
+    </message>
+
+    <!-- Game -->
+    <message>
+        <source>GAME_0</source>
+        <translation> </translation>
+    </message>
+    <message>
+        <source>GAME_1</source>
+        <translation>You're hearing drops of water</translation>
+    </message>
+    <message>
+        <source>GAME_2</source>
+        <translation>It gives you an idea</translation>
+    </message>
+    <message>
+        <source>GAME_LAST</source>
+        <translation>For now, that's it!
+
+You're hearing: ALMOST random 1st music generation.
+
+It'll be better soon!
+
+The game is being developed right now.</translation>
+    </message>
 </context>
 </TS>

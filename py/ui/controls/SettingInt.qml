@@ -13,8 +13,8 @@ RowLayout {
     required property Setting setting
     implicitWidth: slider.implicitWidth
     Layout.margins: 9
-    enabled: setting ? setting.p_unlocked : false
-    property bool readonly: !enabled
+    visible: setting ? setting.p_unlocked : false
+    property bool readonly: !visible
     
     function captionOperator(val) { return val }
     

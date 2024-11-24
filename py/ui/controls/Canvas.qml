@@ -3,6 +3,9 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import QtQuick.Controls.Material
 
+// For State and MusicState enums
+import com.martingamsby.music 1.0
+
 Rectangle {
     color: "black"
     
@@ -16,7 +19,10 @@ Rectangle {
         text: model ? model.p_title.s : ""
         font.pixelSize: 60
     }
+    // TODO: Move to another file?
     Title {
+        id: playbackState
+        visible: model ? (model.p_state_id != StateEnum.GAME || (model.p_gui_playback.p_unlocked && model.p_gui_playback.b)) : false
         font.pixelSize: 20
         anchors.bottom: parent.bottom
         anchors.right: parent.right
@@ -26,6 +32,7 @@ Rectangle {
         text: model ? model.p_music_state_pretty_name : ""        
     }
     Rectangle {
+        visible: playbackState.visible
         color: enabled ? Material.foreground : Material.hintTextColor
         anchors.bottom: parent.bottom
         anchors.left: parent.left

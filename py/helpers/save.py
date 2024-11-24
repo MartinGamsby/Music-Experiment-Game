@@ -1,13 +1,18 @@
+import os
 import logging
 logger = logging.getLogger(__name__)
 
 import configparser
 
+from PySide6.QtCore import QObject, Signal
+
 
 ALWAYS_SAVE = True # TODO: Do I want to always save?
 
 #------------------------------------------------------------------------------
-class Save:
+class Save(QObject):
+    model_changed = Signal()
+
     def __init__(self):
         super().__init__()
         self._initialized = False
@@ -37,6 +42,17 @@ class Save:
             #uh ... mutex?
             self.config.write(configfile)
           
+#------------------------------------------------------------------------------
+    def reset(self):
+        if not self._initialized:
+            raise Exception("Cannot reset unitialized save")
+        logger.info(f"Resetting save {os.path.basename(self.filename)}")
+        if os.path.isfile(self.filename):
+            os.remove(self.filename)
+            
+        self.config = configparser.ConfigParser()
+        self.model_changed.emit()
+            
 #------------------------------------------------------------------------------
     def save(self, name, value, section="Default"):
         if not self._initialized:

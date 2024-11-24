@@ -1,4 +1,5 @@
 import pygame
+import os
 from threading import Thread, Lock
 
 import logging
@@ -57,7 +58,7 @@ def _play_music(music_file, cb, use_sound=False):#True):#Ugh, with sound it's st
         
     try:
         pygame.mixer.music.load(music_file)
-        logger.info( f"Music file {music_file} loaded!" )
+        logger.debug( f"Music file {music_file} loaded!" )
     except pygame.error:
         logger.error( f"File {music_file} not found! ({pygame.get_error()})" )
         return        
@@ -107,6 +108,7 @@ def play(midi_file, cb, volume=1.0):
     pygame.mixer.music.set_volume(volume)
     try:
         with mutex:
+            logger.info(f"Playing {os.path.basename(midi_file)} at {int(volume*100)}%")
             _play_music(midi_file, cb)
     except KeyboardInterrupt:
         # if user hits Ctrl/C then exit
