@@ -12,7 +12,7 @@ AnimatedImage {
     width: 300
     height: width/2
     source: "qrc:/GamesByGamsby.gif"
-    playing: true
+    playing: visible
     onFrameChanged: {
         if(!loop && currentFrame==(frameCount-1)) {
             playing = false

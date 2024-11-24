@@ -3,6 +3,7 @@ import os
 import pathlib
 from helpers.file_helper import abspath, tempfile_path, get_appdata_file
 from helpers.setting import Setting
+from helpers.steps import Steps
 from helpers.save import Save
 from time import sleep, time
 from PySide6.QtGui import QGuiApplication
@@ -19,6 +20,11 @@ logger = logging.getLogger(__name__)
 
 avg_half_frame_ms = 8#1000/60/2 (TODO: Get the actual framerate, or moving avg, or something..)
 
+
+DEBUG_TIME = True
+
+BEATS_PER_MEASURE = (1 if DEBUG_TIME else 4)
+MS_PER_S = (200 if DEBUG_TIME else 1000)
 
 #------------------------------------------------------------------------------
 class Model(QObject):
@@ -51,6 +57,8 @@ class Model(QObject):
         self._tempo = -1
         
         self._last_type = midi_builder.MusicBuildType.DROPS
+        
+        self._steps = Steps()
         # TODO: When?
         # After a few water drops?
         # Is that in the backend?
@@ -82,7 +90,6 @@ class Model(QObject):
         
 #------------------------------------------------------------------------------
     def loadGame(self):
-        self.update_game_title()
         self.apply_step()
         
 #------------------------------------------------------------------------------
@@ -210,16 +217,17 @@ class Model(QObject):
         if at_ms > (self.last_beat_ms-avg_half_frame_ms):
             if self.last_beat_ms > 0:
                 nb_beats = self._music_beat.get()
-                if nb_beats > 0 and not(nb_beats % 4):
+                if nb_beats > 0 and not(nb_beats % BEATS_PER_MEASURE):
                     if self.state == State.GAME:
-                        self.add_time_listened(int(ms_per_beat*4))
+                        self.add_time_listened(int(ms_per_beat*BEATS_PER_MEASURE))
                         logger.debug(f"at {at_ms} (beats#{nb_beats}, {int(ms_per_beat)}ms/beat (listened a total of: {int(self._time_listened.get()/1000)}s)")
                         
                 self._music_beat.add(1)
                 
                 self.last_beat_ms += ms_per_beat
             else:            
-                self.add_time_listened(1)
+                if self.state == State.GAME:
+                    self.add_time_listened(1)
                 self.last_beat_ms += 1#ms_per_beat/2 # TODO: Is this what midi to wav does?
         elif at_ms < (self.last_beat_ms - ms_per_beat):
             self.last_beat_ms = 0# TODO: This is sketchy...
@@ -236,58 +244,75 @@ class Model(QObject):
         
 #------------------------------------------------------------------------------
     def update_game_title(self):
-        key = "GAME_" + str(self._game_progress.get())
+        key = self.current_step_name()
         value = self.app.tr(key)
-        if value != key:
+        if not value or value != key:
             self._game_title.set(value)
         else:
             self._game_title.set("GAME_LAST")
         
+#------------------------------------------------------------------------------
+    def get_seconds(self, s):
+        return s*MS_PER_S
         
 #------------------------------------------------------------------------------
     def add_time_listened(self, time_added):
         self._time_listened.add(time_added)
         
-        # TODO: Config file to specify what's happening here? (Will it always be based on time? Probably not...)        
         step = self._game_progress.get()
-        if step == 0:
-            if self._time_listened.get() > 2000:
-                self.next_step()                
-        elif step == 1:
-            if self._time_listened.get() > 6000:
-                self.next_step()         
-        elif step == 2:
-            if self._time_listened.get() > 10000:
+        
+        s_to_next = self.current_step_seconds_to_next()
+        if s_to_next != -1:
+            if self._time_listened.get() > self.get_seconds(s_to_next):
                 self.next_step()
-                
+        
+#------------------------------------------------------------------------------
+    def current_step(self):
+        return self._steps.get(self._game_progress.get())
+        
+    def current_step_to(self):
+        return self._steps.to(self._game_progress.get())
+        
+    def current_step_name(self):
+        return self._steps.name(self._game_progress.get())
+        
+    def current_step_unlocks(self):
+        return self._steps.unlocks(self._game_progress.get())
+        
+    def current_step_adds(self):
+        return self._steps.adds(self._game_progress.get())
+        
+    def current_step_seconds_to_next(self):
+        return self._steps.seconds_to_next(self._game_progress.get())
+        
 #------------------------------------------------------------------------------
     def next_step(self):
-        """ Things that need to be done only one when changing to step x """
-        self._game_progress.add(1)
-        self.update_game_title()
-            
-        step = self._game_progress.get()
-        # 1: To "hearing drops"
-        if step == 2: # "Gives you an idea"
-            self._ideas.add(1)
-            self._ideas.unlock()         
-        if step == 3: # "Almost random"
-            self._gui_back_to_mainmenu.unlock()
-            
-            # TODO: Not here, later than step 3
-            self._gui_playback.unlock()
+        """ Things that need to be done only one when changing to step x """                
+        
+        self._game_progress.set(self.current_step_to())
+        
+        for u in self.current_step_unlocks():
+            getattr(self, "_"+u).unlock()
+        
+        adds = self.current_step_adds()
+        for key in adds:
+            getattr(self, "_"+key).add(adds[key])
             
         self.apply_step()
                   
 #------------------------------------------------------------------------------
     def apply_step(self):
         """ Things that need to be done every time when changing to step x (e.g. loading the game) """
+        logger.info("APPLY STEP")
         step = self._game_progress.get()
-        if step < 3: # 3: "Almost random"
+        
+        if step < 13: # 12 last: "Gives you an idea"
             self.play_async(type=midi_builder.MusicBuildType.DROPS)
         else:
             self.play_async(type=midi_builder.MusicBuildType.GAME)            
         # Or ... save that in setting ... or ... always GAME, and is DROPS by default?
+        
+        self.update_game_title()
             
             
 #------------------------------------------------------------------------------
@@ -374,58 +399,54 @@ class Model(QObject):
     def get_title(self): return self._title # TODO: Move that inside Setting() class??
     p_title = Property(QObject, get_title, notify=model_changed)
     
-#------------------------------------------------------------------------------
     _game_title = Setting("GAME_0", "game_title")
     def get_game_title(self): return self._game_title
     p_game_title = Property(QObject, get_game_title, notify=model_changed)
+    
     
 #------------------------------------------------------------------------------
     _music_progress = Setting(0.0, "music_progress")
     def get_music_progress(self): return self._music_progress
     p_music_progress = Property(QObject, get_music_progress, notify=model_changed)
     
-#------------------------------------------------------------------------------
     _music_beat = Setting(0, "music_beat")
     def get_music_beat(self): return self._music_beat
     p_music_beat = Property(QObject, get_music_beat, notify=model_changed)
+    
     
 #------------------------------------------------------------------------------
     _language = Setting(QLocale().name(), "Config/language", save_config, save_progress=save_progress, auto_unlock=True)
     def get_language(self): return self._language
     p_language = Property(QObject, get_language, notify=model_changed)
     
-#------------------------------------------------------------------------------
     _generate_mp3 = Setting(True, "Config/generate_mp3", save_config, save_progress=save_progress, auto_unlock=True)
     def get_generate_mp3(self): return self._generate_mp3
     p_generate_mp3 = Property(QObject, get_generate_mp3, notify=model_changed)
     
-#------------------------------------------------------------------------------
     _fullscreen = Setting(True, "Config/fullscreen", save_config, save_progress=save_progress, auto_unlock=True)
     def get_fullscreen(self): return self._fullscreen
     p_fullscreen = Property(QObject, get_fullscreen, notify=model_changed)
+    
     
 #------------------------------------------------------------------------------
     _ideas = Setting(0, "Progress/ideas", save_progress)
     def get_ideas(self): return self._ideas
     p_ideas = Property(QObject, get_ideas, notify=model_changed)
     
-#------------------------------------------------------------------------------
     _game_progress = Setting(0, "Progress/game_progress", save_progress)
     def get_game_progress(self): return self._game_progress
     p_game_progress = Property(QObject, get_game_progress, notify=model_changed)
     
-#------------------------------------------------------------------------------
     _time_listened = Setting(0, "Progress/time_listened", save_progress, auto_unlock=True)
     def get_time_listened(self): return self._time_listened
     p_time_listened = Property(QObject, get_time_listened, notify=model_changed)
     
 #------------------------------------------------------------------------------
-    _gui_playback = Setting(True, "Progress/gui_playback", save_progress)
+    _gui_playback = Setting(True, "GUI/gui_playback", save_progress)
     def get_gui_playback(self): return self._gui_playback
     p_gui_playback = Property(QObject, get_gui_playback, notify=model_changed)
     
-#------------------------------------------------------------------------------
-    _gui_back_to_mainmenu = Setting(True, "Progress/gui_back_to_mainmenu", save_progress)
+    _gui_back_to_mainmenu = Setting(True, "GUI/gui_back_to_mainmenu", save_progress)
     def get_gui_back_to_mainmenu(self): return self._gui_back_to_mainmenu
     p_gui_back_to_mainmenu = Property(QObject, get_gui_back_to_mainmenu, notify=model_changed)
     

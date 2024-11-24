@@ -114,12 +114,17 @@
         <translation> </translation>
     </message>
     <message>
-        <source>GAME_1</source>
-        <translation>Vous entendez des gouttes d'eau</translation>
+        <source>HEARING_DROPS</source>
+        <translation>Tu entends des gouttes d'eau</translation>
     </message>
     <message>
-        <source>GAME_2</source>
-        <translation>Ça vous donne une idée</translation>
+        <source>SOUNDS_MELODIOUS</source>
+        <translation>It sounds almost... Melodious</translation>
+    </message>
+    
+    <message>
+        <source>FIRST_IDEA</source>
+        <translation>Ça te donne une idée</translation>
     </message>
     <message>
         <source>GAME_LAST</source>

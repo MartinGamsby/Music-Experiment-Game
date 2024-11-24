@@ -1,0 +1,19 @@
+0: 
+    to: 10
+    seconds_to_next: 2
+10:
+    name: HEARING_DROPS
+    seconds_to_next: 6
+11:
+    name: SOUNDS_MELODIOUS
+    seconds_to_next: 10
+12:
+    name: FIRST_IDEA
+    to: 13375
+    seconds_to_next: 14
+    unlocks: ["ideas"]
+    adds:
+        ideas: 1
+13375:
+    name: GAME_LAST
+    unlocks: ["gui_playback", "gui_back_to_mainmenu"] #TODO: gui_playback not here, later in the steps (after 12)

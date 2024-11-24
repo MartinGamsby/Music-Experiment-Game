@@ -114,11 +114,15 @@
         <translation> </translation>
     </message>
     <message>
-        <source>GAME_1</source>
+        <source>HEARING_DROPS</source>
         <translation>You're hearing drops of water</translation>
     </message>
     <message>
-        <source>GAME_2</source>
+        <source>SOUNDS_MELODIOUS</source>
+        <translation>It sounds almost... Melodious</translation>
+    </message>
+    <message>
+        <source>FIRST_IDEA</source>
         <translation>It gives you an idea</translation>
     </message>
     <message>

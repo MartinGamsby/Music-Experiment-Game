@@ -9,10 +9,11 @@ SequentialAnimation {
     required property Item target
     property real from: 1.13
     property real to: 1.0
+    property int scaleDownTime: 250
     property int time: 500
     
     ScaleAnimator {
-        duration: 250; target: anim.target
+        duration: scaleDownTime; target: anim.target
         from: 13.0; to: anim.from
         easing.type: Easing.InQuad;
     }

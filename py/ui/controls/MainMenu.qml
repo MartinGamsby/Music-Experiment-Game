@@ -89,6 +89,7 @@ Item {
             from: 1.0
             to: 1.03
             time: 1500
+            scaleDownTime: 0
         }
         
         TitleButtonCentered {
@@ -125,7 +126,7 @@ Item {
                 backend.toSettings()
             }
         }
-        TitleButton {
+        TitleButtonCentered {
             text: tr("EXIT")
             anchors.right: loadGameButton.right
             font.pixelSize: 16
@@ -140,7 +141,7 @@ Item {
         anchors.left: parent.left
         anchors.margins: 9
     }
-    GamesByLogo {
+    GamesByLogoAnimated {
         z: 1
         anchors.bottom: parent.bottom
         anchors.right: parent.right
