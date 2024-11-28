@@ -5,6 +5,7 @@ import QtQuick.Controls
 import QtQuick.Controls.Material
 
 import "controls"
+import "pages"
 
 // For State and MusicState enums
 import com.martingamsby.music 1.0
@@ -14,7 +15,7 @@ ApplicationWindow {
     visible: true
 	title: tr("GAME_TITLE")
     visibility: model ? (model.p_fullscreen.b ? Window.FullScreen : Window.Maximized) : Window.FullScreen
-    color: menu.backgroundColor
+    color:  "#222222"//menu.backgroundColor
     
     minimumWidth: 1280
     minimumHeight: 960
@@ -36,10 +37,6 @@ ApplicationWindow {
         running: true
     }
         
-    Menu {
-        id: menu
-    }
-
     Canvas {
         id: canvas
         Layout.fillWidth: true
@@ -64,65 +61,25 @@ ApplicationWindow {
             id: mainMenuView
         }
         
-        RowLayout {
+        // TODO: To "page" qml file.
+        PlayMidis {
             id: menuView
-            spacing: 9
-            anchors.margins: 9
 
             LayoutItemProxy {
                 target: canvas
-            }
-
-            LayoutItemProxy {
-                target: menu
-                Layout.fillWidth: false
-                Layout.fillHeight: true
+                z: -1
+                anchors.fill: parent
+                //anchors.right: menuView.menu.left
+                //Layout.fillWidth: true
+                //Layout.fillHeight: true
             }
         }
-        Item {
+        Game {
             id: menuView3
-            anchors.margins: 9
-
             LayoutItemProxy {
-                anchors.fill:parent                
-                target: canvas
-            }
-            Item {
-                width: gameLogo.width/2                
-            }
-            TitleAnchored {
                 anchors.fill:parent
-                text: tr(model ? model.p_game_title.s : "")
-                //font.pointSize: 40                
-            }
-            GameLogo {
-                id: gameLogo
-                anchors.right: parent.right
-                anchors.top: parent.top
-                width: maxSizeW
-                height: maxSizeH
-                // TODO: Make a method, like tr() ...
-                visible: model ? (model.p_gui_back_to_mainmenu.p_unlocked && model.p_gui_back_to_mainmenu.b) : false
-            }
-            RowLayout {
-                visible: model ? model.p_ideas.p_unlocked : false
-                GrowingImage {
-                    source: "qrc:/idea"
-                    maxSize: 40
-                }
-                Text {
-                    z: 10
-                    text: (model ? model.p_ideas.i : "")
-                    color: enabled ? Material.foreground : Material.hintTextColor
-                    font.pointSize: 24
-                    x: 10
-                }
-                NumberAnimation on opacity {
-                    from: 0
-                    to: 1
-                    duration: 1000
-                    running: visible
-                }
+                target: canvas
+                z: -1
             }
         }
         RowLayout {

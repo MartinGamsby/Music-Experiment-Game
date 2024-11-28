@@ -11,7 +11,7 @@ from PySide6.QtQml import QQmlApplicationEngine
 from PySide6.QtCore import QObject, Slot, Signal, Property, QTimer, QThread, QLocale
 import threading
 import symusic_midi
-from music import midi_builder, midi_helper
+from music import midi_helper
 
 from state import State, MusicState
 
@@ -24,7 +24,7 @@ avg_half_frame_ms = 8#1000/60/2 (TODO: Get the actual framerate, or moving avg, 
 DEBUG_TIME = True
 
 BEATS_PER_MEASURE = (1 if DEBUG_TIME else 4)
-MS_PER_S = (200 if DEBUG_TIME else 1000)
+MS_PER_S = (250 if DEBUG_TIME else 1000)
 
 #------------------------------------------------------------------------------
 class Model(QObject):
@@ -56,20 +56,28 @@ class Model(QObject):
                 
         self._tempo = -1
         
-        self._last_type = midi_builder.MusicBuildType.DROPS
+        self._last_type = None
         
         self._steps = Steps()
-        # TODO: When?
-        # After a few water drops?
-        # Is that in the backend?
-        # Save number of "songs", and time spent? (in music cb?)
-        #self._ideas.unlock() 
+        
+        self.thread = None
+        
+        # Hook settings
+        self._music_attrs = {}
+        for a in dir(self):
+            if a.startswith("_"):
+                attr = getattr(self, a)
+                if type(attr) == Setting:
+                    if attr._section == "Music":
+                        self._music_attrs[a] = attr
+                        attr.value_updated.connect(self.value_updated)
         
         
 #------------------------------------------------------------------------------
     def __del__(self):
         self.save_config.write_config() # TODO: More often than that...
-        self.thread.deleteLater() #TODO: stop the thread
+        if self.thread:
+            self.thread.deleteLater() #TODO: stop the thread
     
 #------------------------------------------------------------------------------
     def init(self):
@@ -80,6 +88,22 @@ class Model(QObject):
         
         t = threading.Thread(target=self.async_init)
         t.start()
+        
+#------------------------------------------------------------------------------
+    def value_updated(self):
+        logger.info(f"value updated ({self.sender()})")
+        
+        ideas = 0
+        for a in self._music_attrs:
+            attr = self._music_attrs[a]
+            if attr.get():
+                ideas += 1
+        self._ideas.set(ideas)
+        logger.info(f"Used ideas: {ideas}/{self._total_ideas.get()}")
+        
+        # Make another music
+        from music import midi_builder
+        self.play_async(type=midi_builder.MusicBuildType.GAME)
         
 #------------------------------------------------------------------------------
     def newGame(self):
@@ -103,15 +127,23 @@ class Model(QObject):
         self.worker.finished.connect(self.thread.quit)
         
 #------------------------------------------------------------------------------
-    def async_init(self):        
+    def async_init(self):
         ###TODO::: not first? Or only generate?
         sleep(0.5)#Let the UI open or something?
-        self.play_main_menu()
+        self.play_main_menu(State.GAME if self._autoload.get() else State.MAIN_MENU)
         
 #------------------------------------------------------------------------------
-    def play_main_menu(self):
-        #TODO: setting for one of these:
-        self.play_async(abspath("assets/town.mid"))
+    def play_main_menu(self, state=State.MAIN_MENU):
+    
+        if state == State.GAME:
+            if self._game_progress.get() > 0:
+                self.loadGame()
+                self.set_state(state)
+                return
+            
+        #TODO: setting for one of these:        
+        from music import midi_builder
+        self.play_async(midi_builder.MusicBuildType.FILE, abspath("assets/town.mid"))
         #self.play_async("")
         #self.play_async("", type=midi_builder.MusicBuildType.DROPS)
         #self.play_async("", type=midi_builder.MusicBuildType.GAME)
@@ -125,8 +157,12 @@ class Model(QObject):
         pygame_midi.stop_music()
         
 #------------------------------------------------------------------------------
-    def play_async(self, filename="", type=midi_builder.MusicBuildType.FILE):
-        logger.debug(f"from {self._last_type} to {type}")
+    def play_async(self, type, filename=""):
+        logger.debug(f"from {self._last_type} to {type}")        
+        
+        from music import midi_builder
+        self._music_description.set(midi_builder.describe_music(self.app, self._music_attrs))
+        
         self._last_type = type
     
         self.filename = abspath(filename)
@@ -151,7 +187,9 @@ class Model(QObject):
             if not self.filename:        
                 
                 filename = get_appdata_file("__DefaultOutput.mid", subfolder="Music")# "Midi"?
-                self._tempo = midi_builder.make_midi(filename, type=type)
+                from music import midi_builder
+                desc, self._tempo = midi_builder.make_midi(filename, self.app, self._music_attrs, type=type)
+                self._music_description.set(desc)
             else:
                 filename = self.filename
             if self._generate_mp3.get():
@@ -249,6 +287,7 @@ class Model(QObject):
         if not value or value != key:
             self._game_title.set(value)
         else:
+            logger.error("Translate string not found")
             self._game_title.set("GAME_LAST")
         
 #------------------------------------------------------------------------------
@@ -306,10 +345,12 @@ class Model(QObject):
         logger.info("APPLY STEP")
         step = self._game_progress.get()
         
-        if step < 13: # 12 last: "Gives you an idea"
-            self.play_async(type=midi_builder.MusicBuildType.DROPS)
+        from music import midi_builder
+        if step < 13375: # TODO:            
+            desc = self.play_async(type=midi_builder.MusicBuildType.DROPS)
         else:
-            self.play_async(type=midi_builder.MusicBuildType.GAME)            
+            desc = self.play_async(type=midi_builder.MusicBuildType.GAME)            
+        
         # Or ... save that in setting ... or ... always GAME, and is DROPS by default?
         
         self.update_game_title()
@@ -403,6 +444,10 @@ class Model(QObject):
     def get_game_title(self): return self._game_title
     p_game_title = Property(QObject, get_game_title, notify=model_changed)
     
+    # TODO: Add a "gui" portion (to show or not) -- OR just a "what;'s shown", with a multi choice or something... maybe just a bool...
+    _music_description = Setting("GAME_0", "music_description", save_progress=save_progress)
+    def get_music_description(self): return self._music_description
+    p_music_description = Property(QObject, get_music_description, notify=model_changed)
     
 #------------------------------------------------------------------------------
     _music_progress = Setting(0.0, "music_progress")
@@ -427,11 +472,19 @@ class Model(QObject):
     def get_fullscreen(self): return self._fullscreen
     p_fullscreen = Property(QObject, get_fullscreen, notify=model_changed)
     
+    _autoload = Setting(True, "Config/autoload", save_config, save_progress=save_progress, auto_unlock=True)
+    def get_autoload(self): return self._autoload
+    p_autoload = Property(QObject, get_autoload, notify=model_changed)
+    
     
 #------------------------------------------------------------------------------
     _ideas = Setting(0, "Progress/ideas", save_progress)
     def get_ideas(self): return self._ideas
     p_ideas = Property(QObject, get_ideas, notify=model_changed)
+    
+    _total_ideas = Setting(0, "Progress/total_ideas", save_progress)
+    def get_total_ideas(self): return self._total_ideas
+    p_total_ideas = Property(QObject, get_total_ideas, notify=model_changed)    
     
     _game_progress = Setting(0, "Progress/game_progress", save_progress)
     def get_game_progress(self): return self._game_progress
@@ -449,4 +502,17 @@ class Model(QObject):
     _gui_back_to_mainmenu = Setting(True, "GUI/gui_back_to_mainmenu", save_progress)
     def get_gui_back_to_mainmenu(self): return self._gui_back_to_mainmenu
     p_gui_back_to_mainmenu = Property(QObject, get_gui_back_to_mainmenu, notify=model_changed)
+    
+#------------------------------------------------------------------------------
+    _frequency = Setting(False, "Music/frequency", save_progress)
+    def get_frequency(self): return self._frequency
+    p_frequency = Property(QObject, get_frequency, notify=model_changed)
+    
+    _instruments = Setting(False, "Music/instruments", save_progress)
+    def get_instruments(self): return self._instruments
+    p_instruments = Property(QObject, get_instruments, notify=model_changed)
+    
+    _instrument_piano = Setting(False, "Music/instrument_piano", save_progress)
+    def get_instrument_piano(self): return self._instrument_piano
+    p_instrument_piano = Property(QObject, get_instrument_piano, notify=model_changed)
     

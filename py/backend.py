@@ -57,16 +57,16 @@ class Backend(QObject):
         logger.info(f" [User pressed]  play_mid_pressed({value})")
         value = abspath(value)
         if value:
-            self.model.play_async(value, type=midi_builder.MusicBuildType.FILE)
+            self.model.play_async(midi_builder.MusicBuildType.FILE, value)
         else:
-            self.model.play_async(value, type=midi_builder.MusicBuildType.DROPS)
+            self.model.play_async(midi_builder.MusicBuildType.DROPS, value)
         
 #------------------------------------------------------------------------------
     @Slot(bool)
     def toMainMenu(self, play: bool):
         logger.info(f" [User pressed]  toMainMenu({play})")
         if play:
-            self.model.play_main_menu()
+            self.model.play_main_menu(state.State.MAIN_MENU)
         self.model.set_state(state.State.MAIN_MENU)
         
 #------------------------------------------------------------------------------
@@ -88,7 +88,7 @@ class Backend(QObject):
     @Slot(None)
     def loadGame(self):
         logger.info(f" [User pressed]  loadGame")
-        self.model.loadGame()        
+        self.model.loadGame()
         
         self.model.set_state(state.State.GAME)
         
@@ -97,6 +97,12 @@ class Backend(QObject):
     def toSettings(self):
         logger.info(f" [User pressed]  toSettings")
         self.model.set_state(state.State.SETTINGS)
+        
+#------------------------------------------------------------------------------
+    @Slot(None)
+    def makeAnotherMusic(self):
+        logger.info(f" [User pressed]  makeAnotherMusic")
+        self.model.play_async(type=midi_builder.MusicBuildType.GAME)
         
 #------------------------------------------------------------------------------
     @Slot(None)

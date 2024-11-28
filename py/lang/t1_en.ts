@@ -42,9 +42,18 @@
         <translation>Settings</translation>
     </message>
     <message>
+        <source>MUSIC_SETTINGS</source>
+        <translation>Ideas</translation><!--Music generation settings</translation>-->
+    </message>
+    <message>
         <source>EXIT</source>
         <translation>Exit</translation>
     </message>
+    <message>
+        <source>MAKE_ANOTHER_MUSIC</source>
+        <translation>Make another music</translation>
+    </message>
+    
     <message>
         <source>STATS</source>
         <translation>Stats</translation>
@@ -91,13 +100,27 @@
         <source>MIDI_FILES_FILTER</source>
         <translation>MIDI files (*.mid)</translation>
     </message>
+    
+    <!-- settings -->
     <message>
         <source>generate_mp3</source>
         <translation>Generate Beautiful Midi files (Slower, might lag)</translation>
     </message>
     <message>
+        <source>fullscreen</source>
+        <translation>Fullscreen Mode</translation>
+    </message>
+    <message>
+        <source>autoload</source>
+        <translation>Auto load game on startup</translation>
+    </message>
+    <message>
         <source>ideas</source>
         <translation>Ideas</translation>
+    </message>
+    <message>
+        <source>total_ideas</source>
+        <translation>Total Ideas</translation>
     </message>
     <message>
         <source>time_listened</source>
@@ -107,6 +130,25 @@
         <source>gui_playback</source>
         <translation>Show music playback UI</translation>
     </message>
+    
+    <!-- Music Settings -->
+    <message>
+        <source>frequency</source>
+        <translation>Frequency</translation>
+    </message>
+    <message>
+        <source>instruments</source>
+        <translation>Percussions</translation>
+    </message>
+    <message>
+        <source>instruments_desc</source>
+        <translation>You start hitting some things yourself</translation>
+    </message>
+    <message>
+        <source>instrument_piano</source>
+        <translation>Piano</translation>
+    </message>
+    
 
     <!-- Game -->
     <message>
@@ -125,6 +167,10 @@
         <source>FIRST_IDEA</source>
         <translation>It gives you an idea</translation>
     </message>
+    <message>
+        <source>ADDING_FREQUENCY</source>
+        <translation></translation><!-- todo-->
+    </message>    
     <message>
         <source>GAME_LAST</source>
         <translation>For now, that's it!

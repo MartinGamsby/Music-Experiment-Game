@@ -42,9 +42,18 @@
         <translation>Paramètres</translation>
     </message>
     <message>
+        <source>MUSIC_SETTINGS</source>
+        <translation>Idées</translation><!--Paramètres de génération de musique</translation>-->
+    </message>
+    <message>
         <source>EXIT</source>
         <translation>Quitter</translation>
     </message>
+    <message>
+        <source>MAKE_ANOTHER_MUSIC</source>
+        <translation>Faire une autre musique</translation>
+    </message>
+    
     <message>
         <source>STATS</source>
         <translation>Statistiques</translation>
@@ -91,13 +100,27 @@
         <source>MIDI_FILES_FILTER</source>
         <translation>fichiers MIDI (*.mid)</translation>
     </message>
+    
+    <!-- settings -->
     <message>
         <source>generate_mp3</source>
         <translation>Générer des fichiers MIDI plus beaux (plus lent, peut lagger)</translation>
     </message>
     <message>
+        <source>fullscreen</source>
+        <translation>Mode plein écran</translation>
+    </message>
+    <message>
+        <source>autoload</source>
+        <translation>Charger automatiquement la partie au démarrage</translation>
+    </message>
+    <message>
         <source>ideas</source>
         <translation>Idées</translation>
+    </message>
+    <message>
+        <source>total_ideas</source>
+        <translation>Toutes les idées</translation>
     </message>
     <message>
         <source>time_listened</source>
@@ -106,6 +129,24 @@
     <message>
         <source>gui_playback</source>
         <translation>Afficher l'interface de Lecture de musique</translation>
+    </message>
+    
+    <!-- Music Settings -->
+    <message>
+        <source>frequency</source>
+        <translation>Fréquence</translation>
+    </message>
+    <message>
+        <source>instruments</source>
+        <translation>Percussions</translation>
+    </message>
+    <message>
+        <source>instruments_desc</source>
+        <translation>Tu commences à cogner des trucs toi-même</translation>
+    </message>
+    <message>
+        <source>instrument_piano</source>
+        <translation>Piano</translation>
     </message>
     
     <!-- Game -->
@@ -119,7 +160,7 @@
     </message>
     <message>
         <source>SOUNDS_MELODIOUS</source>
-        <translation>It sounds almost... Melodious</translation>
+        <translation>Ça sonne presque ... Mélodieux</translation>
     </message>
     
     <message>

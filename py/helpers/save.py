@@ -20,7 +20,7 @@ class Save(QObject):
 #------------------------------------------------------------------------------
     def init(self, filename):
         if self._initialized:
-            logger.critical("Cannot intitialize twice")
+            logger.error("Cannot initialize twice")
             return
         logger.debug("Initializing save")
         self.filename = filename

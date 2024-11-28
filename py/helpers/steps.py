@@ -12,13 +12,17 @@ class Steps:
         self.__load(filename)
         
 #------------------------------------------------------------------------------
-    def __load(self, filename):        
+    def __load(self, filename):
         with open(filename) as stream:
             try:
                 self.__yaml = yaml.safe_load(stream)
             except yaml.YAMLError as exc:
                 logging.exception("YAML load")
 
+#------------------------------------------------------------------------------
+    def _all(self): # For UT
+        return self.__yaml
+        
 #------------------------------------------------------------------------------
     def get(self, id):
         return self.__yaml[id]

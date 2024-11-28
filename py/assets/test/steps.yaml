@@ -1,0 +1,5 @@
+0: 
+    unlocks: ["typo", "notInModel"]
+    adds:
+        ideas: 1.0
+    seconds_to_next: -2

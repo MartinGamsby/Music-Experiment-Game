@@ -19,6 +19,19 @@ Rectangle {
         text: model ? model.p_title.s : ""
         font.pixelSize: 60
     }
+    Title {
+        id: musicDescription
+        visible: model ? (model.p_music_description.p_unlocked) : false
+        font.pixelSize: 20
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.margins: 9
+        anchors.bottomMargin: 19
+    
+        text: model ? model.p_music_description.s : ""
+        horizontalAlignment: Text.AlignLeft
+    }
+    
     // TODO: Move to another file?
     Title {
         id: playbackState

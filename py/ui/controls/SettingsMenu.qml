@@ -23,6 +23,9 @@ ColumnLayout {
         setting: model ? model.p_fullscreen : null
     }
     SettingBool {
+        setting: model ? model.p_autoload : null
+    }
+    SettingBool {
         setting: model ? model.p_generate_mp3 : null
     }
     SettingBool {

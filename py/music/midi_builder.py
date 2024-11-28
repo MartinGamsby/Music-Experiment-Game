@@ -1,5 +1,6 @@
 import music.midi_helper as mid
 import music.midi_instruments as instr
+from model import Model
 
 from mingus.core import chords
 from random import random, choice, randrange, shuffle
@@ -142,8 +143,37 @@ def add_silence(beats):
     beats.append(mid.Beat(duration=1, notes=[mid.Note()], name=""))#duration?   
 
 #------------------------------------------------------------------------------
-def make_midi(filename, type):
-
+def switch_to_drops(channels, beats):    
+    for b in beats:
+        for n in b.notes:
+            n.octave = 6
+    channels.append(mid.Channel(beats=beats, instrument=115))
+    
+    beats = beats.copy()
+    for b in beats:
+        for n in b.notes:
+            n.octave = 7
+    # 0.25 offset for the drop effect        
+    beats.insert(0,mid.Beat(duration=0.25, notes=[mid.Note("", octave=1)]))
+    channels.append(mid.Channel(beats=beats, instrument=113))
+            
+#------------------------------------------------------------------------------
+def describe_music(app, attrs, suffix="\nGenerating..."):#TODO:tr    
+    desc = ""
+    for a in attrs:
+        desc += f"{app.tr(a[1:])}: {attrs[a].get()}, "
+    
+    return desc + suffix
+            
+#------------------------------------------------------------------------------
+def make_midi(filename, app, attrs, type):
+    
+    s_percussions = attrs["_instruments"].get()#model._instruments.get()
+    s_piano = attrs["_instrument_piano"].get()#model._instrument_piano.get()# TODO: MUTUALLY EXCLUSIVE!?
+    s_frequency = attrs["_frequency"].get()#model._frequency.get()
+    s_drops = False #TODO
+    
+    logger.info( f"Percussions: {s_percussions}, Frequency: {s_frequency}" )
     chord = choice(mid.NOTES)    
     chord_progression = [chord]
     
@@ -170,7 +200,7 @@ def make_midi(filename, type):
     else: # MusicBuildType.GAME
                   
         
-        for i in range(randrange(1,4)):#4,13)):
+        for i in range(randrange(2,4)):#4,13)):
             if random() < 0.2:# sometimes keep the same
                 pass
             else:
@@ -180,21 +210,25 @@ def make_midi(filename, type):
             
         logger.info(f"chord_progression: {chord_progression}")
 
-  
-        # bass, I think
-        # instr.random_instrument(instr.acoustic_bass())
-        instrument1 = randrange(0,79)#47)#piano#int(random_acoustic_bass)
+        # randrange(0,79)
         
-        # 2nd bass, I think
-        # instr.random_instrument(instr.acoustic_bass())
-        instrument2 = randrange(0,79)#47)#piano#int(random_guitar2)
+        possible_instruments = []
         
-        # +1 octave
-        # instr.random_instrument(instr.acoustic_guitar())
-        instrument3 = randrange(0,79)#47)#piano#int(random_acoustic_guitar)
+        if s_piano:
+            possible_instruments.extend(instr.piano())
+        if s_percussions:
+            possible_instruments.extend(instr.percussive())
+            
+        if possible_instruments:            
+            instrument_bass = instr.random_instrument(possible_instruments)
+            instrument_bass2 = instr.random_instrument(possible_instruments)
+            instrument_melody = instr.random_instrument(possible_instruments)
+        else:
+            s_drops = True
         
+            
         #if random() < 0.3:
-        #    instrument1 = randrange(56, 79)
+        #    instrument_bass = randrange(56, 79)
     
         OCTAVE = 3 # TODO: Get ovtace from instrument (use mingus?)
         beats = []
@@ -209,23 +243,32 @@ def make_midi(filename, type):
         randomize = 0.2#True#
         #note_duration1 = [2]# TODO: Should match. Go to my 8 years old code and start from that instead of doing nothing really useful here...
         #note_duration2 = [1]
-        note_duration1 = [1,1,2,4]#[1,1,2,2,2,2,2,4]
-        note_duration2 = [0.5,0.5,1,2]#[0.5,0.5,1,1,1,1,1,2]
+        if s_frequency:
+            note_duration1 = [0.5,0.5,1,1,1,1,1,2,2,2,2,2,2,4,4,4,4]#[2]#[0.5,0.5,0.5,0.5,1,1,2,4,4]#[1,1,2,2,2,2,2,4]
+            note_duration2 = [0.25,0.25,0.25,0.25,0.5,0.5,1,2,2,2,2]#[1]#[0.25,0.25,0.25,0.25,0.5,0.5,1,2,2,2,2]#[0.5,0.5,1,1,1,1,1,2]
+        else:
+            note_duration1 = [4]
+            note_duration2 = [2]
+            skip_random2 = 0.0
+        
         skip_over_silence = 0
         repeat_chord = 2
         
         #for chord in chord_progression:
         #    beats.append(mid.Beat(duration=1, notes=[mid.Note(chords.from_shorthand(chord)[0], OCTAVE)]))
-        beats = add_chord_progression(chord_progression, octave_start=OCTAVE, note_duration=note_duration1, skip_random=skip_random, group_chord=True, skip_over_silence=skip_over_silence, repeat_chord=repeat_chord)
-        channels.append(mid.Channel(beats=beats, instrument=instrument1)) 
+        if not s_drops:
+            beats = add_chord_progression(chord_progression, octave_start=OCTAVE, note_duration=note_duration1, skip_random=skip_random, group_chord=True, skip_over_silence=skip_over_silence, repeat_chord=repeat_chord)        
+            channels.append(mid.Channel(beats=beats, instrument=instrument_bass)) 
         
         #beats = add_chord_progression(chord_progression, octave_start=OCTAVE, note_duration=note_duration1, skip_random=skip_random, group_chord=True, skip_over_silence=skip_over_silence, repeat_chord=repeat_chord)
-        #channels.append(mid.Channel(beats=beats, instrument=instrument2)) 
-        
+        #channels.append(mid.Channel(beats=beats, instrument=instrument_bass2)) 
         
         OCTAVE = 4
         beats = add_chord_progression(chord_progression, octave_start=OCTAVE, note_duration=note_duration2, skip_random=skip_random2, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
-        channels.append(mid.Channel(beats=beats, instrument=instrument3)) 
+        if not s_drops:
+            channels.append(mid.Channel(beats=beats, instrument=instrument_melody)) 
+        else:
+            switch_to_drops(channels, beats)
         
         #OCTAVE = 4
         #beats = add_chord_progression(chord_progression, octave_start=OCTAVE, note_duration=note_duration2, skip_random=skip_random2, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
@@ -235,4 +278,4 @@ def make_midi(filename, type):
     
         
     mid.make_file(filename, channels, tempo=tempo)
-    return tempo
+    return describe_music(app, attrs, f"\n({tempo}bps)"), tempo
