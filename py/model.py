@@ -520,7 +520,63 @@ class Model(QObject):
     def get_instruments(self): return self._instruments
     p_instruments = Property(QObject, get_instruments, notify=model_changed)
     
-    _instrument_piano = Setting(False, "Music/instrument_piano", save_progress, rightOf=_instruments)
+    _instrument_piano = Setting(False, "Music/instrument_piano", save_progress, under=_instruments)
     def get_instrument_piano(self): return self._instrument_piano
     p_instrument_piano = Property(QObject, get_instrument_piano, notify=model_changed)
+    
+    _instrument_chromatic_percussion = Setting(False, "Music/instrument_chromatic_percussion", save_progress, leftOf=_instruments)
+    def get_instrument_chromatic_percussion(self): return self._instrument_chromatic_percussion
+    p_instrument_chromatic_percussion = Property(QObject, get_instrument_chromatic_percussion, notify=model_changed)
+    
+    _instrument_organ = Setting(False, "Music/instrument_organ", save_progress, rightOf=_instrument_piano)
+    def get_instrument_organ(self): return self._instrument_organ
+    p_instrument_organ = Property(QObject, get_instrument_organ, notify=model_changed)
+    
+    _instrument_guitar = Setting(False, "Music/instrument_guitar", save_progress, under=_instrument_piano)
+    def get_instrument_guitar(self): return self._instrument_guitar
+    p_instrument_guitar = Property(QObject, get_instrument_guitar, notify=model_changed)
+    
+    _instrument_bass = Setting(False, "Music/instrument_bass", save_progress, rightOf=_instrument_guitar)
+    def get_instrument_bass(self): return self._instrument_bass
+    p_instrument_bass = Property(QObject, get_instrument_bass, notify=model_changed)
+    
+    _instrument_strings = Setting(False, "Music/instrument_strings", save_progress, leftOf=_instrument_guitar)
+    def get_instrument_strings(self): return self._instrument_strings
+    p_instrument_strings = Property(QObject, get_instrument_strings, notify=model_changed)
+    
+    _instrument_ensemble = Setting(False, "Music/instrument_ensemble", save_progress, under=_instrument_guitar)
+    def get_instrument_ensemble(self): return self._instrument_ensemble
+    p_instrument_ensemble = Property(QObject, get_instrument_ensemble, notify=model_changed)
+    
+    _instrument_brass = Setting(False, "Music/instrument_brass", save_progress, leftOf=_instrument_ensemble)
+    def get_instrument_brass(self): return self._instrument_brass
+    p_instrument_brass = Property(QObject, get_instrument_brass, notify=model_changed)
+    
+    _instrument_reed = Setting(False, "Music/instrument_reed", save_progress, rightOf=_instrument_ensemble)
+    def get_instrument_reed(self): return self._instrument_reed
+    p_instrument_reed = Property(QObject, get_instrument_reed, notify=model_changed)
+    
+    _instrument_pipe = Setting(False, "Music/instrument_pipe", save_progress, rightOf=_instrument_reed)
+    def get_instrument_pipe(self): return self._instrument_pipe
+    p_instrument_pipe = Property(QObject, get_instrument_pipe, notify=model_changed)
+    
+    _instrument_synth_lead = Setting(False, "Music/instrument_synth_lead", save_progress, under=_instrument_ensemble)
+    def get_instrument_synth_lead(self): return self._instrument_synth_lead
+    p_instrument_synth_lead = Property(QObject, get_instrument_synth_lead, notify=model_changed)
+    
+    _instrument_synth_pad = Setting(False, "Music/instrument_synth_pad", save_progress, rightOf=_instrument_synth_lead)
+    def get_instrument_synth_pad(self): return self._instrument_synth_pad
+    p_instrument_synth_pad = Property(QObject, get_instrument_synth_pad, notify=model_changed)
+    
+    _instrument_synth_effects = Setting(False, "Music/instrument_synth_effects", save_progress, leftOf=_instrument_synth_lead)
+    def get_instrument_synth_effects(self): return self._instrument_synth_effects
+    p_instrument_synth_effects = Property(QObject, get_instrument_synth_effects, notify=model_changed)
+    
+    _instrument_ethnic = Setting(False, "Music/instrument_ethnic", save_progress, under=_instrument_synth_lead)
+    def get_instrument_ethnic(self): return self._instrument_ethnic
+    p_instrument_ethnic = Property(QObject, get_instrument_ethnic, notify=model_changed)
+    
+    _instrument_sound_effects = Setting(False, "Music/instrument_sound_effects", save_progress, rightOf=_instrument_ethnic)
+    def get_instrument_sound_effects(self): return self._instrument_sound_effects
+    p_instrument_sound_effects = Property(QObject, get_instrument_sound_effects, notify=model_changed)
     

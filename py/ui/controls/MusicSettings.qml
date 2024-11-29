@@ -17,6 +17,8 @@ ColumnLayout {
         
         property Item under: null
         property Item rightOf: null
+        property Item leftOf: null
+        property Item over: null
         
         // already checked: can uncheck.
         // otherwise only enabled if we have enough remaining ideas
@@ -24,11 +26,14 @@ ColumnLayout {
         alignCenter: true
         
         anchors.top: under ? under.bottom : undefined
-        x: under ? under.x : 0
+        x: under ? under.x : (over ? over.x : 0)
         
-        y: rightOf ? rightOf.y : 0
+        y: rightOf ? rightOf.y : (leftOf ? leftOf.y : 0)
         
         anchors.left: rightOf ? rightOf.right : undefined
+        anchors.right: leftOf ? leftOf.left : undefined
+        
+        anchors.horizontalCenter: over ? over.horizontalCenter : (under ? under.horizontalCenter : undefined)
     }
     
     Title {
@@ -51,8 +56,8 @@ ColumnLayout {
         
         Flickable {
             id: flickable
-            width: 360 
-            height: 360
+            width: 800 
+            height: 800
             contentWidth: flickableContents.width
             contentHeight: flickableContents.height
             anchors.centerIn: parent
@@ -69,8 +74,8 @@ ColumnLayout {
                 color: Qt.rgba(0,0,0,0.25)
                 radius: 9
                 
-                height: 500
-                width: 500
+                height: 1500
+                width: 1500
                 
                 Repeater
                 {
@@ -93,7 +98,7 @@ ColumnLayout {
                             
                             // Check if all items are populated
                             if (settingRepeater.objectArray.length === settingRepeater.count) {
-                                console.log("All delegates are ready:", settingRepeater.objectArray)
+                                console.log("All delegates are ready:")
                                 for (let i = 0; i < settingRepeater.objectArray.length; i++) {
                                     let child = settingRepeater.objectArray[i]
                                     
@@ -113,6 +118,26 @@ ColumnLayout {
                                         let foundItem = settingRepeater.objectArray.find(obj => obj.objectName === child.setting.p_rightOf);
                                         if (foundItem) {
                                             child.rightOf = foundItem;
+                                        } else {
+                                            console.log("Object not found");
+                                        }
+                                    }
+                                    if(child.setting.p_leftOf != "")
+                                    {
+                                        console.log(child.objectName + " left of " + child.setting.p_leftOf)
+                                        let foundItem = settingRepeater.objectArray.find(obj => obj.objectName === child.setting.p_leftOf);
+                                        if (foundItem) {
+                                            child.leftOf = foundItem;
+                                        } else {
+                                            console.log("Object not found");
+                                        }
+                                    }
+                                    if(child.setting.p_over != "")
+                                    {
+                                        console.log(child.objectName + " over " + child.setting.p_over)
+                                        let foundItem = settingRepeater.objectArray.find(obj => obj.objectName === child.setting.p_over);
+                                        if (foundItem) {
+                                            child.over = foundItem;
                                         } else {
                                             console.log("Object not found");
                                         }

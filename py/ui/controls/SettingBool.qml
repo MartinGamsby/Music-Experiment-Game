@@ -19,11 +19,23 @@ Item {
     implicitHeight: cb.implicitHeight
     
     visible: setting ? setting.p_unlocked : false
+    
+    function getName(name) {
+        let tr_name = tr(name)
+        if( tr_name == name ){
+            return name
+                .replace(/_/g, ' ') // Replace underscores with spaces
+                .split(' ')         // Split into words
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize each word
+                .join(' ');         // Join the words back with spaces
+                }
+        return tr_name
+    }
         
     CenteredCheckBox {    
         id: cb
             
-        text: setting ? tr(setting.p_name) : ""
+        text: setting ? getName(setting.p_name) : ""
         checked: setting ? setting.b : false
         onClicked: {
             setting.b = checked

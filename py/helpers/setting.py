@@ -18,7 +18,7 @@ class Setting(QObject):
     
 #------------------------------------------------------------------------------
     def __init__(self, default_value, fullname="", save=None, save_progress=None, 
-            sub_unlock=True, auto_unlock=False, under=None, rightOf=None):
+            sub_unlock=True, auto_unlock=False, under=None, rightOf=None, leftOf=None, over=None):
         
         super().__init__()
                 
@@ -44,6 +44,8 @@ class Setting(QObject):
         
         self._under = under
         self._rightOf = rightOf
+        self._leftOf = leftOf
+        self._over = over
         
         self._initialized = False
         
@@ -156,6 +158,16 @@ class Setting(QObject):
             raise Exception("Not unlockable")
         return self._rightOf.p_name if self._rightOf else ""
         
+    def leftOf(self):
+        if not self._unlocked:
+            raise Exception("Not unlockable")
+        return self._leftOf.p_name if self._leftOf else ""
+        
+    def over(self):
+        if not self._unlocked:
+            raise Exception("Not unlockable")
+        return self._over.p_name if self._over else ""
+        
 #------------------------------------------------------------------------------
     s = Property(str, get, set, notify=value_updated)
     b = Property(bool, get, set, notify=value_updated)
@@ -167,4 +179,6 @@ class Setting(QObject):
     
     p_under = Property(str, under, notify=name_updated)
     p_rightOf = Property(str, rightOf, notify=name_updated)
+    p_leftOf = Property(str, leftOf, notify=name_updated)
+    p_over = Property(str, over, notify=name_updated)
     

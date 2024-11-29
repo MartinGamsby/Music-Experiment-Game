@@ -168,12 +168,8 @@ def describe_music(app, attrs, suffix="\nGenerating..."):#TODO:tr
 #------------------------------------------------------------------------------
 def make_midi(filename, app, attrs, type):
     
-    s_percussions = attrs["_instruments"].get()#model._instruments.get()
-    s_piano = attrs["_instrument_piano"].get()#model._instrument_piano.get()# TODO: MUTUALLY EXCLUSIVE!?
-    s_frequency = attrs["_frequency"].get()#model._frequency.get()
     s_drops = False #TODO
     
-    logger.info( f"Percussions: {s_percussions}, Frequency: {s_frequency}" )
     chord = choice(mid.NOTES)    
     chord_progression = [chord]
     
@@ -214,10 +210,38 @@ def make_midi(filename, app, attrs, type):
         
         possible_instruments = []
         
-        if s_piano:
+        if attrs["_instrument_piano"].get():
             possible_instruments.extend(instr.piano())
-        if s_percussions:
+        if attrs["_instruments"].get():
             possible_instruments.extend(instr.percussive())
+        if attrs["_instrument_chromatic_percussion"].get():
+            possible_instruments.extend(instr.chromatic_percussion())
+        if attrs["_instrument_organ"].get():
+            possible_instruments.extend(instr.organ())
+        if attrs["_instrument_guitar"].get():
+            possible_instruments.extend(instr.guitar())
+        if attrs["_instrument_bass"].get():
+            possible_instruments.extend(instr.bass())
+        if attrs["_instrument_strings"].get():
+            possible_instruments.extend(instr.strings())
+        if attrs["_instrument_ensemble"].get():
+            possible_instruments.extend(instr.ensemble())
+        if attrs["_instrument_brass"].get():
+            possible_instruments.extend(instr.brass())
+        if attrs["_instrument_reed"].get():
+            possible_instruments.extend(instr.reed())
+        if attrs["_instrument_pipe"].get():
+            possible_instruments.extend(instr.pipe())
+        if attrs["_instrument_synth_lead"].get():
+            possible_instruments.extend(instr.synth_lead())
+        if attrs["_instrument_synth_pad"].get():
+            possible_instruments.extend(instr.synth_pad())
+        if attrs["_instrument_synth_effects"].get():
+            possible_instruments.extend(instr.synth_effects())
+        if attrs["_instrument_ethnic"].get():
+            possible_instruments.extend(instr.ethnic())
+        if attrs["_instrument_sound_effects"].get():
+            possible_instruments.extend(instr.sound_effects())
             
         if possible_instruments:            
             instrument_bass = instr.random_instrument(possible_instruments)
@@ -243,7 +267,7 @@ def make_midi(filename, app, attrs, type):
         randomize = 0.2#True#
         #note_duration1 = [2]# TODO: Should match. Go to my 8 years old code and start from that instead of doing nothing really useful here...
         #note_duration2 = [1]
-        if s_frequency:
+        if attrs["_frequency"]:
             note_duration1 = [0.5,0.5,1,1,1,1,1,2,2,2,2,2,2,4,4,4,4]#[2]#[0.5,0.5,0.5,0.5,1,1,2,4,4]#[1,1,2,2,2,2,2,4]
             note_duration2 = [0.25,0.25,0.25,0.25,0.5,0.5,1,2,2,2,2]#[1]#[0.25,0.25,0.25,0.25,0.5,0.5,1,2,2,2,2]#[0.5,0.5,1,1,1,1,1,2]
         else:
