@@ -53,8 +53,8 @@ ColumnLayout {
             id: flickable
             width: 360 
             height: 360
-            contentWidth: contents.width
-            contentHeight: contents.height
+            contentWidth: flickableContents.width
+            contentHeight: flickableContents.height
             anchors.centerIn: parent
             clip: true
 
@@ -64,28 +64,63 @@ ColumnLayout {
                 policy: ScrollBar.AlwaysOn
             }
             Rectangle {
-                id: contents
+                id: flickableContents
+                objectName: "flickableContents"
                 color: Qt.rgba(0,0,0,0.25)
                 radius: 9
                 
                 height: 500
                 width: 500
                 
-                IdeaSetting {
-                    id: baseSetting
-                    anchors.centerIn: parent
+                Repeater
+                {
+                    id: settingRepeater
+                    model: rootWindow.model ? rootWindow.model.p_music_settings : null//buildSettingsModel( musicSettings.settings )
                     
-                    setting: model ? model.p_frequency : null
-                }
-                IdeaSetting {
-                    id: setting2 // TODO: Use yaml?
-                    
-                    under: baseSetting
-                    setting: model ? model.p_instruments : null
-                }
-                IdeaSetting {
-                    setting: model ? model.p_instrument_piano : null
-                    rightOf: setting2
+                    property var objectArray: []
+    
+                    delegate: 
+                    IdeaSetting {
+                        id: settingDelegate
+                        required property var modelData
+                        setting: modelData
+                        objectName: setting.p_name
+                        
+                        anchors.centerIn: setting.p_name == "frequency" ? parent : undefined // TODO: is "frequency" the center?
+
+                        Component.onCompleted: {
+                            settingRepeater.objectArray.push(settingDelegate)
+                            
+                            // Check if all items are populated
+                            if (settingRepeater.objectArray.length === settingRepeater.count) {
+                                console.log("All delegates are ready:", settingRepeater.objectArray)
+                                for (let i = 0; i < settingRepeater.objectArray.length; i++) {
+                                    let child = settingRepeater.objectArray[i]
+                                    
+                                    if(child.setting.p_under != "")
+                                    {
+                                        console.log(child.objectName + " under " + child.setting.p_under)
+                                        let foundItem = settingRepeater.objectArray.find(obj => obj.objectName === child.setting.p_under);
+                                        if (foundItem) {
+                                            child.under = foundItem;
+                                        } else {
+                                            console.log("Object not found");
+                                        }
+                                    }
+                                    if(child.setting.p_rightOf != "")
+                                    {
+                                        console.log(child.objectName + " right of " + child.setting.p_rightOf)
+                                        let foundItem = settingRepeater.objectArray.find(obj => obj.objectName === child.setting.p_rightOf);
+                                        if (foundItem) {
+                                            child.rightOf = foundItem;
+                                        } else {
+                                            console.log("Object not found");
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             Component.onCompleted: {

@@ -64,12 +64,14 @@ class Model(QObject):
         
         # Hook settings
         self._music_attrs = {}
+        self._music_properties = []
         for a in dir(self):
             if a.startswith("_"):
                 attr = getattr(self, a)
                 if type(attr) == Setting:
                     if attr._section == "Music":
                         self._music_attrs[a] = attr
+                        self._music_properties.append( attr )
                         attr.value_updated.connect(self.value_updated)
         
         
@@ -366,6 +368,12 @@ class Model(QObject):
         pass
         
 #------------------------------------------------------------------------------
+    @Slot()
+    def get_music_settings(self):
+        return self._music_properties
+        
+    p_music_settings = Property(list, get_music_settings, notify=model_changed)
+#------------------------------------------------------------------------------
     def set_state(self, state):
         if self.state != state:
             self.state = state
@@ -508,11 +516,11 @@ class Model(QObject):
     def get_frequency(self): return self._frequency
     p_frequency = Property(QObject, get_frequency, notify=model_changed)
     
-    _instruments = Setting(False, "Music/instruments", save_progress)
+    _instruments = Setting(False, "Music/instruments", save_progress, under=_frequency)
     def get_instruments(self): return self._instruments
     p_instruments = Property(QObject, get_instruments, notify=model_changed)
     
-    _instrument_piano = Setting(False, "Music/instrument_piano", save_progress)
+    _instrument_piano = Setting(False, "Music/instrument_piano", save_progress, rightOf=_instruments)
     def get_instrument_piano(self): return self._instrument_piano
     p_instrument_piano = Property(QObject, get_instrument_piano, notify=model_changed)
     

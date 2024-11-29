@@ -105,6 +105,7 @@ Item {
             id: newGameButton
             
             anchors.right: loadGameButton.right
+            anchors.horizontalCenter: backend ? (backend.p_has_save_files.b ? undefined : parent.horizontalCenter ) : undefined
             
             text: tr("NEW_GAME")
             font.pixelSize: loadGameButton.visible ? 14 : 42

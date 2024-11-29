@@ -18,7 +18,7 @@ class Setting(QObject):
     
 #------------------------------------------------------------------------------
     def __init__(self, default_value, fullname="", save=None, save_progress=None, 
-            sub_unlock=True, auto_unlock=False):
+            sub_unlock=True, auto_unlock=False, under=None, rightOf=None):
         
         super().__init__()
                 
@@ -42,6 +42,8 @@ class Setting(QObject):
         if self._save:
             self._save.model_changed.connect(self.model_changed)
         
+        self._under = under
+        self._rightOf = rightOf
         
         self._initialized = False
         
@@ -79,7 +81,7 @@ class Setting(QObject):
 #------------------------------------------------------------------------------
     @Slot()
     def model_changed(self):
-        self._value = self._default_value
+        self.set( self._default_value )
         if self._unlocked:
             self._unlocked.model_changed()
         
@@ -143,6 +145,16 @@ class Setting(QObject):
             raise Exception("Not unlockable")
         return self._name
         
+#------------------------------------------------------------------------------
+    def under(self):
+        if not self._unlocked:
+            raise Exception("Not unlockable")
+        return self._under.p_name if self._under else ""
+        
+    def rightOf(self):
+        if not self._unlocked:
+            raise Exception("Not unlockable")
+        return self._rightOf.p_name if self._rightOf else ""
         
 #------------------------------------------------------------------------------
     s = Property(str, get, set, notify=value_updated)
@@ -152,4 +164,7 @@ class Setting(QObject):
     
     p_name = Property(str, name, notify=name_updated)
     p_unlocked = Property(int, unlocked, notify=unlocked_updated)
+    
+    p_under = Property(str, under, notify=name_updated)
+    p_rightOf = Property(str, rightOf, notify=name_updated)
     
