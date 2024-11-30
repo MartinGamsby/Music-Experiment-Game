@@ -15,10 +15,12 @@ class Setting(QObject):
     name_updated = Signal()
     value_updated = Signal()
     unlocked_updated = Signal()
+    enabled_updated = Signal()
     
 #------------------------------------------------------------------------------
     def __init__(self, default_value, fullname="", save=None, save_progress=None, 
-            sub_unlock=True, auto_unlock=False, under=None, rightOf=None, leftOf=None, over=None):
+            sub_unlock=True, auto_unlock=False, under=None, rightOf=None, leftOf=None, over=None, 
+            dependencies=[]):
         
         super().__init__()
                 
@@ -47,13 +49,16 @@ class Setting(QObject):
         self._leftOf = leftOf
         self._over = over
         
+        self._dependencies = dependencies
+        
         self._initialized = False
         
-        # TODO: different save?
         if sub_unlock:
             self._unlocked = Setting(auto_unlock, f"Unlocked/{self._name}", save=self._save_progress, sub_unlock=False)
         else:
             self._unlocked = None
+            
+        self._enabled = True
     
 #------------------------------------------------------------------------------
     @staticmethod
@@ -69,11 +74,20 @@ class Setting(QObject):
                 if self._type == str:
                     pass # val = val
                 elif self._type == bool:
-                    val = self.str2bool(val)
+                    try:
+                        val = self.str2bool(val)
+                    except:
+                        logger.error(f"Could read {val} as {self._type}")
                 elif self._type == float:
-                    val = float(val)
+                    try:
+                        val = float(val)
+                    except:
+                        logger.error(f"Could read {val} as {self._type}")
                 elif self._type == int:
-                    val = int(val)
+                    try:
+                        val = int(val)
+                    except:
+                        logger.error(f"Could read {val} as {self._type}")
                 else:
                     raise Exception("TO IMPLEMENT {self._type}")
                 
@@ -93,6 +107,13 @@ class Setting(QObject):
             self.init()
         logger.debug(f"{self._name} == {self._value}")
         return self._value
+        
+    def gete(self):
+        if not self._initialized:
+            self.init()
+        if not self.enabled():
+            return self._default_value
+        return self.get()
         
 #------------------------------------------------------------------------------
     def set(self, value):
@@ -121,7 +142,22 @@ class Setting(QObject):
     def unlocked(self):
         if not self._unlocked:
             raise Exception("Not unlockable")
+        for d in self._dependencies:
+            if not d.unlocked():
+                return False
         return self._unlocked.get()
+        
+#------------------------------------------------------------------------------
+    def setEnabled(self, enabled):
+        if self._enabled != enabled:
+            self._enabled = enabled
+            self.enabled_updated.emit()
+            
+    def enabled(self):
+        for d in self._dependencies:
+            if not d.enabled():
+                return False
+        return self._enabled
         
 #------------------------------------------------------------------------------
     #@Slot()
@@ -176,6 +212,7 @@ class Setting(QObject):
     
     p_name = Property(str, name, notify=name_updated)
     p_unlocked = Property(int, unlocked, notify=unlocked_updated)
+    p_enabled = Property(bool, enabled, notify=enabled_updated)
     
     p_under = Property(str, under, notify=name_updated)
     p_rightOf = Property(str, rightOf, notify=name_updated)

@@ -134,14 +134,15 @@
     <!-- Music Settings -->
     <message>
         <source>frequency</source>
-        <translation>Fréquence</translation>
+        <translation>Notes et accords 
+~aléatoires</translation>
     </message>
     <message>
-        <source>instruments</source>
+        <source>instrument_percussions</source>
         <translation>Percussions</translation>
     </message>
     <message>
-        <source>instruments_desc</source>
+        <source>instrument_percussions.desc</source>
         <translation>Tu commences à cogner des trucs toi-même</translation>
     </message>
     <message>
@@ -173,7 +174,7 @@
 
 Vous entendez: première génération de musique PRESQUE aléatoire.
 
-Ce sera bientôt mieux!
+Ce sera mieux bientôt!
 
 Le jeu est en cours de développement en ce moment.</translation>
     </message>

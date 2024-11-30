@@ -37,6 +37,52 @@ class TestMidiHelper(unittest.TestCase):
     def test_jazz_scale(self):
         self.assertEqual(mb.jazz_scale("C"), ['C', 'D', 'Eb', 'E', 'G', 'A'])
 
+#------------------------------------------------------------------------------
+    def test_transition_chord(self):
+    
+        from mingus.core import chords
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("A")), ["D","E","A"])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("A7")), ["D"])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Am")), ["C","F","G"])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Am7")), ["C","F","G"])
+        
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Bb")), ['Eb', 'F', 'Bb'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Bb7")), ['Eb'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Bbm")), ['Ab'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Bbm7")), ['Ab'])
+        
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("B")), ["E","F#","B"])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("B7")), ["E"])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Bm")), ['D', 'G', 'A'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Bm7")), ['D', 'G', 'A'])
+        
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("C")), ['C', 'F', 'G'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("C7")), ['F'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Cm")), ['Eb', 'Ab', 'Bb'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Cm7")), ['Eb', 'Ab', 'Bb'])
+        
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("C#")), ['C#', 'F#'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("C#7")), ['F#'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("C#m")), ['E', 'A', 'B'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("C#m7")), ['E', 'A', 'B'])
+        
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("D")), ['D', 'G', 'A'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Dm")), ['C', 'F', 'Bb'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Eb")), ['Eb', 'Ab', 'Bb'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Ebm")), [])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("E")), ['E', 'A', 'B'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Em")), ['C', 'D', 'G'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("F")), ['C', 'F', 'Bb'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("F7")), ['Bb'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Fm")), ['Eb', 'Ab'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("F#")), ['C#', 'F#', 'B'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("F#m")), ['D', 'E', 'A'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("G")), ['C', 'D', 'G'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("G7")), ['C'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Gm")), ['Eb', 'F', 'Bb'])        
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Ab")), ['Eb', 'Ab'])
+        self.assertEqual(mb.scales_with_notes(chords.from_shorthand("Abm")), [])
+        
         
 
 #------------------------------------------------------------------------------

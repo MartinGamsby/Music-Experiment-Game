@@ -25,8 +25,12 @@ Rectangle {
         font.pixelSize: 20
         anchors.bottom: parent.bottom
         anchors.left: parent.left
+        anchors.right: playbackState.left
         anchors.margins: 9
         anchors.bottomMargin: 19
+        
+        wrapMode: Text.Wrap
+        textFormat: Text.RichText      
     
         text: model ? model.p_music_description.s : ""
         horizontalAlignment: Text.AlignLeft

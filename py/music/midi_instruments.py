@@ -10,38 +10,45 @@ def random_instrument(choices):
     instrument = choice(choices)
     midi_instr = midi_instrument(instrument)
     logger.info(f"Instrument {instrument}: {midi_instr}")
-    return midi_instr
+    return midi_instr, instrument
     
 #------------------------------------------------------------------------------
 def midi_instrument(name):
     return instr.MidiInstrument().names.index(name)
     
 #------------------------------------------------------------------------------
+# https://en.wikipedia.org/wiki/General_MIDI
 def piano():
-    return ["Acoustic Grand Piano", "Bright Acoustic Piano", "Electric Grand Piano", "Honky-tonk Piano", "Electric Piano 1", "Electric Piano 2", "Harpsichord", "Clavi"]
+    return ["Acoustic Grand Piano", "Bright Acoustic Piano"]
+    
+def piano_electric():
+    return ["Electric Grand Piano", "Honky-tonk Piano", "Electric Piano 1", "Electric Piano 2", "Harpsichord", "Clavi"]
 
 def chromatic_percussion():
     return ["Celesta", "Glockenspiel", "Music Box", "Vibraphone", "Marimba", "Xylophone", "Tubular Bells", "Dulcimer"]
         
 def organ():
-    return ["Drawbar Organ", "Percussive Organ", "Rock Organ", "Church Organ", "Reed Organ", "Accordion", "Harmonica", "Tango Accordion"]
+    return ["Drawbar Organ", "Percussive Organ", "Rock Organ", "Church Organ", "Reed Organ"]
+    
+def free_reed():
+    return ["Accordion", "Harmonica", "Tango Accordion"]
         
 def guitar():
     """ In most synthesizer interpretations, guitar and bass sounds are set an octave lower than other instruments. """
-    return ["Acoustic Guitar (nylon)", "Acoustic Guitar (steel)", "Electric Guitar (jazz)", "Electric Guitar (clean)", "Electric Guitar (muted)", "Overdriven Guitar", "Distortion Guitar", "Guitar harmonics"]
-    
-def acoustic_guitar():
-    """ In most synthesizer interpretations, guitar and bass sounds are set an octave lower than other instruments. """
     return ["Acoustic Guitar (nylon)", "Acoustic Guitar (steel)"]
-        
-def bass():
-    """ In most synthesizer interpretations, guitar and bass sounds are set an octave lower than other instruments. """
-    return ["Acoustic Bass", "Electric Bass (finger)", "Electric Bass (pick)", "Fretless Bass", "Slap Bass 1", "Slap Bass 2", "Synth Bass 1", "Synth Bass 2"]
     
-def acoustic_bass():
+def guitar_electric():
+    """ In most synthesizer interpretations, guitar and bass sounds are set an octave lower than other instruments. """
+    return ["Electric Guitar (jazz)", "Electric Guitar (clean)", "Electric Guitar (muted)", "Overdriven Guitar", "Distortion Guitar", "Guitar harmonics"]
+           
+def bass():
     """ In most synthesizer interpretations, guitar and bass sounds are set an octave lower than other instruments. """
     return ["Acoustic Bass"]
     
+def bass_electric():
+    """ In most synthesizer interpretations, guitar and bass sounds are set an octave lower than other instruments. """
+    return ["Electric Bass (finger)", "Electric Bass (pick)", "Fretless Bass", "Slap Bass 1", "Slap Bass 2", "Synth Bass 1", "Synth Bass 2"]
+        
 def strings():
     return ["Violin", "Viola", "Cello", "Contrabass", "Tremolo Strings", "Pizzicato Strings", "Orchestral Harp", "Timpani" ]
         

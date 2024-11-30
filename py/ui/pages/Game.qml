@@ -67,7 +67,7 @@ Item {
         anchors.top: ideaLayout.bottom
         x: 9
         radius: 9
-        color: Qt.rgba(0,0,0,0.25)
+        color: Qt.rgba(0,0,0,0.4)
         
         implicitWidth: musicSettings.width
         implicitHeight: musicSettings.height

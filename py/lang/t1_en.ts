@@ -134,14 +134,15 @@
     <!-- Music Settings -->
     <message>
         <source>frequency</source>
-        <translation>Frequency</translation>
+        <translation>~Random pitch 
+and chords</translation>
     </message>
     <message>
-        <source>instruments</source>
+        <source>instrument_percussions</source>
         <translation>Percussions</translation>
     </message>
     <message>
-        <source>instruments_desc</source>
+        <source>instrument_percussions.desc</source>
         <translation>You start hitting some things yourself</translation>
     </message>
     <message>

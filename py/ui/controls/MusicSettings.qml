@@ -13,7 +13,7 @@ ColumnLayout {
     
     component IdeaSetting: SettingBool {
         
-        anchors.margins: 24
+        anchors.margins: 0//24
         
         property Item under: null
         property Item rightOf: null
@@ -26,6 +26,7 @@ ColumnLayout {
         alignCenter: true
         
         anchors.top: under ? under.bottom : undefined
+        anchors.bottom: over ? over.top : undefined
         x: under ? under.x : (over ? over.x : 0)
         
         y: rightOf ? rightOf.y : (leftOf ? leftOf.y : 0)
@@ -57,7 +58,7 @@ ColumnLayout {
         Flickable {
             id: flickable
             width: 800 
-            height: 800
+            height: 640
             contentWidth: flickableContents.width
             contentHeight: flickableContents.height
             anchors.centerIn: parent
@@ -71,7 +72,7 @@ ColumnLayout {
             Rectangle {
                 id: flickableContents
                 objectName: "flickableContents"
-                color: Qt.rgba(0,0,0,0.25)
+                color: Qt.rgba(0,0,0,0.4)
                 radius: 9
                 
                 height: 1500

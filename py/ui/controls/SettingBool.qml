@@ -15,14 +15,16 @@ Item {
     Layout.fillWidth: true
     Layout.fillHeight: false
     
-    implicitWidth: cb.implicitWidth
-    implicitHeight: cb.implicitHeight
+    implicitWidth: alignCenter ? (Math.max(140, cb.implicitWidth)) : cb.implicitWidth
+    implicitHeight: alignCenter ? (Math.max(90,cb.implicitHeight)) : cb.implicitHeight
     
-    visible: setting ? setting.p_unlocked : false
+    visible: setting ? setting.p_unlocked : false    
     
     function getName(name) {
         let tr_name = tr(name)
         if( tr_name == name ){
+            //hack for instrument:
+            name = name.replace("instrument_","")
             return name
                 .replace(/_/g, ' ') // Replace underscores with spaces
                 .split(' ')         // Split into words
@@ -31,9 +33,12 @@ Item {
                 }
         return tr_name
     }
-        
-    CenteredCheckBox {    
+     
+    // TODO: Loader or something        
+    CheckBox {    
         id: cb
+        visible: !alignCenter
+        enabled: setting ? setting.p_enabled : false
             
         text: setting ? getName(setting.p_name) : ""
         checked: setting ? setting.b : false
@@ -41,9 +46,21 @@ Item {
             setting.b = checked
         }
     }
+    CenteredCheckBox {    
+        id: centeredCb
+        visible: !cb.visible
+        enabled: setting ? setting.p_enabled : false
+        anchors.centerIn: parent
+            
+        text: cb.text
+        checked: cb.checked
+        onClicked: {
+            setting.b = checked
+        }
+    }
     Tooltip {
-        property string tr_name: setting ? (setting.p_name+"_desc") : "" 
+        property string tr_name: setting ? (setting.p_name+".desc") : "" 
         text: tr(tr_name)
-        visible: (tr_name != text) ? ( cb.hovered || cb.visualFocus ) : false
+        visible: (tr_name != text) ? ( cb.hovered || cb.visualFocus || centeredCb.hovered || centeredCb.visualFocus ) : false
     }
 }

@@ -98,8 +98,20 @@ class Model(QObject):
         ideas = 0
         for a in self._music_attrs:
             attr = self._music_attrs[a]
-            if attr.get():
+            
+            valid = True
+            for d in attr._dependencies:#_weak_dependencies:
+                if not d.unlocked() or not d.gete():
+                    valid = False
+                    
+            attr.setEnabled(valid)
+            if valid:
+                attr.unlock()
+                
+            if attr.enabled() and attr.gete():# TODO: what if not bool?
                 ideas += 1
+                
+            
         self._ideas.set(ideas)
         logger.info(f"Used ideas: {ideas}/{self._total_ideas.get()}")
         
@@ -356,6 +368,7 @@ class Model(QObject):
         # Or ... save that in setting ... or ... always GAME, and is DROPS by default?
         
         self.update_game_title()
+        self.value_updated()
             
             
 #------------------------------------------------------------------------------
@@ -512,7 +525,7 @@ class Model(QObject):
     p_gui_back_to_mainmenu = Property(QObject, get_gui_back_to_mainmenu, notify=model_changed)
     
 #------------------------------------------------------------------------------
-    _frequency = Setting(False, "Music/frequency", save_progress)
+    _frequency = Setting(False, "Music/frequency", save_progress) # TODO: Split
     def get_frequency(self): return self._frequency
     p_frequency = Property(QObject, get_frequency, notify=model_changed)
     
@@ -520,63 +533,93 @@ class Model(QObject):
     def get_instruments(self): return self._instruments
     p_instruments = Property(QObject, get_instruments, notify=model_changed)
     
-    _instrument_piano = Setting(False, "Music/instrument_piano", save_progress, under=_instruments)
+    _instrument_percussions = Setting(False, "Music/instrument_percussions", save_progress, under=_instruments, dependencies=[_instruments])
+    def get_instrument_percussions(self): return self._instrument_percussions
+    p_instrument_percussions = Property(QObject, get_instrument_percussions, notify=model_changed)
+    
+    _instrument_piano = Setting(False, "Music/instrument_piano", save_progress, under=_instrument_percussions, dependencies=[_instruments])
     def get_instrument_piano(self): return self._instrument_piano
     p_instrument_piano = Property(QObject, get_instrument_piano, notify=model_changed)
     
-    _instrument_chromatic_percussion = Setting(False, "Music/instrument_chromatic_percussion", save_progress, leftOf=_instruments)
+    _instrument_piano_electric = Setting(False, "Music/instrument_piano_electric", save_progress, leftOf=_instrument_piano, dependencies=[_instruments])
+    def get_instrument_piano_electric(self): return self._instrument_piano_electric
+    p_instrument_piano_electric = Property(QObject, get_instrument_piano_electric, notify=model_changed)
+    
+    _instrument_chromatic_percussion = Setting(False, "Music/instrument_chromatic_percussion", save_progress, leftOf=_instrument_percussions, dependencies=[_instruments])
     def get_instrument_chromatic_percussion(self): return self._instrument_chromatic_percussion
     p_instrument_chromatic_percussion = Property(QObject, get_instrument_chromatic_percussion, notify=model_changed)
     
-    _instrument_organ = Setting(False, "Music/instrument_organ", save_progress, rightOf=_instrument_piano)
+    _instrument_organ = Setting(False, "Music/instrument_organ", save_progress, rightOf=_instrument_piano, dependencies=[_instruments])
     def get_instrument_organ(self): return self._instrument_organ
     p_instrument_organ = Property(QObject, get_instrument_organ, notify=model_changed)
     
-    _instrument_guitar = Setting(False, "Music/instrument_guitar", save_progress, under=_instrument_piano)
+    _instrument_guitar = Setting(False, "Music/instrument_guitar", save_progress, under=_instrument_piano, dependencies=[_instruments])
     def get_instrument_guitar(self): return self._instrument_guitar
     p_instrument_guitar = Property(QObject, get_instrument_guitar, notify=model_changed)
     
-    _instrument_bass = Setting(False, "Music/instrument_bass", save_progress, rightOf=_instrument_guitar)
+    _instrument_guitar_electric = Setting(False, "Music/instrument_guitar_electric", save_progress, leftOf=_instrument_guitar, dependencies=[_instruments])
+    def get_instrument_guitar_electric(self): return self._instrument_guitar_electric
+    p_instrument_guitar_electric = Property(QObject, get_instrument_guitar_electric, notify=model_changed)
+    
+    _instrument_bass = Setting(False, "Music/instrument_bass", save_progress, rightOf=_instrument_guitar, dependencies=[_instruments])
     def get_instrument_bass(self): return self._instrument_bass
     p_instrument_bass = Property(QObject, get_instrument_bass, notify=model_changed)
     
-    _instrument_strings = Setting(False, "Music/instrument_strings", save_progress, leftOf=_instrument_guitar)
+    _instrument_bass_electric = Setting(False, "Music/instrument_bass_electric", save_progress, rightOf=_instrument_bass, dependencies=[_instruments])
+    def get_instrument_bass_electric(self): return self._instrument_bass_electric
+    p_instrument_bass_electric = Property(QObject, get_instrument_bass_electric, notify=model_changed)
+    
+    _instrument_strings = Setting(False, "Music/instrument_strings", save_progress, under=_instrument_guitar, dependencies=[_instruments])
     def get_instrument_strings(self): return self._instrument_strings
     p_instrument_strings = Property(QObject, get_instrument_strings, notify=model_changed)
     
-    _instrument_ensemble = Setting(False, "Music/instrument_ensemble", save_progress, under=_instrument_guitar)
-    def get_instrument_ensemble(self): return self._instrument_ensemble
-    p_instrument_ensemble = Property(QObject, get_instrument_ensemble, notify=model_changed)
-    
-    _instrument_brass = Setting(False, "Music/instrument_brass", save_progress, leftOf=_instrument_ensemble)
+    _instrument_brass = Setting(False, "Music/instrument_brass", save_progress, leftOf=_instrument_strings, dependencies=[_instruments])
     def get_instrument_brass(self): return self._instrument_brass
     p_instrument_brass = Property(QObject, get_instrument_brass, notify=model_changed)
     
-    _instrument_reed = Setting(False, "Music/instrument_reed", save_progress, rightOf=_instrument_ensemble)
+    _instrument_ensemble = Setting(False, "Music/instrument_ensemble", save_progress, leftOf=_instrument_brass, dependencies=[_instruments])
+    def get_instrument_ensemble(self): return self._instrument_ensemble
+    p_instrument_ensemble = Property(QObject, get_instrument_ensemble, notify=model_changed)
+    
+    _instrument_reed = Setting(False, "Music/instrument_reed", save_progress, rightOf=_instrument_strings, dependencies=[_instruments])
     def get_instrument_reed(self): return self._instrument_reed
     p_instrument_reed = Property(QObject, get_instrument_reed, notify=model_changed)
     
-    _instrument_pipe = Setting(False, "Music/instrument_pipe", save_progress, rightOf=_instrument_reed)
+    _instrument_free_reed = Setting(False, "Music/instrument_free_reed", save_progress, rightOf=_instrument_reed, dependencies=[_instruments])
+    def get_instrument_free_reed(self): return self._instrument_free_reed
+    p_instrument_free_reed = Property(QObject, get_instrument_free_reed, notify=model_changed)
+    
+    _instrument_pipe = Setting(False, "Music/instrument_pipe", save_progress, rightOf=_instrument_free_reed, dependencies=[_instruments])
     def get_instrument_pipe(self): return self._instrument_pipe
     p_instrument_pipe = Property(QObject, get_instrument_pipe, notify=model_changed)
     
-    _instrument_synth_lead = Setting(False, "Music/instrument_synth_lead", save_progress, under=_instrument_ensemble)
+    _instrument_synth_lead = Setting(False, "Music/instrument_synth_lead", save_progress, under=_instrument_strings, dependencies=[_instruments])
     def get_instrument_synth_lead(self): return self._instrument_synth_lead
     p_instrument_synth_lead = Property(QObject, get_instrument_synth_lead, notify=model_changed)
     
-    _instrument_synth_pad = Setting(False, "Music/instrument_synth_pad", save_progress, rightOf=_instrument_synth_lead)
+    _instrument_synth_pad = Setting(False, "Music/instrument_synth_pad", save_progress, leftOf=_instrument_synth_lead, dependencies=[_instruments])
     def get_instrument_synth_pad(self): return self._instrument_synth_pad
     p_instrument_synth_pad = Property(QObject, get_instrument_synth_pad, notify=model_changed)
     
-    _instrument_synth_effects = Setting(False, "Music/instrument_synth_effects", save_progress, leftOf=_instrument_synth_lead)
+    _instrument_synth_effects = Setting(False, "Music/instrument_synth_effects", save_progress, leftOf=_instrument_synth_pad, dependencies=[_instruments])
     def get_instrument_synth_effects(self): return self._instrument_synth_effects
     p_instrument_synth_effects = Property(QObject, get_instrument_synth_effects, notify=model_changed)
     
-    _instrument_ethnic = Setting(False, "Music/instrument_ethnic", save_progress, under=_instrument_synth_lead)
+    _instrument_ethnic = Setting(False, "Music/instrument_ethnic", save_progress, rightOf=_instrument_synth_lead, dependencies=[_instruments])
     def get_instrument_ethnic(self): return self._instrument_ethnic
     p_instrument_ethnic = Property(QObject, get_instrument_ethnic, notify=model_changed)
     
-    _instrument_sound_effects = Setting(False, "Music/instrument_sound_effects", save_progress, rightOf=_instrument_ethnic)
+    _instrument_sound_effects = Setting(False, "Music/instrument_sound_effects", save_progress, rightOf=_instrument_ethnic, dependencies=[_instruments])
     def get_instrument_sound_effects(self): return self._instrument_sound_effects
     p_instrument_sound_effects = Property(QObject, get_instrument_sound_effects, notify=model_changed)
+    
+    
+    # TODO: int, sub setting??
+    _bass_tracks = Setting(True, "Music/bass_tracks", save_progress, rightOf=_instruments, dependencies=[_instruments])
+    def get_bass_tracks(self): return self._bass_tracks
+    p_bass_tracks = Property(QObject, get_bass_tracks, notify=model_changed)
+    
+    _multi_instruments = Setting(False, "Music/multi_instruments", save_progress, rightOf=_bass_tracks, dependencies=[_bass_tracks])
+    def get_multi_instruments(self): return self._multi_instruments
+    p_multi_instruments = Property(QObject, get_multi_instruments, notify=model_changed)
     

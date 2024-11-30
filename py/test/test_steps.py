@@ -22,8 +22,8 @@ class TestSetting(unittest.TestCase):
         self.assertEqual(steps.name(10), "HEARING_DROPS")
         self.assertEqual(steps.name(1), "")
         
-        self.assertEqual(steps.get(12)["unlocks"], ["ideas", "total_ideas", "instruments"])
-        self.assertEqual(steps.unlocks(12), ["ideas", "total_ideas", "instruments"])
+        self.assertEqual(steps.get(12)["unlocks"], ["ideas", "total_ideas", "frequency"])
+        self.assertEqual(steps.unlocks(12), ["ideas", "total_ideas", "frequency"])
         self.assertEqual(steps.unlocks(1), [])
             
         self.assertEqual(steps.get(12)["adds"], {"total_ideas": 1})

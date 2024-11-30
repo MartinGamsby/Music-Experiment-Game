@@ -10,18 +10,17 @@
 12:
     name: FIRST_IDEA
     seconds_to_next: 14
-    unlocks: ["ideas", "total_ideas", "instruments"]
+    unlocks: ["ideas", "total_ideas", "frequency"]
     adds:
         total_ideas: 1
 13:
     name: ADDING_FREQUENCY
     seconds_to_next: 18
     to: 13375
-    unlocks: ["frequency", "music_description", "instrument_piano", "instrument_chromatic_percussion", "instrument_organ", "instrument_guitar", "instrument_bass", "instrument_strings", "instrument_ensemble", "instrument_brass", "instrument_reed", "instrument_pipe", "instrument_synth_lead", "instrument_synth_pad", "instrument_synth_effects", "instrument_ethnic", "instrument_sound_effects"]
+    unlocks: ["music_description"]
     adds:
         total_ideas: 12
 13375:
     name: GAME_LAST
     unlocks: ["gui_playback", "gui_back_to_mainmenu"] #TODO: gui_playback not here, later in the steps (after 12)
     
-    #TODO: New game doesn't update ... frequency?? (Shouldn't be in steps.yaml, I just don't know where to put it...)

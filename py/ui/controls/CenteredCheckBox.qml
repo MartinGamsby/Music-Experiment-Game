@@ -52,5 +52,6 @@ T.CheckBox {
         text: control.text
         y: control.topPadding + 28 // 28 == ripple height
         color: control.enabled ? control.Material.foreground : control.Material.hintTextColor
+        horizontalAlignment: Text.AlignHCenter
     }
 }
