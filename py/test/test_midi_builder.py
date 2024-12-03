@@ -13,6 +13,10 @@ class TestMidiHelper(unittest.TestCase):
         self.assertEqual(["C", "E", "G", "Bb"], chords.from_shorthand("C7"))
         
 #------------------------------------------------------------------------------
+    def test_add_semitones(self):
+        self.assertEqual(mb.add_semitones("C", 5), "F")
+        
+#------------------------------------------------------------------------------
     def test_transition_chord(self):
         with self.assertRaises(Exception) as context:
             mb.tension_chord_going_to(1)

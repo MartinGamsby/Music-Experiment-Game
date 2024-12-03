@@ -179,9 +179,7 @@
         <source>GAME_LAST</source>
         <translation>For now, that's it!
 
-You're hearing: ALMOST random 1st music generation.
-
-It'll be better soon!
+Click on the light bulb to discover music concepts and generate your own music.
 
 The game is being developed right now.</translation>
     </message>

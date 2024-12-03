@@ -20,7 +20,7 @@ def add_semitones(chord, semitones):
     if type(chord) is not str:
         raise Exception(f"chord ({chord}) should be a string")
     to = mid.Note(chord).number    
-    return mid.Note.from_number(to-5).note
+    return mid.Note.from_number(to+semitones).note
     
 
 #------------------------------------------------------------------------------

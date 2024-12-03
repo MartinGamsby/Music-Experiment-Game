@@ -43,7 +43,7 @@ ColumnLayout {
             
             x: (widget.over || widget.under) ?0 : ((widget.leftOf ? widget.width : 0)-width/2)
             //y: widget.height*5/6
-            y: widget.under ? -height/2 : (widget.over ? 0 : widget.height/3)
+            y: widget.under ? -height/2 : (widget.over ? widget.height*5/6 : widget.height/3)
             width: (widget.over || widget.under) ? widget.width : widget.width/3
             height: widget.height/4//3
             onPaint: {

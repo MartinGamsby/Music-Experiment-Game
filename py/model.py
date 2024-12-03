@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 avg_half_frame_ms = 8#1000/60/2 (TODO: Get the actual framerate, or moving avg, or something..)
 
 
-DEBUG_TIME = True
+DEBUG_TIME = False
 
 BEATS_PER_MEASURE = (1 if DEBUG_TIME else 4)
 MS_PER_S = (250 if DEBUG_TIME else 1000)

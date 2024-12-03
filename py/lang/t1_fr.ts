@@ -175,9 +175,7 @@
         <source>GAME_LAST</source>
         <translation>Pour l'instant, c'est tout !
 
-Vous entendez: première génération de musique PRESQUE aléatoire.
-
-Ce sera mieux bientôt!
+Cliquez sur l'ampoule pour découvrir des concepts de musique et générer votre propre musique.
 
 Le jeu est en cours de développement en ce moment.</translation>
     </message>
