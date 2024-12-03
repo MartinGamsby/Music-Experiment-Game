@@ -66,24 +66,34 @@ class Setting(QObject):
         return v.lower() not in ("no", "false", "f", "0")
         
 #------------------------------------------------------------------------------
+    def isBool(self):
+        return self._type == bool
+    def isInt(self):
+        return self._type == int
+    def isFloat(self):
+        return self._type == float
+    def isString(self):
+        return self._type == str
+        
+#------------------------------------------------------------------------------
     def init(self):
         if self._save:
             val = self._save.load(self._name, section=self._section)
             logger.debug(f"Get {self._name} == {val} ({self._value})")
             if val is not None:
-                if self._type == str:
+                if self.isString():
                     pass # val = val
-                elif self._type == bool:
+                elif self.isBool():
                     try:
                         val = self.str2bool(val)
                     except:
                         logger.error(f"Could read {val} as {self._type}")
-                elif self._type == float:
+                elif self.isFloat():
                     try:
                         val = float(val)
                     except:
                         logger.error(f"Could read {val} as {self._type}")
-                elif self._type == int:
+                elif self.isInt():
                     try:
                         val = int(val)
                     except:

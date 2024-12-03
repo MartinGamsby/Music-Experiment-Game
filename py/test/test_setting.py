@@ -53,13 +53,124 @@ class TestSetting(unittest.TestCase):
         
 #------------------------------------------------------------------------------
     def test_unlockeable(self):
-        setting_int = Setting(1, "int3", save=None, sub_unlock=False)
-        with self.assertRaises(Exception) as context:
-            setting_int.unlocked()        
-        with self.assertRaises(Exception) as context:
-            setting_int.unlock()
-        with self.assertRaises(Exception) as context:
-            setting_int.lock()
+        setting_int1 = Setting(1, "int1", save=None)
+        setting_int2 = Setting(2, "int2", save=None, dependencies=[setting_int1])
+        setting_int3 = Setting(3, "int3", save=None, dependencies=[setting_int2])
+        
+        setting_int1.set(10)
+        setting_int2.set(20)
+        setting_int3.set(30)
+        
+        # wrong, but test .gete(), and unlocked and enabled all the way down
+        self.assertEqual(False, setting_int1.unlocked())
+        self.assertEqual(False, setting_int2.unlocked())
+        self.assertEqual(False, setting_int3.unlocked())
+        self.assertEqual(10, setting_int1.get())
+        self.assertEqual(20, setting_int2.get())
+        self.assertEqual(30, setting_int3.get())
+        self.assertEqual(10, setting_int1.gete())
+        self.assertEqual(20, setting_int2.gete())
+        self.assertEqual(30, setting_int3.gete())
+        
+        setting_int3.unlock()
+        
+        self.assertEqual(False, setting_int1.unlocked())
+        self.assertEqual(False, setting_int2.unlocked())
+        self.assertEqual(False, setting_int3.unlocked())
+        self.assertEqual(10, setting_int1.get())
+        self.assertEqual(20, setting_int2.get())
+        self.assertEqual(30, setting_int3.get())
+        self.assertEqual(10, setting_int1.gete())
+        self.assertEqual(20, setting_int2.gete())
+        self.assertEqual(30, setting_int3.gete())
+        
+        setting_int2.unlock()
+        
+        self.assertEqual(False, setting_int1.unlocked())
+        self.assertEqual(False, setting_int2.unlocked())
+        self.assertEqual(False, setting_int3.unlocked())
+        self.assertEqual(10, setting_int1.get())
+        self.assertEqual(20, setting_int2.get())
+        self.assertEqual(30, setting_int3.get())
+        self.assertEqual(10, setting_int1.gete())
+        self.assertEqual(20, setting_int2.gete())
+        self.assertEqual(30, setting_int3.gete())
+        
+        setting_int1.unlock()
+        
+        self.assertEqual(True, setting_int1.unlocked())
+        self.assertEqual(True, setting_int2.unlocked())
+        self.assertEqual(True, setting_int3.unlocked())
+        self.assertEqual(10, setting_int1.get())
+        self.assertEqual(20, setting_int2.get())
+        self.assertEqual(30, setting_int3.get())
+        self.assertEqual(10, setting_int1.gete())
+        self.assertEqual(20, setting_int2.gete())
+        self.assertEqual(30, setting_int3.gete())
+        
+        # Same for enabled:
+        self.assertEqual(True, setting_int1.enabled())
+        self.assertEqual(True, setting_int2.enabled())
+        self.assertEqual(True, setting_int3.enabled())
+        self.assertEqual(10, setting_int1.get())
+        self.assertEqual(20, setting_int2.get())
+        self.assertEqual(30, setting_int3.get())
+        self.assertEqual(10, setting_int1.gete())
+        self.assertEqual(20, setting_int2.gete())
+        self.assertEqual(30, setting_int3.gete())
+                
+        setting_int1.setEnabled(False)
+        
+        self.assertEqual(False, setting_int1.enabled())
+        self.assertEqual(False, setting_int2.enabled())
+        self.assertEqual(False, setting_int3.enabled())
+        self.assertEqual(10, setting_int1.get())
+        self.assertEqual(20, setting_int2.get())
+        self.assertEqual(30, setting_int3.get())
+        self.assertEqual(1, setting_int1.gete())
+        self.assertEqual(2, setting_int2.gete())
+        self.assertEqual(3, setting_int3.gete())
+                
+        setting_int1.setEnabled(True)
+        setting_int2.setEnabled(False)
+        
+        self.assertEqual(True, setting_int1.enabled())
+        self.assertEqual(False, setting_int2.enabled())
+        self.assertEqual(False, setting_int3.enabled())
+        self.assertEqual(10, setting_int1.get())
+        self.assertEqual(20, setting_int2.get())
+        self.assertEqual(30, setting_int3.get())
+        self.assertEqual(10, setting_int1.gete())
+        self.assertEqual(2, setting_int2.gete())
+        self.assertEqual(3, setting_int3.gete())
+                
+        setting_int2.setEnabled(True)
+        setting_int3.setEnabled(False)
+        
+        self.assertEqual(True, setting_int1.enabled())
+        self.assertEqual(True, setting_int2.enabled())
+        self.assertEqual(False, setting_int3.enabled())
+        self.assertEqual(10, setting_int1.get())
+        self.assertEqual(20, setting_int2.get())
+        self.assertEqual(30, setting_int3.get())
+        self.assertEqual(10, setting_int1.gete())
+        self.assertEqual(20, setting_int2.gete())
+        self.assertEqual(3, setting_int3.gete())
+            
+#------------------------------------------------------------------------------
+    def test_gete(self):
+        setting_int = Setting(1, "int2", save=None)
+        self.assertEqual(False, setting_int.unlocked())
+        
+        setting_int.unlock()
+        self.assertEqual(True, setting_int.unlocked())
+        
+        setting_int.lock()
+        self.assertEqual(False, setting_int.unlocked())
+        
+#------------------------------------------------------------------------------
+    # TODO: save_progress
+    
     
 #------------------------------------------------------------------------------
     def test_locked_permanent(self):

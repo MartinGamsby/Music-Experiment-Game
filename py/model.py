@@ -96,20 +96,23 @@ class Model(QObject):
         logger.info(f"value updated ({self.sender()})")
         
         ideas = 0
-        for a in self._music_attrs:
-            attr = self._music_attrs[a]
-            
-            valid = True
-            for d in attr._dependencies:#_weak_dependencies:
-                if not d.unlocked() or not d.gete():
-                    valid = False
-                    
-            attr.setEnabled(valid)
-            if valid:
-                attr.unlock()
+        
+        # Uh we need to do the dependencies of dependencies and all... this is the worst way to do it, sorry
+        for i in range(5):
+            for a in self._music_attrs:
+                attr = self._music_attrs[a]
                 
-            if attr.enabled() and attr.gete():# TODO: what if not bool?
-                ideas += 1
+                valid = True
+                for d in attr._dependencies:#_weak_dependencies:
+                    if not d.unlocked() or not d.gete():
+                        valid = False
+                        
+                attr.setEnabled(valid)
+                if valid:
+                    attr.unlock()
+                    
+                if i == 0 and attr.enabled() and attr.gete():# TODO: what if not bool?
+                    ideas += 1
                 
             
         self._ideas.set(ideas)
@@ -360,10 +363,10 @@ class Model(QObject):
         step = self._game_progress.get()
         
         from music import midi_builder
-        if step < 13375: # TODO:            
-            desc = self.play_async(type=midi_builder.MusicBuildType.DROPS)
-        else:
-            desc = self.play_async(type=midi_builder.MusicBuildType.GAME)            
+        #if step < 13375: # TODO:            
+        #    desc = self.play_async(type=midi_builder.MusicBuildType.DROPS)
+        #else:
+        desc = self.play_async(type=midi_builder.MusicBuildType.GAME)            
         
         # Or ... save that in setting ... or ... always GAME, and is DROPS by default?
         
@@ -529,6 +532,38 @@ class Model(QObject):
     def get_frequency(self): return self._frequency
     p_frequency = Property(QObject, get_frequency, notify=model_changed)
     
+    _less_random_test = Setting(False, "Music/less_random_test", save_progress, leftOf=_frequency, dependencies=[_frequency])
+    def get_less_random_test(self): return self._less_random_test
+    p_less_random_test = Property(QObject, get_less_random_test, notify=model_changed)
+    
+    _scales = Setting(False, "Music/scales", save_progress, over=_frequency, dependencies=[_frequency])
+    def get_scales(self): return self._scales
+    p_scales = Property(QObject, get_scales, notify=model_changed)
+    
+    _chords = Setting(False, "Music/chords", save_progress, leftOf=_scales, dependencies=[_scales])
+    def get_chords(self): return self._chords
+    p_chords = Property(QObject, get_chords, notify=model_changed)
+    
+    _chord_progression = Setting(False, "Music/chord_progression", save_progress, leftOf=_chords, dependencies=[_chords])
+    def get_chord_progression(self): return self._chord_progression
+    p_chord_progression = Property(QObject, get_chord_progression, notify=model_changed)
+    
+    _more_same_notes = Setting(False, "Music/more_same_notes", save_progress, rightOf=_scales, dependencies=[_scales])
+    def get_more_same_notes(self): return self._more_same_notes
+    p_more_same_notes = Property(QObject, get_more_same_notes, notify=model_changed)
+    
+    _another_kind_of_random_notes = Setting(False, "Music/another_kind_of_random_notes", save_progress, over=_scales, dependencies=[_scales])
+    def get_another_kind_of_random_notes(self): return self._another_kind_of_random_notes
+    p_another_kind_of_random_notes = Property(QObject, get_another_kind_of_random_notes, notify=model_changed)
+    
+    _another_kind_of_random_duration = Setting(False, "Music/another_kind_of_random_duration", save_progress, rightOf=_another_kind_of_random_notes, dependencies=[_scales])
+    def get_another_kind_of_random_duration(self): return self._another_kind_of_random_duration
+    p_another_kind_of_random_duration = Property(QObject, get_another_kind_of_random_duration, notify=model_changed)
+    
+    _test_jazz_scales = Setting(False, "Music/test_jazz_scales", save_progress, leftOf=_another_kind_of_random_notes, over=_another_kind_of_random_notes, dependencies=[_scales])
+    def get_test_jazz_scales(self): return self._test_jazz_scales
+    p_test_jazz_scales = Property(QObject, get_test_jazz_scales, notify=model_changed)
+    
     _instruments = Setting(False, "Music/instruments", save_progress, under=_frequency)
     def get_instruments(self): return self._instruments
     p_instruments = Property(QObject, get_instruments, notify=model_changed)
@@ -615,7 +650,7 @@ class Model(QObject):
     
     
     # TODO: int, sub setting??
-    _bass_tracks = Setting(True, "Music/bass_tracks", save_progress, rightOf=_instruments, dependencies=[_instruments])
+    _bass_tracks = Setting(False, "Music/bass_tracks", save_progress, rightOf=_instruments, dependencies=[_instruments])
     def get_bass_tracks(self): return self._bass_tracks
     p_bass_tracks = Property(QObject, get_bass_tracks, notify=model_changed)
     

@@ -35,33 +35,34 @@ TEMPO = {
         
 #------------------------------------------------------------------------------        
 def swap_accidentals(note):
-    if note == 'Db':
-        return 'C#'
-    if note == 'D#':
-        return 'Eb'
-    if note == 'E#':
-        return 'F'
-    if note == 'Gb':
-        return 'F#'
-    if note == 'G#':
-        return 'Ab'
-    if note == 'A#':
-        return 'Bb'
-    if note == 'B#':
-        return 'C'
+    # This is crap, mingus returns crap.
+    for i in range(10):
+        note = note.replace("A##", "B")
+        note = note.replace("B##", "C#")
+        note = note.replace("C##", "D")
+        note = note.replace("D##", "E")
+        note = note.replace("E##", "F#")
+        note = note.replace("F##", "G")
+        note = note.replace("G##", "A")
+        
+        note = note.replace("Abb", "G")
+        note = note.replace("Bbb", "A")
+        note = note.replace("Cbb", "Bb")
+        note = note.replace("Dbb", "C")
+        note = note.replace("Ebb", "D")
+        note = note.replace("Fbb", "Eb")
+        note = note.replace("Gbb", "F")
+        
+    note = note.replace("Cb", "B")
+    note = note.replace("Db", "C#")
+    note = note.replace("D#", "Eb")
+    note = note.replace("E#", "F")
+    note = note.replace("Gb", "F#")
+    note = note.replace("G#", "Ab")
+    note = note.replace("A#", "Bb")
+    note = note.replace("B#", "C")
+    note = note.replace("Fb", "E")
 
-    if note == 'A##':
-        return 'B'
-    if note == 'B##':
-        return 'C'
-    if note == 'C##':
-        return 'D'
-    if note == 'D##':
-        return 'E'
-    if note == 'F##':
-        return 'G'
-    if note == 'G##':
-        return 'A'
         
     return note
 

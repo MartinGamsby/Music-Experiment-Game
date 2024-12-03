@@ -134,8 +134,7 @@
     <!-- Music Settings -->
     <message>
         <source>frequency</source>
-        <translation>~Random pitch 
-and chords</translation>
+        <translation>Random duration</translation>
     </message>
     <message>
         <source>instrument_percussions</source>
@@ -148,6 +147,10 @@ and chords</translation>
     <message>
         <source>instrument_piano</source>
         <translation>Piano</translation>
+    </message>
+    <message>
+        <source>chord_progression</source>
+        <translation>Chord progression (Cycle of fifths)</translation>
     </message>
     
 

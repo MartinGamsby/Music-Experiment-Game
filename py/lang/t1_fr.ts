@@ -134,8 +134,7 @@
     <!-- Music Settings -->
     <message>
         <source>frequency</source>
-        <translation>Notes et accords 
-~aléatoires</translation>
+        <translation>Durées aléatoires</translation>
     </message>
     <message>
         <source>instrument_percussions</source>
@@ -148,6 +147,10 @@
     <message>
         <source>instrument_piano</source>
         <translation>Piano</translation>
+    </message>
+    <message>
+        <source>chord_progression</source>
+        <translation>Progression d'accords (Cycle de quintes)</translation>
     </message>
     
     <!-- Game -->

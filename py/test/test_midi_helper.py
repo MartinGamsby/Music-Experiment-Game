@@ -31,7 +31,9 @@ class TestMidiHelper(unittest.TestCase):
             note4 = mid.Note.from_number(128)
         self.assertIn('Bad input, note number 128 not in between 0 and 127', str(context.exception))
         
-        
+#------------------------------------------------------------------------------
+    def test_crazy_mingus(self):
+        self.assertEqual(mid.swap_accidentals("Cbbbbbb"), "F#")
 
 #------------------------------------------------------------------------------
 if __name__ == "__main__":

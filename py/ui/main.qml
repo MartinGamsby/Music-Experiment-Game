@@ -37,7 +37,7 @@ ApplicationWindow {
         running: true
     }
         
-    Canvas {
+    MusicCanvas {
         id: canvas
         Layout.fillWidth: true
         Layout.fillHeight: true

@@ -12,7 +12,7 @@ ColumnLayout {
     id: musicSettingsRoot
     
     component IdeaSetting: SettingBool {
-        
+        id: widget
         anchors.margins: 0//24
         
         property Item under: null
@@ -35,6 +35,42 @@ ColumnLayout {
         anchors.right: leftOf ? leftOf.left : undefined
         
         anchors.horizontalCenter: over ? over.horizontalCenter : (under ? under.horizontalCenter : undefined)
+        
+        // repeater for all dependencies?
+        Canvas {
+            id: mycanvas
+            z: -1
+            
+            x: (widget.over || widget.under) ?0 : ((widget.leftOf ? widget.width : 0)-width/2)
+            //y: widget.height*5/6
+            y: widget.under ? -height/2 : (widget.over ? 0 : widget.height/3)
+            width: (widget.over || widget.under) ? widget.width : widget.width/3
+            height: widget.height/4//3
+            onPaint: {
+                var ctx = getContext("2d");
+                //ctx.fillStyle = Qt.rgba(1, 1, 1, 0.5);
+                //ctx.fillRect(0, 0, width, height);
+                
+                if( widget.under || widget.over )
+                {
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle =  Qt.rgba(1, 1, 1, 0.5);//"red"
+                    ctx.beginPath()
+                    ctx.moveTo(width / 2, 0)
+                    ctx.lineTo(width / 2, height)
+                    ctx.stroke()
+                }
+                if( widget.leftOf || widget.rightOf )
+                {
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle =  Qt.rgba(1, 1, 1, 0.5);//"red"
+                    ctx.beginPath()
+                    ctx.moveTo(0, height/2)
+                    ctx.lineTo(width, height/2)
+                    ctx.stroke()
+                }
+            }
+        }
     }
     
     Title {
@@ -103,6 +139,7 @@ ColumnLayout {
                                 for (let i = 0; i < settingRepeater.objectArray.length; i++) {
                                     let child = settingRepeater.objectArray[i]
                                     
+                                    // TODO: Dependencies too!
                                     if(child.setting.p_under != "")
                                     {
                                         console.log(child.objectName + " under " + child.setting.p_under)
