@@ -532,6 +532,14 @@ class Model(QObject):
     def get_frequency(self): return self._frequency
     p_frequency = Property(QObject, get_frequency, notify=model_changed)
     
+    _faster = Setting(False, "Music/faster", save_progress, rightOf=_frequency, dependencies=[_frequency])
+    def get_faster(self): return self._faster
+    p_faster = Property(QObject, get_faster, notify=model_changed)
+    
+    _slower = Setting(False, "Music/slower", save_progress, rightOf=_faster, dependencies=[_frequency])
+    def get_slower(self): return self._slower
+    p_slower = Property(QObject, get_slower, notify=model_changed)
+    
     _less_random_test = Setting(False, "Music/less_random_test", save_progress, leftOf=_frequency, dependencies=[_frequency])
     def get_less_random_test(self): return self._less_random_test
     p_less_random_test = Property(QObject, get_less_random_test, notify=model_changed)
@@ -547,6 +555,14 @@ class Model(QObject):
     _chord_progression = Setting(False, "Music/chord_progression", save_progress, leftOf=_chords, dependencies=[_chords])
     def get_chord_progression(self): return self._chord_progression
     p_chord_progression = Property(QObject, get_chord_progression, notify=model_changed)
+    
+    _chord_progression2 = Setting(False, "Music/chord_progression2", save_progress, leftOf=_chord_progression, dependencies=[_chord_progression])
+    def get_chord_progression2(self): return self._chord_progression2
+    p_chord_progression2 = Property(QObject, get_chord_progression2, notify=model_changed)
+    
+    _progression_random_tension = Setting(False, "Music/progression_random_tension", save_progress, leftOf=_chord_progression, dependencies=[_chord_progression])
+    def get_progression_random_tension(self): return self._progression_random_tension
+    p_progression_random_tension = Property(QObject, get_progression_random_tension, notify=model_changed)
     
     _more_same_notes = Setting(False, "Music/more_same_notes", save_progress, rightOf=_scales, dependencies=[_scales])
     def get_more_same_notes(self): return self._more_same_notes

@@ -46,9 +46,7 @@ def scales_with_notes(notes):
         if not skip:
             matching_scales.append(s)
     return matching_scales
-    
-    
-#------------------------------------------------------------------------------
+        
 #------------------------------------------------------------------------------
 def jazz_scale(chord):
     if type(chord) is not str:
@@ -66,12 +64,13 @@ def jazz_scale(chord):
     scale = [chord,n2,nb3,n3,nb5,n5]#,nb7]
     return scale
     
+#------------------------------------------------------------------------------
 def get_mode_from_idx(list, mode):
     # TODO: Is this skewed? Probably...
     return list.index(mode)/len(list)
     
 #------------------------------------------------------------------------------
-def add_progression(chord_progression, attrs, scale=False, measure_duration=4, note_duration=[1], 
+def add_progression(chord_progression, scale_progression, attrs, scale=False, measure_duration=4, note_duration=[1], 
     octave_start=4, group_chord=False, skip_random=0.0, skip_over_silence=0, randomize=0.5, repeat_chord=1):
     
     group_chord = group_chord and attrs["_chords"].gete()
@@ -80,18 +79,19 @@ def add_progression(chord_progression, attrs, scale=False, measure_duration=4, n
         
     beats = []
     velocity = 100
-    for chord in chord_progression:
+    for idx, chord in enumerate(chord_progression):
+        scale_used = scale_progression[idx]
         for i in range(repeat_chord): #TODO: repeat_chord depending on measure_duration instead... 
             if not attrs["_scales"].gete():
                 sub_notes = mid.NOTES
             elif scale:
                 if attrs["_test_jazz_scales"].gete():
-                    sub_notes = jazz_scale(chord)            
+                    sub_notes = jazz_scale(scale_used)            
                 else:
-                    simplified_chord = chord.replace("7","")# TODO!! (For min/maj/etc too?)
-                    sub_notes = scales.get_notes(simplified_chord)
+                    #simplified_chord = chord.replace("7","")# TODO!! (For min/maj/etc too?)
+                    sub_notes = scales.get_notes(scale_used)
                     # TODO: Also get more notes from the chords (more chance to get #3, then #1, etc.)                                        
-                    sub_notes.extend(chords.from_shorthand(simplified_chord))
+                    #sub_notes.extend(chords.from_shorthand(chord))
             else:
                 sub_notes = chords.from_shorthand(chord)
             # TODO: This is really bad, move away from mingus...
@@ -299,7 +299,60 @@ def pick_on_curve(choices, mode=0.5):
         raise Exception(f"{mode} needs to be between 0 and 1")
     return choices[int(np.random.triangular(0, int(nb*mode), nb, size=None))]
     
+    
+#------------------------------------------------------------------------------
+def get_rpt_progression(chord_progression, scale_progression, nb_chords):
+    if len(chord_progression) != 1:
+        raise Exception(f"chord_progression ({chord_progression}) needs to have a starting chord")
+    if len(scale_progression) != 1:
+        raise Exception(f"scale_progression ({scale_progression}) needs to have a starting chord")
+    class ProgressionsState(Enum):
+        R, P, T, End = range(4)
             
+            
+    first_chord = chord_progression[0]
+    for i in range(nb_chords):
+        state = ProgressionsState(i%ProgressionsState.End.value)
+        if i >= len(chord_progression):
+            #print(f"state {state}, from chord {last_chord}" )
+            
+            if state == ProgressionsState.P:
+                # P: ii or IV
+                if random() < 0.5:
+                    # ii:
+                    new_chord = add_semitones(first_chord, 2) + "min"
+                else:
+                    # IV:
+                    new_chord = add_semitones(first_chord, 5)
+                    
+            elif state == ProgressionsState.T:
+                # T: V7 or vii*
+                if random() < 0.5:
+                    # V7:
+                    new_chord = add_semitones(first_chord, -5) + "7"
+                else:
+                    #vii*
+                    new_chord = add_semitones(first_chord, -1) + "dim"
+                
+            elif state == ProgressionsState.R:            
+                # R: I or vi
+                if random() < 0.5:
+                    # I:
+                    new_chord = first_chord
+                else:
+                    # vi:?    
+                    new_chord = add_semitones(first_chord, -5) #TODO: + "min"
+                # Change first_chord?
+                first_chord = new_chord
+            chord_progression.append(new_chord)
+            scale_progression.append(first_chord)
+            
+        last_chord = chord_progression[i]
+        
+        
+        
+    return chord_progression, scale_progression
+
 #------------------------------------------------------------------------------
 def make_midi(filename, app, attrs, type):
     
@@ -308,10 +361,16 @@ def make_midi(filename, app, attrs, type):
     
     chord = choice(mid.NOTES)
     chord_progression = [chord]
+    scale_progression = [chord]
     
-    #tempo_choices = ["GRAVE", "LARGO", "LARGHETTO", "LENTO", "ADAGIO", "ADAGIETTO", "ANDANTE", "ANDANTINO", "MODERATO", "ALLEGRETTO", "ALLEGRO", "VIVACE", "PRESTO", "PRETISSIMO"]
     tempo_choices = ["ADAGIO", "ADAGIETTO", "ANDANTE", "ANDANTINO", "MODERATO", "ALLEGRETTO", "ALLEGRO", "VIVACE", "PRESTO", "PRETISSIMO"]
     
+    if attrs["_slower"].gete():
+        tempo_choices = ["GRAVE", "LARGO", "LARGHETTO", "LENTO", "ADAGIO", "ADAGIETTO", "ANDANTE", "ANDANTINO", "MODERATO"]
+    if attrs["_faster"].gete():
+        tempo_choices = ["ANDANTE", "ANDANTINO", "MODERATO", "ALLEGRETTO", "ALLEGRO", "VIVACE", "PRESTO", "PRETISSIMO"]
+        
+        
     # Easier for now:
     tempo_str = pick_on_curve(tempo_choices, 0.5)
     tempo = mid.TEMPO[tempo_str]
@@ -325,9 +384,9 @@ def make_midi(filename, app, attrs, type):
         # TODO: Notes with the octave. Return Note() here, and make sure we go up if we go over G.
         #skip_random = 0.33
         skip_random = 0.0
-        beats = add_progression(chord_progression, attrs, octave_start=6, note_duration=[4], skip_random=skip_random, group_chord=False)
+        beats = add_progression(chord_progression, scale_progression, attrs, octave_start=6, note_duration=[4], skip_random=skip_random, group_chord=False)
         channels.append(mid.Channel(beats=beats, instrument=115)) 
-        beats = add_progression(chord_progression, attrs, octave_start=7, note_duration=[4], skip_random=skip_random, group_chord=False)
+        beats = add_progression(chord_progression, scale_progression, attrs, octave_start=7, note_duration=[4], skip_random=skip_random, group_chord=False)
         beats.insert(0,mid.Beat(duration=0.25, notes=[mid.Note("", octave=1)]))
         channels.append(mid.Channel(beats=beats, instrument=113)) 
         #TODO: Change to switch_to_drops(channels, beats) ?
@@ -342,24 +401,34 @@ def make_midi(filename, app, attrs, type):
         if not attrs["_chord_progression"].gete():
             for i in range(nb_chords):
                 chord_progression.append(choice(mid.NOTES))
+            scale_progression = chord_progression
         elif False: # TODO: Setting using scales_with_notes()?
             chord_progression = ["Am7", "G"]
             # Am7 -> Do, Sol ou Fa
         else:
             #TODO: Length (int setting)
-            for i in range(nb_chords):#4,13)):
-                if False:#TODO: setting?random() < 0.15:# sometimes keep the same
-                    pass
-                else:
-                    chord = add_semitones(chord, 5)
-                if False:#TODO: setting? random() < 0.25:# sometimes add tension chords:
-                    chord_progression.append(tension_chord_going_to(chord))
-                chord_progression.append(chord)
-            
+            if attrs["_chord_progression2"].gete():
+                
+                chord_progression, scale_progression = get_rpt_progression(chord_progression, scale_progression, nb_chords)
+                
+            else: #_chord_progression
+                for i in range(nb_chords):#4,13)):
+                    if False:#TODO: setting?random() < 0.15:# sometimes keep the same
+                        pass
+                    else:
+                        chord = add_semitones(chord, -5)
+                    if False:#TODO: setting? random() < 0.25:# sometimes add tension chords:
+                        chord_progression.append(tension_chord_going_to(chord))
+                    chord_progression.append(chord)
+                scale_progression = chord_progression
+        
+        
         if attrs["_scales"].gete():
             if not attrs["_chord_progression"].gete(): 
                 music_desc += f"Random "
             music_desc += f"<font color='blue'>Chords:</font> {', '.join(chord_progression)}<br />"
+            if attrs["_chord_progression2"].gete():
+                music_desc += f"<font color='blue'>Scales:</font> {', '.join(scale_progression)}<br />"
                 
 
         # randrange(0,79)
@@ -447,7 +516,14 @@ def make_midi(filename, app, attrs, type):
             # TODO: I really need to have measures here, not random things, so that they MATCH (bass and melody)            
             # From least to most probable
             note_duration1 = [2]#Until repeat_chord is fixed[0.25, 3, 1.5, 0.5, 4, 1, 2, 2]
+            
             note_duration2 = [4, 3, 0.25, 1.5, 2, 0.5, 1, 1]
+            if attrs["_slower"].gete():
+                note_duration2.sort()
+                note_duration2.append(4)
+            if attrs["_faster"].gete():
+                note_duration2.sort(reverse=True)
+                note_duration2.append(0.25)
         else:
             note_duration1 = [4]
             note_duration2 = [4]
@@ -460,7 +536,7 @@ def make_midi(filename, app, attrs, type):
         #for chord in chord_progression:
         #    beats.append(mid.Beat(duration=1, notes=[mid.Note(chords.from_shorthand(chord)[0], OCTAVE)]))
         if not s_drops and attrs["_bass_tracks"].gete():
-            beats = add_progression(chord_progression, attrs, octave_start=OCTAVE, note_duration=note_duration1, skip_random=skip_random_bass, group_chord=True, skip_over_silence=skip_over_silence, repeat_chord=repeat_chord, randomize=randomize)        
+            beats = add_progression(chord_progression, scale_progression, attrs, octave_start=OCTAVE, note_duration=note_duration1, skip_random=skip_random_bass, group_chord=True, skip_over_silence=skip_over_silence, repeat_chord=repeat_chord, randomize=randomize)        
             channels.append(mid.Channel(beats=beats, instrument=instrument_bass)) 
         
         #beats = add_progression(chord_progression, attrs, octave_start=OCTAVE, note_duration=note_duration1, skip_random=skip_random_bass, group_chord=True, skip_over_silence=skip_over_silence, repeat_chord=repeat_chord)
@@ -468,14 +544,14 @@ def make_midi(filename, app, attrs, type):
         
         #5 sometimes? needs to go higher sometimes?
         OCTAVE = 4
-        beats = add_progression(chord_progression, attrs, scale=True, octave_start=OCTAVE, note_duration=note_duration2, skip_random=skip_random_melody, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
+        beats = add_progression(chord_progression, scale_progression, attrs, scale=True, octave_start=OCTAVE, note_duration=note_duration2, skip_random=skip_random_melody, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
         if not s_drops:
             channels.append(mid.Channel(beats=beats, instrument=instrument_melody)) 
         else:
             switch_to_drops(channels, beats)
         
         #OCTAVE = 4
-        #beats = add_progression(chord_progression, attrs, octave_start=OCTAVE, note_duration=note_duration2, skip_random=skip_random_melody, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
+        #beats = add_progression(chord_progression, scale_progression, attrs, octave_start=OCTAVE, note_duration=note_duration2, skip_random=skip_random_melody, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
         #channels.append(mid.Channel(beats=beats, instrument=118, channel_id_override=9)) 
     
     

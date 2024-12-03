@@ -17,6 +17,11 @@ class TestMidiHelper(unittest.TestCase):
         self.assertEqual(mb.add_semitones("C", 5), "F")
         
 #------------------------------------------------------------------------------
+    def test_rpt_progression(self):
+        self.assertEqual(mb.get_rpt_progression(["C"], ["C"], 2), (["C","Dmin"], ['C', 'C']))
+        self.assertEqual(mb.get_rpt_progression(["C"], ["C"], 7), (["C","Dmin", "G7", "C", "Dmin", "G7", "C"], ['C', 'C', 'C', 'C', 'C', 'C', 'C']))
+        
+#------------------------------------------------------------------------------
     def test_transition_chord(self):
         with self.assertRaises(Exception) as context:
             mb.tension_chord_going_to(1)
