@@ -115,6 +115,10 @@
         <translation>Auto load game on startup</translation>
     </message>
     <message>
+        <source>auto_replay</source>
+        <translation>Auto regenerate when music is done playing</translation>
+    </message>
+    <message>
         <source>ideas</source>
         <translation>Ideas</translation>
     </message>

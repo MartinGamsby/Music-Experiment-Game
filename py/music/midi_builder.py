@@ -311,12 +311,14 @@ def get_rpt_progression(chord_progression, scale_progression, nb_chords):
             
             
     first_chord = chord_progression[0]
-    for i in range(nb_chords):
+    for i in range(nb_chords+3): # Breaking lower, adding 3 to make sure we end on an R
         state = ProgressionsState(i%ProgressionsState.End.value)
         if i >= len(chord_progression):
             #print(f"state {state}, from chord {last_chord}" )
             
             if state == ProgressionsState.P:
+                if len(chord_progression) > nb_chords:
+                    break
                 # P: ii or IV
                 if random() < 0.5:
                     # ii:

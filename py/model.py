@@ -120,7 +120,7 @@ class Model(QObject):
         
         # Make another music
         from music import midi_builder
-        self.play_async(type=midi_builder.MusicBuildType.GAME)
+        self.play_async(type=self._last_type, filename=self.filename)
         
 #------------------------------------------------------------------------------
     def newGame(self):
@@ -209,6 +209,7 @@ class Model(QObject):
                 self._music_description.set(desc)
             else:
                 filename = self.filename
+                self._music_description.set("")
             if self._generate_mp3.get():
                 logger.debug("GENERATE WAV FROM MIDI")
                 symusic_midi.midi_to_wav_worker(self.worker, self.thread, filename, force_gen=not self.filename)
@@ -295,7 +296,8 @@ class Model(QObject):
             self._music_beat.set(0)
             self.set_music_state(MusicState.IDLE)
             
-            self.play_async(type=self._last_type)
+            if self._auto_replay.get():
+                self.play_async(type=self._last_type)
         
 #------------------------------------------------------------------------------
     def update_game_title(self):
@@ -499,6 +501,10 @@ class Model(QObject):
     _autoload = Setting(True, "Config/autoload", save_config, save_progress=save_progress, auto_unlock=True)
     def get_autoload(self): return self._autoload
     p_autoload = Property(QObject, get_autoload, notify=model_changed)
+    
+    _auto_replay = Setting(True, "Config/auto_replay", save_config, save_progress=save_progress, auto_unlock=True)
+    def get_auto_replay(self): return self._auto_replay
+    p_auto_replay = Property(QObject, get_auto_replay, notify=model_changed)
     
     
 #------------------------------------------------------------------------------

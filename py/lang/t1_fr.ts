@@ -71,7 +71,7 @@
     </message>
     <message>
         <source>STATE_IDLE</source>
-        <translation>En attente</translation>
+        <translation>Inactif</translation>
     </message>
     <message>
         <source>STATE_PREPARING</source>
@@ -113,6 +113,10 @@
     <message>
         <source>autoload</source>
         <translation>Charger automatiquement la partie au démarrage</translation>
+    </message>
+    <message>
+        <source>auto_replay</source>
+        <translation>Regénérer automatiquement une musique à la fin de la lecture</translation>
     </message>
     <message>
         <source>ideas</source>
