@@ -111,6 +111,9 @@ def add_progression(chord_progression, attrs, scale=False, measure_duration=4, n
                             new_sub_notes.append(s)
                     logger.debug(f"added same notes: {sub_notes} to {new_sub_notes}")
                     sub_notes = new_sub_notes
+            else:
+                if attrs["_less_random_test"].gete() and random() < 0.5:
+                    sub_notes.reverse()
                 
             logger.debug( f"{chord}, {sub_notes}" )
             octave = octave_start
@@ -133,7 +136,7 @@ def add_progression(chord_progression, attrs, scale=False, measure_duration=4, n
             # ++, then check every loop measure_duration
             
             current_measure_dur = 0
-            duration = note_duration[int(len(note_duration)/2)]#Defaultm middle duration
+            last_duration = note_duration[int(len(note_duration)/2)]#Defaultm middle duration
             name = note=sub_notes[int(len(sub_notes)/2)]# TODO: Real middle ... same for the others... also, use 3rd instead? (TODO: last_name instead?)
             
             for i in range(len(sub_notes)):#TODO: more than that? but not while true...
@@ -165,7 +168,8 @@ def add_progression(chord_progression, attrs, scale=False, measure_duration=4, n
                         
                 
                 #if not attrs["_another_kind_of_random_notes"] and random() < 0.3:#TODO:setting, right now always same duration? (0.3: 30% repeat duration)
-                if random() < 0.3:#setting, right now always same duration? (0.3: 30% repeat duration)
+                if False:#TODO:random() < 0.3:#setting, right now always same duration? (0.3: 30% repeat duration)
+                    duration = last_duration
                     pass #Keep same duration
                 else:                    
                     if attrs["_another_kind_of_random_duration"].gete():
@@ -175,16 +179,21 @@ def add_progression(chord_progression, attrs, scale=False, measure_duration=4, n
                     else:
                         # TODO: Make the mode last duration instead (It was done, but I think this is skewed... fix it)
                         # TODO: make it pick from previous durations too (add them to a note_duration equivalent list? with mode beind the last one...) ortransformer-like, I guess, ugh
-                        duration = pick_on_curve(note_duration, get_mode_from_idx(note_duration, duration))
+                        duration = pick_on_curve(note_duration, get_mode_from_idx(note_duration, last_duration))
+                    last_duration = duration
                 if not group_chord:
                     current_measure_dur += duration
                     if current_measure_dur > measure_duration:
                         note.note = mid.SILENCE
-                        dur = measure_duration - (current_measure_dur - duration)
-                        if dur <= 0 or not (dur in note_duration):
-                            #TODO: add silences
+                        duration = measure_duration - (current_measure_dur - duration)
+                        if duration <= 0:
                             break
-                        duration = dur # Because python
+                        elif not (duration in note_duration):
+                            pass#break
+                        else:
+                            last_duration = duration
+                    else:
+                        last_duration = duration
                         
                 notes = [note]#Only one note
                 if group_chord and last_note > note.number:
@@ -330,7 +339,7 @@ def make_midi(filename, app, attrs, type):
                   
         
         nb_chords = randrange(3,13)
-        if not attrs["_chord_progression"].gete():         
+        if not attrs["_chord_progression"].gete():
             for i in range(nb_chords):
                 chord_progression.append(choice(mid.NOTES))
         elif False: # TODO: Setting using scales_with_notes()?
