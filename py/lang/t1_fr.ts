@@ -101,6 +101,44 @@
         <translation>fichiers MIDI (*.mid)</translation>
     </message>
     
+    <!-- Music description -->
+    <message>
+        <source>GENERATING_</source>
+        <translation>Génération:</translation>
+    </message>
+    <message>
+        <source>GENERATED_</source>
+        <translation>Généré:</translation>
+    </message>
+    <message>
+        <source>RANDOM_</source>
+        <translation>Aléatoire </translation>
+    </message>
+    <message>
+        <source>CHORDS_</source>
+        <translation>Accords: </translation>
+    </message>
+    <message>
+        <source>SCALES_</source>
+        <translation>Gammes: </translation>
+    </message>
+    <message>
+        <source>MELODY_</source>
+        <translation>Mélodie: </translation>
+    </message>
+    <message>
+        <source>BASS_</source>
+        <translation>Basse: </translation>
+    </message>
+    <message>
+        <source>TEMPO_</source>
+        <translation>Tempo: </translation>
+    </message>
+    <message>
+        <source>TEMPO_BPM</source>
+        <translation>bpm</translation>
+    </message>
+    
     <!-- settings -->
     <message>
         <source>generate_mp3</source>
@@ -168,7 +206,7 @@
     </message>
     <message>
         <source>SOUNDS_MELODIOUS</source>
-        <translation>Ça sonne presque ... Mélodieux</translation>
+        <translation>Ça sonne presque ... mélodieux</translation>
     </message>
     
     <message>

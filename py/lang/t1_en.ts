@@ -101,6 +101,44 @@
         <translation>MIDI files (*.mid)</translation>
     </message>
     
+    <!-- Music description -->
+    <message>
+        <source>GENERATING_</source>
+        <translation>Generating:</translation>
+    </message>
+    <message>
+        <source>GENERATED_</source>
+        <translation>Generated:</translation>
+    </message>
+    <message>
+        <source>RANDOM_</source>
+        <translation>Random </translation>
+    </message>
+    <message>
+        <source>CHORDS_</source>
+        <translation>Chords: </translation>
+    </message>
+    <message>
+        <source>SCALES_</source>
+        <translation>Scales: </translation>
+    </message>
+    <message>
+        <source>MELODY_</source>
+        <translation>Melody: </translation>
+    </message>
+    <message>
+        <source>BASS_</source>
+        <translation>Bass: </translation>
+    </message>
+    <message>
+        <source>TEMPO_</source>
+        <translation>Tempo: </translation>
+    </message>
+    <message>
+        <source>TEMPO_BPM</source>
+        <translation>bpm</translation>
+    </message>
+    
     <!-- settings -->
     <message>
         <source>generate_mp3</source>

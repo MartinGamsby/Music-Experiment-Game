@@ -19,7 +19,7 @@
     to: 13375
     unlocks: ["music_description"]
     adds:
-        total_ideas: 12
+        total_ideas: 15
 13375:
     name: GAME_LAST
     unlocks: ["gui_playback", "gui_back_to_mainmenu"] #TODO: gui_playback not here, later in the steps (after 12)

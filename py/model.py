@@ -146,7 +146,7 @@ class Model(QObject):
 #------------------------------------------------------------------------------
     def async_init(self):
         ###TODO::: not first? Or only generate?
-        sleep(0.5)#Let the UI open or something?
+        sleep(0.75)#Let the UI open or something?
         self.play_main_menu(State.GAME if self._autoload.get() else State.MAIN_MENU)
         
 #------------------------------------------------------------------------------
@@ -178,7 +178,7 @@ class Model(QObject):
         logger.debug(f"from {self._last_type} to {type}")        
         
         from music import midi_builder
-        self._music_description.set(midi_builder.describe_music(self.app, self._music_attrs))
+        self._music_description.set(midi_builder.describe_music(self.app, self._music_attrs, f"<br /><font color='silver'>{self.app.tr("GENERATING_")}</font>"))
         
         self._last_type = type
     
@@ -566,7 +566,7 @@ class Model(QObject):
     def get_chord_progression2(self): return self._chord_progression2
     p_chord_progression2 = Property(QObject, get_chord_progression2, notify=model_changed)
     
-    _progression_random_tension = Setting(False, "Music/progression_random_tension", save_progress, leftOf=_chord_progression, dependencies=[_chord_progression])
+    _progression_random_tension = Setting(False, "Music/progression_random_tension", save_progress, leftOf=_chord_progression2, dependencies=[_chord_progression])
     def get_progression_random_tension(self): return self._progression_random_tension
     p_progression_random_tension = Property(QObject, get_progression_random_tension, notify=model_changed)
     

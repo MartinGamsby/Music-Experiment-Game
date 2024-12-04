@@ -70,18 +70,52 @@ def get_mode_from_idx(list, mode):
     return list.index(mode)/len(list)
     
 #------------------------------------------------------------------------------
-def add_progression(chord_progression, scale_progression, attrs, scale=False, measure_duration=4, note_duration=[1], 
-    octave_start=4, group_chord=False, skip_random=0.0, skip_over_silence=0, randomize=0.5, repeat_chord=1):
+def pick_duration(attrs, choices_duration, last_duration, measure_duration, current_measure_dur, add_silence):
+    silenced = False
+    #if not attrs["_another_kind_of_random_notes"] and random() < 0.3:#TODO:setting, right now always same duration? (0.3: 30% repeat duration)
+    if False:#TODO:random() < 0.3:#setting, right now always same duration? (0.3: 30% repeat duration)
+        duration = last_duration
+        pass #Keep same duration
+    else:                    
+        if attrs["_another_kind_of_random_duration"].gete():
+            duration = pick_on_curve(choices_duration, 1.0)#choices_duration.index(duration)/len(choices_duration))#TODO:
+            # TODO: That's not enough, it needs to be CLOSE too. Check back the c++ code, it was better...
+            choices_duration.append(duration)
+        else:
+            # TODO: Make the mode last duration instead (It was done, but I think this is skewed... fix it)
+            # TODO: make it pick from previous durations too (add them to a choices_duration equivalent list? with mode beind the last one...) ortransformer-like, I guess, ugh
+            duration = pick_on_curve(choices_duration, get_mode_from_idx(choices_duration, last_duration))
+        last_duration = duration
+    if add_silence:
+        if current_measure_dur > measure_duration:
+            silenced = True
+            duration = measure_duration - current_measure_dur
+            if duration <= 0:
+                return -1, True
+            elif not (duration in choices_duration):
+                pass# not break, but don't update last_duration
+            else:
+                last_duration = duration
+        else:
+            last_duration = duration
+        
+    return duration, silenced# TODO Is last_duration, current_measure_dur, etc. updated? Python?
+    
+#------------------------------------------------------------------------------
+def add_progression(chord_progression, scale_progression, attrs, scale=False, measure_duration=4, choices_duration=[1], 
+    octave_start=4, group_chord=False, skip_random=0.0, skip_over_silence=0, randomize=0.5):
     
     group_chord = group_chord and attrs["_chords"].gete()
-    if not group_chord:
-        repeat_chord = 1
         
     beats = []
     velocity = 100
     for idx, chord in enumerate(chord_progression):
         scale_used = scale_progression[idx]
-        for i in range(repeat_chord): #TODO: repeat_chord depending on measure_duration instead... 
+        
+        last_group_duration = choices_duration[int(len(choices_duration)/2)]#Defaultm middle duration
+        current_group_measure_dur = 0
+        for i in range(8 if group_chord else 1):#TODO: more than that? but not while true... (And more for group_chord!
+        #for i in range(repeat_chord): #TODO: repeat_chord depending on measure_duration instead... 
             if not attrs["_scales"].gete():
                 sub_notes = mid.NOTES
             elif scale:
@@ -118,7 +152,7 @@ def add_progression(chord_progression, scale_progression, attrs, scale=False, me
             logger.debug( f"{chord}, {sub_notes}" )
             octave = octave_start
             
-            # TODO: different if note_duration is not 1.
+            # TODO: different if choices_duration is not 1.
             if len(sub_notes) == 0:
                 raise Exception("No notes in chord progression!")
             if len(sub_notes) < measure_duration:
@@ -136,10 +170,10 @@ def add_progression(chord_progression, scale_progression, attrs, scale=False, me
             # ++, then check every loop measure_duration
             
             current_measure_dur = 0
-            last_duration = note_duration[int(len(note_duration)/2)]#Defaultm middle duration
+            last_duration = choices_duration[int(len(choices_duration)/2)]#Defaultm middle duration
             name = note=sub_notes[int(len(sub_notes)/2)]# TODO: Real middle ... same for the others... also, use 3rd instead? (TODO: last_name instead?)
             
-            for i in range(len(sub_notes)):#TODO: more than that? but not while true...
+            for i in range(len(sub_notes)):#TODO: more than that? but not while true... (And more for group_chord!
                 # TODO: UT and make better / settings:
                 if attrs["_another_kind_of_random_notes"].gete():
                     if randomized:
@@ -167,34 +201,15 @@ def add_progression(chord_progression, scale_progression, attrs, scale=False, me
                             continue
                         
                 
-                #if not attrs["_another_kind_of_random_notes"] and random() < 0.3:#TODO:setting, right now always same duration? (0.3: 30% repeat duration)
-                if False:#TODO:random() < 0.3:#setting, right now always same duration? (0.3: 30% repeat duration)
-                    duration = last_duration
-                    pass #Keep same duration
-                else:                    
-                    if attrs["_another_kind_of_random_duration"].gete():
-                        duration = pick_on_curve(note_duration, 1.0)#note_duration.index(duration)/len(note_duration))#TODO:
-                        # TODO: That's not enough, it needs to be CLOSE too. Check back the c++ code, it was better...
-                        note_duration.append(duration)
-                    else:
-                        # TODO: Make the mode last duration instead (It was done, but I think this is skewed... fix it)
-                        # TODO: make it pick from previous durations too (add them to a note_duration equivalent list? with mode beind the last one...) ortransformer-like, I guess, ugh
-                        duration = pick_on_curve(note_duration, get_mode_from_idx(note_duration, last_duration))
-                    last_duration = duration
-                if not group_chord:
-                    current_measure_dur += duration
-                    if current_measure_dur > measure_duration:
-                        note.note = mid.SILENCE
-                        duration = measure_duration - (current_measure_dur - duration)
-                        if duration <= 0:
-                            break
-                        elif not (duration in note_duration):
-                            pass#break
-                        else:
-                            last_duration = duration
-                    else:
-                        last_duration = duration
-                        
+                duration, silenced = pick_duration(attrs, choices_duration, last_duration, measure_duration, current_measure_dur, add_silence = (not group_chord))
+                if duration <= 0:
+                    break
+                if silenced:
+                    note.note = mid.SILENCE
+                current_measure_dur += duration
+                #print(duration, last_duration, current_measure_dur)
+                
+                
                 notes = [note]#Only one note
                 if group_chord and last_note > note.number:
                     octave += 1
@@ -204,15 +219,28 @@ def add_progression(chord_progression, scale_progression, attrs, scale=False, me
                 
                 last_note = note.number
                 
-            if group_chord:
-            
+            if group_chord:            
                 beat_notes = []
                 for beat in sub_beats:
                     assert len(beat.notes) == 1
                     beat_notes.append(beat.notes[0])
                 #TODO: duration mode from last duration too?
-                common_beat = mid.Beat(pick_on_curve(note_duration, 1.0), beat_notes, name=chord)
+                
+                               
+                
+                duration, silenced = pick_duration(attrs, choices_duration, last_group_duration, measure_duration, current_group_measure_dur, add_silence = True)
+                if duration <= 0:
+                    break
+                if silenced:
+                    for note in beat_notes:
+                        note.note = mid.SILENCE
+                current_group_measure_dur += duration
+                print(duration, last_group_duration, current_group_measure_dur)
+                
+                
+                common_beat = mid.Beat(duration, beat_notes, name=chord)
                 beats.append(common_beat)
+                
             else:
                 beats.extend(sub_beats)
             logger.debug( f"{chord}, {[b.notes[0].note for b in sub_beats]}" )
@@ -269,7 +297,7 @@ def split_in_colors(names_list, separator=", "):
     
             
 #------------------------------------------------------------------------------
-def describe_music(app, attrs, suffix="<br /><font color='silver'>Generating...</font>"):#TODO:tr    
+def describe_music(app, attrs, suffix):#TODO:tr    
     desc = ""
     bool_desc_true = ""
     bool_desc_false = ""
@@ -277,7 +305,7 @@ def describe_music(app, attrs, suffix="<br /><font color='silver'>Generating...<
         setting = attrs[a]
         
         if setting.unlocked() and setting.enabled():
-            name = app.tr(a[1:]).replace("instrument_","").replace("_", ' ')
+            name = app.tr(a[1:]).replace("instrument_","").replace("_", ' ').title()
             val = setting.gete()
             if setting.isBool():                
                 if val:                    
@@ -342,8 +370,8 @@ def get_rpt_progression(chord_progression, scale_progression, nb_chords):
                     # I:
                     new_chord = first_chord
                 else:
-                    # vi:?    
-                    new_chord = add_semitones(first_chord, -5) #TODO: + "min"
+                    # vi:
+                    new_chord = add_semitones(first_chord, -3) #TODO: + "min"
                 # Change first_chord?
                 first_chord = new_chord
             chord_progression.append(new_chord)
@@ -356,9 +384,15 @@ def get_rpt_progression(chord_progression, scale_progression, nb_chords):
     return chord_progression, scale_progression
 
 #------------------------------------------------------------------------------
+def add_random_tension(chord_progression, scale_progression):
+    # TODO
+    return chord_progression, scale_progression
+    
+    
+#------------------------------------------------------------------------------
 def make_midi(filename, app, attrs, type):
     
-    music_desc = "<br /><font color='silver'>Generated:</font><br />"# TODO: translate
+    music_desc = f"<br /><font color='silver'>{app.tr("GENERATED_")}</font><br />"# TODO: translate
     s_drops = False #TODO
     
     chord = choice(mid.NOTES)
@@ -386,9 +420,9 @@ def make_midi(filename, app, attrs, type):
         # TODO: Notes with the octave. Return Note() here, and make sure we go up if we go over G.
         #skip_random = 0.33
         skip_random = 0.0
-        beats = add_progression(chord_progression, scale_progression, attrs, octave_start=6, note_duration=[4], skip_random=skip_random, group_chord=False)
+        beats = add_progression(chord_progression, scale_progression, attrs, octave_start=6, choices_duration=[4], skip_random=skip_random, group_chord=False)
         channels.append(mid.Channel(beats=beats, instrument=115)) 
-        beats = add_progression(chord_progression, scale_progression, attrs, octave_start=7, note_duration=[4], skip_random=skip_random, group_chord=False)
+        beats = add_progression(chord_progression, scale_progression, attrs, octave_start=7, choices_duration=[4], skip_random=skip_random, group_chord=False)
         beats.insert(0,mid.Beat(duration=0.25, notes=[mid.Note("", octave=1)]))
         channels.append(mid.Channel(beats=beats, instrument=113)) 
         #TODO: Change to switch_to_drops(channels, beats) ?
@@ -424,13 +458,16 @@ def make_midi(filename, app, attrs, type):
                     chord_progression.append(chord)
                 scale_progression = chord_progression
         
+        if attrs["_progression_random_tension"].gete():
+            chord_progression, scale_progression = add_random_tension(chord_progression, scale_progression)
+
         
         if attrs["_scales"].gete():
             if not attrs["_chord_progression"].gete(): 
-                music_desc += f"Random "
-            music_desc += f"<font color='blue'>Chords:</font> {', '.join(chord_progression)}<br />"
+                music_desc += f"{app.tr("RANDOM_")}"
+            music_desc += f"<font color='blue'>{app.tr("CHORDS_")}</font> {', '.join(chord_progression)}<br />"
             if attrs["_chord_progression2"].gete():
-                music_desc += f"<font color='blue'>Scales:</font> {', '.join(scale_progression)}<br />"
+                music_desc += f"<font color='lightblue'>{app.tr("SCALES_")}</font> {', '.join(scale_progression)}<br />"
                 
 
         # randrange(0,79)
@@ -488,9 +525,9 @@ def make_midi(filename, app, attrs, type):
                 
             instrument_bass2, name_bass2 = instr.random_instrument(possible_instruments)
             
-            music_desc += f"<font color='green'>melody:</font> {name_melody}"
+            music_desc += f"<font color='green'>{app.tr("MELODY_")}</font> {name_melody}"
             if attrs["_bass_tracks"].gete():
-                music_desc += f", <font color='green'>bass:</font> {name_bass}"
+                music_desc += f", <font color='green'>{app.tr("BASS_")}</font> {name_bass}"
             music_desc += "<br />"
         else:
             s_drops = True
@@ -502,64 +539,62 @@ def make_midi(filename, app, attrs, type):
         beats = []
         #skip_random = 0.5#0.5 # 0 to 1
         #randomize = True
-        #note_duration1 = [2,2,4,8]
-        #note_duration2 = [0.5,0.5,1,2]
+        #choices_duration_bass = [2,2,4,8]
+        #choices_duration_melody = [0.5,0.5,1,2]
         #skip_over_silence = 0.5
-        #repeat_chord = 1
         
         
-        skip_random_bass = 0.4 if attrs["_test_jazz_scales"].gete() else 0.05
+        skip_random_bass = 0.8 if attrs["_test_jazz_scales"].gete() else 0.05
         skip_random_melody = 0.2 if attrs["_test_jazz_scales"].gete() else 0.1
         randomize = 0.2 if attrs["_less_random_test"].gete() else 1.0 # TODO: int
         # TODO: Flip sometimes?
-        #note_duration1 = [2]# TODO: Should match. Go to my 8 years old code and start from that instead of doing nothing really useful here...
-        #note_duration2 = [1]
+        #choices_duration_bass = [2]# TODO: Should match. Go to my 8 years old code and start from that instead of doing nothing really useful here...
+        #choices_duration_melody = [1]
         if attrs["_frequency"].gete():
             # TODO: I really need to have measures here, not random things, so that they MATCH (bass and melody)            
             # From least to most probable
-            note_duration1 = [2]#Until repeat_chord is fixed[0.25, 3, 1.5, 0.5, 4, 1, 2, 2]
+            choices_duration_bass = [2]#TODO better...[0.25, 3, 0.5, 1.5, 4, 1, 2, 2]
             
-            note_duration2 = [4, 3, 0.25, 1.5, 2, 0.5, 1, 1]
+            choices_duration_melody = [4, 3, 0.25, 1.5, 2, 0.5, 1, 1]
             if attrs["_slower"].gete():
-                note_duration2.sort()
-                note_duration2.append(4)
+                choices_duration_melody.sort()
+                choices_duration_melody.append(4)
             if attrs["_faster"].gete():
-                note_duration2.sort(reverse=True)
-                note_duration2.append(0.25)
+                choices_duration_melody.sort(reverse=True)
+                choices_duration_melody.append(0.25)
         else:
-            note_duration1 = [4]
-            note_duration2 = [4]
+            choices_duration_bass = [4]
+            choices_duration_melody = [4]
             skip_random_bass = 0.0
             skip_random_melody = 0.0
         
         skip_over_silence = 0
-        repeat_chord = 2#TODO: Remove repeat_chord! (Use measure_time instead)
         
         #for chord in chord_progression:
         #    beats.append(mid.Beat(duration=1, notes=[mid.Note(chords.from_shorthand(chord)[0], OCTAVE)]))
         if not s_drops and attrs["_bass_tracks"].gete():
-            beats = add_progression(chord_progression, scale_progression, attrs, octave_start=OCTAVE, note_duration=note_duration1, skip_random=skip_random_bass, group_chord=True, skip_over_silence=skip_over_silence, repeat_chord=repeat_chord, randomize=randomize)        
+            beats = add_progression(chord_progression, scale_progression, attrs, octave_start=OCTAVE, choices_duration=choices_duration_bass, skip_random=skip_random_bass, group_chord=True, skip_over_silence=skip_over_silence, randomize=randomize)
             channels.append(mid.Channel(beats=beats, instrument=instrument_bass)) 
         
-        #beats = add_progression(chord_progression, attrs, octave_start=OCTAVE, note_duration=note_duration1, skip_random=skip_random_bass, group_chord=True, skip_over_silence=skip_over_silence, repeat_chord=repeat_chord)
+        #beats = add_progression(chord_progression, attrs, octave_start=OCTAVE, choices_duration=choices_duration_bass, skip_random=skip_random_bass, group_chord=True, skip_over_silence=skip_over_silence)
         #channels.append(mid.Channel(beats=beats, instrument=instrument_bass2)) 
         
         #5 sometimes? needs to go higher sometimes?
         OCTAVE = 4
-        beats = add_progression(chord_progression, scale_progression, attrs, scale=True, octave_start=OCTAVE, note_duration=note_duration2, skip_random=skip_random_melody, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
+        beats = add_progression(chord_progression, scale_progression, attrs, scale=True, octave_start=OCTAVE, choices_duration=choices_duration_melody, skip_random=skip_random_melody, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
         if not s_drops:
             channels.append(mid.Channel(beats=beats, instrument=instrument_melody)) 
         else:
             switch_to_drops(channels, beats)
         
         #OCTAVE = 4
-        #beats = add_progression(chord_progression, scale_progression, attrs, octave_start=OCTAVE, note_duration=note_duration2, skip_random=skip_random_melody, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
+        #beats = add_progression(chord_progression, scale_progression, attrs, octave_start=OCTAVE, choices_duration=choices_duration_melody, skip_random=skip_random_melody, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
         #channels.append(mid.Channel(beats=beats, instrument=118, channel_id_override=9)) 
     
     
     
         
     mid.make_file(filename, channels, tempo=tempo)
-    music_desc += f"tempo: <font color='red'>{tempo_str}</font> ({tempo}bps)"
+    music_desc += f"{app.tr("TEMPO_")}<font color='red'>{tempo_str.title()}</font> ({tempo}{app.tr("TEMPO_BPM")})"
     logger.info(music_desc)
     return describe_music(app, attrs, music_desc), tempo
