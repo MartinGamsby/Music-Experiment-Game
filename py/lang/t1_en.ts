@@ -123,6 +123,10 @@
         <translation>Scales: </translation>
     </message>
     <message>
+        <source>LOGIC_</source>
+        <translation>Logic: </translation>
+    </message>
+    <message>
         <source>MELODY_</source>
         <translation>Melody: </translation>
     </message>

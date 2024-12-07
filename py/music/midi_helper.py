@@ -36,6 +36,7 @@ TEMPO = {
 #------------------------------------------------------------------------------        
 def swap_accidentals(note):
     # This is crap, mingus returns crap.
+    # Well apparently mingus does it: mingus.core.scales.reduce_accidentals
     for i in range(10):
         note = note.replace("A##", "B")
         note = note.replace("B##", "C#")
@@ -143,6 +144,13 @@ class Channel:
     
     instrument: int = 0
     channel_id_override: int = -1
+    
+#------------------------------------------------------------------------------
+@dataclass
+class MeasureDesc:
+    chords: List[str]
+    scales: List[str]
+    desc: List[str]
     
 #------------------------------------------------------------------------------
 def make_file(filename, channels, tempo):

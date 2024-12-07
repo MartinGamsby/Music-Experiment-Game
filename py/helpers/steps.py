@@ -1,5 +1,6 @@
 import os
 import yaml
+from helpers.file_helper import abspath
 
 import logging
 logger = logging.getLogger(__name__)
@@ -7,7 +8,7 @@ logger = logging.getLogger(__name__)
 #------------------------------------------------------------------------------
 class Steps:
 
-    def __init__(self, filename="assets/steps.yaml"):
+    def __init__(self, filename=abspath(os.path.join("assets", "steps.yaml"))):
         super().__init__()       
         self.__load(filename)
         

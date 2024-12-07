@@ -18,8 +18,24 @@ class TestMidiHelper(unittest.TestCase):
         
 #------------------------------------------------------------------------------
     def test_rpt_progression(self):
-        self.assertEqual(mb.get_rpt_progression(["C"], ["C"], 2), (["C","Dmin"], ['C', 'C']))
-        self.assertEqual(mb.get_rpt_progression(["C"], ["C"], 7), (["C","Dmin", "G7", "C", "Dmin", "G7", "C"], ['C', 'C', 'C', 'C', 'C', 'C', 'C']))
+        chord = ["C"]
+        
+        possibilities = [
+            (["C","F","G7","C"],        ['C', 'C', 'C', 'C'], 'R: I, P: IV, T: V7, R: I'),
+            (["C","F","Bdim","C"],      ['C', 'C', 'C', 'C'], 'R: I, P: IV, T: vii*, R: I'),
+            (["C","Dmin","G7","C"],     ['C', 'C', 'C', 'C'], 'R: I, P: ii, T: V7, R: I'),
+            (["C","Dmin","Bdim","C"],   ['C', 'C', 'C', 'C'], 'R: I, P: ii, T: vii*, R: I'),
+            
+            (["C","F","G7","Amin"],        ['C', 'C', 'C', 'A'], 'R: I, P: IV, T: V7, R: vi/I'),
+            (["C","F","Bdim","Amin"],      ['C', 'C', 'C', 'A'], 'R: I, P: IV, T: vii*, R: vi/I'),
+            (["C","Dmin","G7","Amin"],     ['C', 'C', 'C', 'A'], 'R: I, P: ii, T: V7, R: vi/I'),
+            (["C","Dmin","Bdim","Amin"],   ['C', 'C', 'C', 'A'], 'R: I, P: ii, T: vii*, R: vi/I'),
+        ]
+        
+        for i in range(100):
+            result = mb.get_rpt_progression(chord, chord, 2) 
+            
+            self.assertIn((result.chords, result.scales, result.desc), possibilities)
         
 #------------------------------------------------------------------------------
     def test_transition_chord(self):

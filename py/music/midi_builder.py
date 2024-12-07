@@ -78,9 +78,23 @@ def pick_duration(attrs, choices_duration, last_duration, measure_duration, curr
         pass #Keep same duration
     else:                    
         if attrs["_another_kind_of_random_duration"].gete():
-            duration = pick_on_curve(choices_duration, 1.0)#choices_duration.index(duration)/len(choices_duration))#TODO:
-            # TODO: That's not enough, it needs to be CLOSE too. Check back the c++ code, it was better...
-            choices_duration.append(duration)
+            
+            
+            if False:# 3rd type of random??
+                # The longer the list, the less it's skewed? (Need to change pick_on_curve for that)
+                if len(choices_duration)>20:
+                    duration = choice(choices_duration)
+                else:
+                    duration = pick_on_curve(choices_duration, 1.0)#choices_duration.index(duration)/len(choices_duration))#TODO:
+                # TODO: That's not enough, it needs to be CLOSE too. Check back the c++ code, it was better...
+                diff = int(4 - duration)+2
+                print(f"DIFF: {diff} (for {duration})")
+                for i in range(diff):
+                    choices_duration.append(duration)
+            else:
+                duration = pick_on_curve(choices_duration, 1.0)
+                choices_duration.append(duration)
+                
         else:
             # TODO: Make the mode last duration instead (It was done, but I think this is skewed... fix it)
             # TODO: make it pick from previous durations too (add them to a choices_duration equivalent list? with mode beind the last one...) ortransformer-like, I guess, ugh
@@ -235,7 +249,7 @@ def add_progression(chord_progression, scale_progression, attrs, scale=False, me
                     for note in beat_notes:
                         note.note = mid.SILENCE
                 current_group_measure_dur += duration
-                print(duration, last_group_duration, current_group_measure_dur)
+                #print(duration, last_group_duration, current_group_measure_dur)
                 
                 
                 common_beat = mid.Beat(duration, beat_notes, name=chord)
@@ -328,6 +342,8 @@ def pick_on_curve(choices, mode=0.5):
     return choices[int(np.random.triangular(0, int(nb*mode), nb, size=None))]
     
     
+# TODO: Different file, and return Measure desc class
+
 #------------------------------------------------------------------------------
 def get_rpt_progression(chord_progression, scale_progression, nb_chords):
     if len(chord_progression) != 1:
@@ -337,55 +353,70 @@ def get_rpt_progression(chord_progression, scale_progression, nb_chords):
     class ProgressionsState(Enum):
         R, P, T, End = range(4)
             
+    ret_chords = [chord_progression[0]]
+    ret_scales = [scale_progression[0]]
+    desc = "R: I"
             
     first_chord = chord_progression[0]
     for i in range(nb_chords+3): # Breaking lower, adding 3 to make sure we end on an R
         state = ProgressionsState(i%ProgressionsState.End.value)
         if i >= len(chord_progression):
-            #print(f"state {state}, from chord {last_chord}" )
+            logger.debug(f"state {state}, from chord {last_chord}" )
             
             if state == ProgressionsState.P:
-                if len(chord_progression) > nb_chords:
+                if len(ret_chords) >= nb_chords:
+                    logger.debug("done")
                     break
                 # P: ii or IV
                 if random() < 0.5:
                     # ii:
                     new_chord = add_semitones(first_chord, 2) + "min"
+                    desc += ", P: ii"
+                    logger.debug(f"P: ii ({first_chord} -> {new_chord})")
                 else:
                     # IV:
                     new_chord = add_semitones(first_chord, 5)
+                    desc += ", P: IV"
+                    logger.debug(f"P: IV ({first_chord} -> {new_chord})")
                     
             elif state == ProgressionsState.T:
                 # T: V7 or vii*
                 if random() < 0.5:
                     # V7:
                     new_chord = add_semitones(first_chord, -5) + "7"
+                    desc += ", T: V7"
+                    logger.debug(f"T: V7 ({first_chord} -> {new_chord})")
                 else:
                     #vii*
                     new_chord = add_semitones(first_chord, -1) + "dim"
+                    desc += ", T: vii*"
+                    logger.debug(f"T: vii* ({first_chord} -> {new_chord})")
                 
             elif state == ProgressionsState.R:            
                 # R: I or vi
                 if random() < 0.5:
                     # I:
                     new_chord = first_chord
+                    desc += ", R: I"
+                    logger.debug(f"R: I ({first_chord} -> {new_chord})")
                 else:
                     # vi:
-                    new_chord = add_semitones(first_chord, -3) #TODO: + "min"
+                    new_chord = add_semitones(first_chord, -3) + "min"
+                    desc += ", R: vi/I"
+                    logger.debug(f"R: vi ({first_chord} -> {new_chord})")
                 # Change first_chord?
-                first_chord = new_chord
-            chord_progression.append(new_chord)
-            scale_progression.append(first_chord)
+                first_chord = new_chord.replace("min","")
+            ret_chords.append(new_chord)
+            ret_scales.append(first_chord)
             
-        last_chord = chord_progression[i]
+        last_chord = ret_chords[i]
         
         
         
-    return chord_progression, scale_progression
+    return mid.MeasureDesc(ret_chords, ret_scales, desc)
 
 #------------------------------------------------------------------------------
 def add_random_tension(chord_progression, scale_progression):
-    # TODO
     return chord_progression, scale_progression
     
     
@@ -445,8 +476,12 @@ def make_midi(filename, app, attrs, type):
             #TODO: Length (int setting)
             if attrs["_chord_progression2"].gete():
                 
-                chord_progression, scale_progression = get_rpt_progression(chord_progression, scale_progression, nb_chords)
-                
+                # TODO: use mid.MeasureDesc everywhere
+                result = get_rpt_progression(chord_progression, scale_progression, nb_chords)
+                chord_progression = result.chords
+                scale_progression = result.scales
+                desc = result.desc
+                music_desc += f"<font color='darkblue'>{app.tr("LOGIC_")}</font> {desc}<br />"
             else: #_chord_progression
                 for i in range(nb_chords):#4,13)):
                     if False:#TODO: setting?random() < 0.15:# sometimes keep the same
@@ -553,7 +588,7 @@ def make_midi(filename, app, attrs, type):
         if attrs["_frequency"].gete():
             # TODO: I really need to have measures here, not random things, so that they MATCH (bass and melody)            
             # From least to most probable
-            choices_duration_bass = [2]#TODO better...[0.25, 3, 0.5, 1.5, 4, 1, 2, 2]
+            choices_duration_bass = [0.25, 3, 0.5, 1.5, 4, 1, 2, 2]
             
             choices_duration_melody = [4, 3, 0.25, 1.5, 2, 0.5, 1, 1]
             if attrs["_slower"].gete():

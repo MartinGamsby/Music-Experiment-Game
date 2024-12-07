@@ -123,6 +123,10 @@
         <translation>Gammes: </translation>
     </message>
     <message>
+        <source>LOGIC_</source>
+        <translation>Logique: </translation>
+    </message>
+    <message>
         <source>MELODY_</source>
         <translation>Mélodie: </translation>
     </message>
