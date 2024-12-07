@@ -354,7 +354,7 @@ def make_midi(filename, app, attrs, type):
             if attrs["_chord_progression2"].gete():
                 
                 # TODO: use mid.MeasureDesc everywhere
-                measures = rpt.get_rpt_progression(chord, chord, nb_chords)
+                measures = rpt.get_rpt_progression(chord, chord, nb_chords, change_scale=0.5)#TODO:setting
                 
             else: #_chord_progression
                 for i in range(nb_chords):#4,13)):
@@ -472,8 +472,8 @@ def make_midi(filename, app, attrs, type):
         #skip_over_silence = 0.5
         
         
-        skip_random_bass = 0.8 if attrs["_test_jazz_scales"].gete() else 0.2
-        skip_random_melody = 0.2 if attrs["_test_jazz_scales"].gete() else 0.3
+        skip_random_bass = 0.8 if attrs["_test_jazz_scales"].gete() else 0.1
+        skip_random_melody = 0.2 if attrs["_test_jazz_scales"].gete() else 0.2
         randomize = 0.2 if attrs["_less_random_test"].gete() else 1.0 # TODO: int
         # TODO: Flip sometimes?
         #choices_duration_bass = [2]# TODO: Should match. Go to my 8 years old code and start from that instead of doing nothing really useful here...

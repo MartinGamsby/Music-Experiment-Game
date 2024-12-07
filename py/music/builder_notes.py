@@ -4,8 +4,8 @@ import music.midi_helper as mid
 #import numpy as np
 #from model import Model
 #
-from mingus.core import scales
-#from random import random, choice, randrange, shuffle
+from mingus.core import scales, chords
+from random import choice
 
 import logging
 logger = logging.getLogger(__name__)
@@ -37,6 +37,10 @@ def scales_with_notes(notes):
             matching_scales.append(s)
     return matching_scales
     
+#------------------------------------------------------------------------------
+def change_scale(from_chord):
+    return choice(scales_with_notes(chords.from_shorthand(from_chord)))
+
 #------------------------------------------------------------------------------
 def jazz_scale(chord):
     if type(chord) is not str:
