@@ -148,8 +148,8 @@ class Channel:
 #------------------------------------------------------------------------------
 @dataclass
 class MeasureDesc:
-    chords: List[str]
-    scales: List[str]
+    chord_progression: List[str]
+    scale_progression: List[str]
     desc: List[str]
     
 #------------------------------------------------------------------------------

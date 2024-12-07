@@ -1,6 +1,7 @@
 import music.midi_helper as mid
 import music.midi_instruments as instr
 import music.builder_rpt as rpt
+import music.builder_notes as bn
 import numpy as np
 from model import Model
 
@@ -72,15 +73,15 @@ def pick_duration(attrs, choices_duration, last_duration, measure_duration, curr
     return duration, silenced# TODO Is last_duration, current_measure_dur, etc. updated? Python?
     
 #------------------------------------------------------------------------------
-def add_progression(chord_progression, scale_progression, attrs, scale=False, measure_duration=4, choices_duration=[1], 
+def add_progression(measures, attrs, scale=False, measure_duration=4, choices_duration=[1], 
     octave_start=4, group_chord=False, skip_random=0.0, skip_over_silence=0, randomize=0.5):
     
     group_chord = group_chord and attrs["_chords"].gete()
         
     beats = []
     velocity = 100
-    for idx, chord in enumerate(chord_progression):
-        scale_used = scale_progression[idx]
+    for idx, chord in enumerate(measures.chord_progression):
+        scale_used = measures.scale_progression[idx]
         
         last_group_duration = choices_duration[int(len(choices_duration)/2)]#Defaultm middle duration
         current_group_measure_dur = 0
@@ -304,8 +305,7 @@ def make_midi(filename, app, attrs, type):
     s_drops = False #TODO
     
     chord = choice(mid.NOTES)
-    chord_progression = [chord]
-    scale_progression = [chord]
+    measures = mid.MeasureDesc([chord], [chord], [])
     
     tempo_choices = ["ADAGIO", "ADAGIETTO", "ANDANTE", "ANDANTINO", "MODERATO", "ALLEGRETTO", "ALLEGRO", "VIVACE", "PRESTO", "PRETISSIMO"]
     
@@ -328,9 +328,9 @@ def make_midi(filename, app, attrs, type):
         # TODO: Notes with the octave. Return Note() here, and make sure we go up if we go over G.
         #skip_random = 0.33
         skip_random = 0.0
-        beats = add_progression(chord_progression, scale_progression, attrs, octave_start=6, choices_duration=[4], skip_random=skip_random, group_chord=False)
+        beats = add_progression(measures, attrs, octave_start=6, choices_duration=[4], skip_random=skip_random, group_chord=False)
         channels.append(mid.Channel(beats=beats, instrument=115)) 
-        beats = add_progression(chord_progression, scale_progression, attrs, octave_start=7, choices_duration=[4], skip_random=skip_random, group_chord=False)
+        beats = add_progression(measures, attrs, octave_start=7, choices_duration=[4], skip_random=skip_random, group_chord=False)
         beats.insert(0,mid.Beat(duration=0.25, notes=[mid.Note("", octave=1)]))
         channels.append(mid.Channel(beats=beats, instrument=113)) 
         #TODO: Change to switch_to_drops(channels, beats) ?
@@ -344,42 +344,58 @@ def make_midi(filename, app, attrs, type):
         nb_chords = randrange(3,13)
         if not attrs["_chord_progression"].gete():
             for i in range(nb_chords):
-                chord_progression.append(choice(mid.NOTES))
-            scale_progression = chord_progression
+                measures.chord_progression.append(choice(mid.NOTES))
+            measures.scale_progression = measures.chord_progression
         elif False: # TODO: Setting using scales_with_notes()?
-            chord_progression = ["Am7", "G"]
+            measures.chord_progression = ["Am7", "G"]
             # Am7 -> Do, Sol ou Fa
         else:
             #TODO: Length (int setting)
             if attrs["_chord_progression2"].gete():
                 
                 # TODO: use mid.MeasureDesc everywhere
-                result = rpt.get_rpt_progression(chord_progression, scale_progression, nb_chords)
-                chord_progression = result.chords
-                scale_progression = result.scales
-                desc = result.desc
-                music_desc += f"<font color='darkblue'>{app.tr("LOGIC_")}</font> {desc}<br />"
+                measures = rpt.get_rpt_progression(chord, chord, nb_chords)
+                
             else: #_chord_progression
                 for i in range(nb_chords):#4,13)):
                     if False:#TODO: setting?random() < 0.15:# sometimes keep the same
                         pass
                     else:
-                        chord = add_semitones(chord, -5)
+                        chord = bn.add_semitones(chord, -5)
                     if False:#TODO: setting? random() < 0.25:# sometimes add tension chords:
-                        chord_progression.append(tension_chord_going_to(chord))
-                    chord_progression.append(chord)
-                scale_progression = chord_progression
+                        measures.chord_progression.append(tension_chord_going_to(chord))
+                    measures.chord_progression.append(chord)
+                measures.scale_progression = measures.chord_progression
         
-        if attrs["_progression_random_tension"].gete():
-            chord_progression, scale_progression = add_random_tension(chord_progression, scale_progression)
+        #if attrs["_progression_random_tension"].gete():
+        #    measures = add_random_tension(measures)
 
         
+        from tabulate import tabulate
+        rows = []
+        
         if attrs["_scales"].gete():
-            if not attrs["_chord_progression"].gete(): 
-                music_desc += f"{app.tr("RANDOM_")}"
-            music_desc += f"<font color='blue'>{app.tr("CHORDS_")}</font> {', '.join(chord_progression)}<br />"
-            if attrs["_chord_progression2"].gete():
-                music_desc += f"<font color='lightblue'>{app.tr("SCALES_")}</font> {', '.join(scale_progression)}<br />"
+            if attrs["_chord_progression2"].gete():            
+                rows.append([f"<font color='darkblue'>{app.tr("LOGIC_")}</font>"])
+                rows[-1].extend(measures.desc)
+                
+            if not attrs["_chord_progression"].gete():
+                rows.append([f"{app.tr("RANDOM_")}"])
+            else:
+                rows.append([""])
+            rows[-1][0] += f"<font color='blue'>{app.tr("CHORDS_")}</font>"
+            rows[-1].extend(measures.chord_progression)
+            
+            if attrs["_chord_progression2"].gete() and measures.chord_progression != measures.scale_progression:
+                rows.append([f"<font color='lightblue'>{app.tr("SCALES_")}</font>"])
+                rows[-1].extend(measures.scale_progression)
+                
+        # Yeah I really should do it in another way than html...    
+        music_desc += tabulate(rows, tablefmt='html') \
+            .replace("&gt;",">").replace("&lt;","<").replace("&#x27;","'") \
+            .replace("<td", "<td style='padding-right: 5px; padding-left: 5px;'") \
+            .replace("<table", "<table style=' border: 1px solid white; border-collapse: collapse'")
+            
                 
 
         # randrange(0,79)
@@ -456,8 +472,8 @@ def make_midi(filename, app, attrs, type):
         #skip_over_silence = 0.5
         
         
-        skip_random_bass = 0.8 if attrs["_test_jazz_scales"].gete() else 0.05
-        skip_random_melody = 0.2 if attrs["_test_jazz_scales"].gete() else 0.1
+        skip_random_bass = 0.8 if attrs["_test_jazz_scales"].gete() else 0.2
+        skip_random_melody = 0.2 if attrs["_test_jazz_scales"].gete() else 0.3
         randomize = 0.2 if attrs["_less_random_test"].gete() else 1.0 # TODO: int
         # TODO: Flip sometimes?
         #choices_duration_bass = [2]# TODO: Should match. Go to my 8 years old code and start from that instead of doing nothing really useful here...
@@ -485,22 +501,22 @@ def make_midi(filename, app, attrs, type):
         #for chord in chord_progression:
         #    beats.append(mid.Beat(duration=1, notes=[mid.Note(chords.from_shorthand(chord)[0], OCTAVE)]))
         if not s_drops and attrs["_bass_tracks"].gete():
-            beats = add_progression(chord_progression, scale_progression, attrs, octave_start=OCTAVE, choices_duration=choices_duration_bass, skip_random=skip_random_bass, group_chord=True, skip_over_silence=skip_over_silence, randomize=randomize)
+            beats = add_progression(measures, attrs, octave_start=OCTAVE, choices_duration=choices_duration_bass, skip_random=skip_random_bass, group_chord=True, skip_over_silence=skip_over_silence, randomize=randomize)
             channels.append(mid.Channel(beats=beats, instrument=instrument_bass)) 
         
-        #beats = add_progression(chord_progression, attrs, octave_start=OCTAVE, choices_duration=choices_duration_bass, skip_random=skip_random_bass, group_chord=True, skip_over_silence=skip_over_silence)
+        #beats = add_progression(measures, attrs, octave_start=OCTAVE, choices_duration=choices_duration_bass, skip_random=skip_random_bass, group_chord=True, skip_over_silence=skip_over_silence)
         #channels.append(mid.Channel(beats=beats, instrument=instrument_bass2)) 
         
         #5 sometimes? needs to go higher sometimes?
         OCTAVE = 4
-        beats = add_progression(chord_progression, scale_progression, attrs, scale=True, octave_start=OCTAVE, choices_duration=choices_duration_melody, skip_random=skip_random_melody, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
+        beats = add_progression(measures, attrs, scale=True, octave_start=OCTAVE, choices_duration=choices_duration_melody, skip_random=skip_random_melody, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
         if not s_drops:
             channels.append(mid.Channel(beats=beats, instrument=instrument_melody)) 
         else:
             switch_to_drops(channels, beats)
         
         #OCTAVE = 4
-        #beats = add_progression(chord_progression, scale_progression, attrs, octave_start=OCTAVE, choices_duration=choices_duration_melody, skip_random=skip_random_melody, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
+        #beats = add_progression(measures, attrs, octave_start=OCTAVE, choices_duration=choices_duration_melody, skip_random=skip_random_melody, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
         #channels.append(mid.Channel(beats=beats, instrument=118, channel_id_override=9)) 
     
     
