@@ -1,5 +1,6 @@
 import music.midi_helper as mid
 import music.midi_instruments as instr
+import music.builder_rpt as rpt
 import numpy as np
 from model import Model
 
@@ -14,56 +15,11 @@ logger = logging.getLogger(__name__)
 #------------------------------------------------------------------------------
 class MusicBuildType(Enum):
     FILE, DROPS, GAME, MINGUS = range(4)
-
-#------------------------------------------------------------------------------
-def add_semitones(chord, semitones):
-    if type(chord) is not str:
-        raise Exception(f"chord ({chord}) should be a string")
-    to = mid.Note(chord).number    
-    return mid.Note.from_number(to+semitones).note
-    
-
-#------------------------------------------------------------------------------
-def tension_chord_going_to(to_chord):
-    # -5 semitones, add "7" if possible?
-    return add_semitones(to_chord, -5)+"7"
     
 #------------------------------------------------------------------------------
 def clamp(minimum, x, maximum):
     return max(minimum, min(x, maximum))
-    
-#------------------------------------------------------------------------------
-def scales_with_notes(notes):
-    """ From the notes passed in argument, return all the scales that contain all the notes """
-    matching_scales = []
-    for s in mid.NOTES:
-        scale_notes = scales.get_notes(s)
-        skip = False
-        for n in notes:
-            if not n in scale_notes:
-                skip = True
-                break
-        if not skip:
-            matching_scales.append(s)
-    return matching_scales
         
-#------------------------------------------------------------------------------
-def jazz_scale(chord):
-    if type(chord) is not str:
-        raise Exception(f"chord ({chord}) should be a string")
-    if "7" in chord:
-        return chords.from_shorthand(chord)
-    
-    first = mid.Note(chord).number
-    n2  = mid.Note.from_number(first+2).note
-    nb3 = mid.Note.from_number(first+3).note
-    n3  = mid.Note.from_number(first+4).note
-    nb5  = mid.Note.from_number(first+7).note
-    n5   = mid.Note.from_number(first+9).note
-    #nb7   = mid.Note.from_number(first-2).note
-    scale = [chord,n2,nb3,n3,nb5,n5]#,nb7]
-    return scale
-    
 #------------------------------------------------------------------------------
 def get_mode_from_idx(list, mode):
     # TODO: Is this skewed? Probably...
@@ -341,85 +297,6 @@ def pick_on_curve(choices, mode=0.5):
         raise Exception(f"{mode} needs to be between 0 and 1")
     return choices[int(np.random.triangular(0, int(nb*mode), nb, size=None))]
     
-    
-# TODO: Different file, and return Measure desc class
-
-#------------------------------------------------------------------------------
-def get_rpt_progression(chord_progression, scale_progression, nb_chords):
-    if len(chord_progression) != 1:
-        raise Exception(f"chord_progression ({chord_progression}) needs to have a starting chord")
-    if len(scale_progression) != 1:
-        raise Exception(f"scale_progression ({scale_progression}) needs to have a starting chord")
-    class ProgressionsState(Enum):
-        R, P, T, End = range(4)
-            
-    ret_chords = [chord_progression[0]]
-    ret_scales = [scale_progression[0]]
-    desc = "R: I"
-            
-    first_chord = chord_progression[0]
-    for i in range(nb_chords+3): # Breaking lower, adding 3 to make sure we end on an R
-        state = ProgressionsState(i%ProgressionsState.End.value)
-        if i >= len(chord_progression):
-            logger.debug(f"state {state}, from chord {last_chord}" )
-            
-            if state == ProgressionsState.P:
-                if len(ret_chords) >= nb_chords:
-                    logger.debug("done")
-                    break
-                # P: ii or IV
-                if random() < 0.5:
-                    # ii:
-                    new_chord = add_semitones(first_chord, 2) + "min"
-                    desc += ", P: ii"
-                    logger.debug(f"P: ii ({first_chord} -> {new_chord})")
-                else:
-                    # IV:
-                    new_chord = add_semitones(first_chord, 5)
-                    desc += ", P: IV"
-                    logger.debug(f"P: IV ({first_chord} -> {new_chord})")
-                    
-            elif state == ProgressionsState.T:
-                # T: V7 or vii*
-                if random() < 0.5:
-                    # V7:
-                    new_chord = add_semitones(first_chord, -5) + "7"
-                    desc += ", T: V7"
-                    logger.debug(f"T: V7 ({first_chord} -> {new_chord})")
-                else:
-                    #vii*
-                    new_chord = add_semitones(first_chord, -1) + "dim"
-                    desc += ", T: vii*"
-                    logger.debug(f"T: vii* ({first_chord} -> {new_chord})")
-                
-            elif state == ProgressionsState.R:            
-                # R: I or vi
-                if random() < 0.5:
-                    # I:
-                    new_chord = first_chord
-                    desc += ", R: I"
-                    logger.debug(f"R: I ({first_chord} -> {new_chord})")
-                else:
-                    # vi:
-                    new_chord = add_semitones(first_chord, -3) + "min"
-                    desc += ", R: vi/I"
-                    logger.debug(f"R: vi ({first_chord} -> {new_chord})")
-                # Change first_chord?
-                first_chord = new_chord.replace("min","")
-            ret_chords.append(new_chord)
-            ret_scales.append(first_chord)
-            
-        last_chord = ret_chords[i]
-        
-        
-        
-    return mid.MeasureDesc(ret_chords, ret_scales, desc)
-
-#------------------------------------------------------------------------------
-def add_random_tension(chord_progression, scale_progression):
-    return chord_progression, scale_progression
-    
-    
 #------------------------------------------------------------------------------
 def make_midi(filename, app, attrs, type):
     
@@ -477,7 +354,7 @@ def make_midi(filename, app, attrs, type):
             if attrs["_chord_progression2"].gete():
                 
                 # TODO: use mid.MeasureDesc everywhere
-                result = get_rpt_progression(chord_progression, scale_progression, nb_chords)
+                result = rpt.get_rpt_progression(chord_progression, scale_progression, nb_chords)
                 chord_progression = result.chords
                 scale_progression = result.scales
                 desc = result.desc

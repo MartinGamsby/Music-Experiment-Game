@@ -11,7 +11,7 @@ from PySide6.QtCore import QObject, Slot, Signal, Property, QStandardPaths, QUrl
 
 import model
 import state
-from music import midi_builder
+from music import builder
 
 import helpers.translator as translator
 
@@ -57,9 +57,9 @@ class Backend(QObject):
         logger.info(f" [User pressed]  play_mid_pressed({value})")
         value = abspath(value)
         if value:
-            self.model.play_async(midi_builder.MusicBuildType.FILE, value)
+            self.model.play_async(builder.MusicBuildType.FILE, value)
         else:
-            self.model.play_async(midi_builder.MusicBuildType.DROPS, value)
+            self.model.play_async(builder.MusicBuildType.DROPS, value)
         
 #------------------------------------------------------------------------------
     @Slot(bool)
@@ -102,7 +102,7 @@ class Backend(QObject):
     @Slot(None)
     def makeAnotherMusic(self):
         logger.info(f" [User pressed]  makeAnotherMusic")
-        self.model.play_async(type=midi_builder.MusicBuildType.GAME)
+        self.model.play_async(type=builder.MusicBuildType.GAME)
         
 #------------------------------------------------------------------------------
     @Slot(None)

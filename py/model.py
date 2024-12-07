@@ -119,7 +119,6 @@ class Model(QObject):
         logger.info(f"Used ideas: {ideas}/{self._total_ideas.get()}")
         
         # Make another music
-        from music import midi_builder
         self.play_async(type=self._last_type, filename=self.filename)
         
 #------------------------------------------------------------------------------
@@ -159,12 +158,12 @@ class Model(QObject):
                 return
             
         #TODO: setting for one of these:        
-        from music import midi_builder
-        self.play_async(midi_builder.MusicBuildType.FILE, abspath("assets/town.mid"))
+        from music import builder
+        self.play_async(builder.MusicBuildType.FILE, abspath("assets/town.mid"))
         #self.play_async("")
-        #self.play_async("", type=midi_builder.MusicBuildType.DROPS)
-        #self.play_async("", type=midi_builder.MusicBuildType.GAME)
-        #self.play_async("", type=midi_builder.MusicBuildType.MINGUS)
+        #self.play_async("", type=builder.MusicBuildType.DROPS)
+        #self.play_async("", type=builder.MusicBuildType.GAME)
+        #self.play_async("", type=builder.MusicBuildType.MINGUS)
         
         # TODO: Repeat? 
         
@@ -177,8 +176,8 @@ class Model(QObject):
     def play_async(self, type, filename=""):
         logger.debug(f"from {self._last_type} to {type}")        
         
-        from music import midi_builder
-        self._music_description.set(midi_builder.describe_music(self.app, self._music_attrs, f"<br /><font color='silver'>{self.app.tr("GENERATING_")}</font>"))
+        from music import builder
+        self._music_description.set(builder.describe_music(self.app, self._music_attrs, f"<br /><font color='silver'>{self.app.tr("GENERATING_")}</font>"))
         
         self._last_type = type
     
@@ -204,8 +203,8 @@ class Model(QObject):
             if not self.filename:        
                 
                 filename = get_appdata_file("__DefaultOutput.mid", subfolder="Music")# "Midi"?
-                from music import midi_builder
-                desc, self._tempo = midi_builder.make_midi(filename, self.app, self._music_attrs, type=type)
+                from music import builder
+                desc, self._tempo = builder.make_midi(filename, self.app, self._music_attrs, type=type)
                 self._music_description.set(desc)
             else:
                 filename = self.filename
@@ -364,11 +363,11 @@ class Model(QObject):
         logger.info("APPLY STEP")
         step = self._game_progress.get()
         
-        from music import midi_builder
+        from music import builder
         #if step < 13375: # TODO:            
-        #    desc = self.play_async(type=midi_builder.MusicBuildType.DROPS)
+        #    desc = self.play_async(type=builder.MusicBuildType.DROPS)
         #else:
-        desc = self.play_async(type=midi_builder.MusicBuildType.GAME)            
+        desc = self.play_async(type=builder.MusicBuildType.GAME)            
         
         # Or ... save that in setting ... or ... always GAME, and is DROPS by default?
         
