@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------------------------
 def get_rpt_progression(first_chord, first_scale, nb_chords, change_scale=0.0):
-    measure = mid.MeasureDesc([first_chord], [first_scale], [])
+    measure = mid.MeasureDesc([first_chord], [first_scale], [], [])
     
     if len(measure.chord_progression) != 1:
         raise Exception(f"chord_progression ({measure.chord_progression}) needs to have a starting chord")

@@ -152,6 +152,8 @@ class MeasureDesc:
     scale_progression: List[str]
     desc: List[str]
     
+    detailed: List[List[str]]
+    
 #------------------------------------------------------------------------------
 def make_file(filename, channels, tempo):
     track = 0

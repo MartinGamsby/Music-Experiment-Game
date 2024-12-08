@@ -72,16 +72,30 @@ def pick_duration(attrs, choices_duration, last_duration, measure_duration, curr
         
     return duration, silenced# TODO Is last_duration, current_measure_dur, etc. updated? Python?
     
+    
+#------------------------------------------------------------------------------
+def beat_desc(beats):
+    desc = ""
+    descs = []
+    for b in beats:
+        descs.append("".join([n.note for n in b.notes]) + str(b.duration))
+    return ", ".join(descs)
+    
 #------------------------------------------------------------------------------
 def add_progression(measures, attrs, scale=False, measure_duration=4, choices_duration=[1], 
     octave_start=4, group_chord=False, skip_random=0.0, skip_over_silence=0, randomize=0.5):
+    
+    measures.detailed.append([])
+    detailed = measures.detailed[-1]
     
     group_chord = group_chord and attrs["_chords"].gete()
         
     beats = []
     velocity = 100
-    for idx, chord in enumerate(measures.chord_progression):
-        scale_used = measures.scale_progression[idx]
+    for measure_idx, chord in enumerate(measures.chord_progression):
+        detailed.append("")
+        
+        scale_used = measures.scale_progression[measure_idx]
         
         last_group_duration = choices_duration[int(len(choices_duration)/2)]#Defaultm middle duration
         current_group_measure_dur = 0
@@ -211,9 +225,11 @@ def add_progression(measures, attrs, scale=False, measure_duration=4, choices_du
                 
                 common_beat = mid.Beat(duration, beat_notes, name=chord)
                 beats.append(common_beat)
-                
+                desc = beat_desc([common_beat])
+                detailed[measure_idx] += (", " + desc) if detailed[measure_idx] else desc
             else:
                 beats.extend(sub_beats)
+                detailed[measure_idx] += beat_desc(sub_beats)
             logger.debug( f"{chord}, {[b.notes[0].note for b in sub_beats]}" )
             #notes.extend(sub_notes)
     return beats
@@ -305,7 +321,7 @@ def make_midi(filename, app, attrs, type):
     s_drops = False #TODO
     
     chord = choice(mid.NOTES)
-    measures = mid.MeasureDesc([chord], [chord], [])
+    measures = mid.MeasureDesc([chord], [chord], [], [])
     
     tempo_choices = ["ADAGIO", "ADAGIETTO", "ANDANTE", "ANDANTINO", "MODERATO", "ALLEGRETTO", "ALLEGRO", "VIVACE", "PRESTO", "PRETISSIMO"]
     
@@ -370,33 +386,6 @@ def make_midi(filename, app, attrs, type):
         #if attrs["_progression_random_tension"].gete():
         #    measures = add_random_tension(measures)
 
-        
-        from tabulate import tabulate
-        rows = []
-        
-        if attrs["_scales"].gete():
-            if attrs["_chord_progression2"].gete():            
-                rows.append([f"<font color='darkblue'>{app.tr("LOGIC_")}</font>"])
-                rows[-1].extend(measures.desc)
-                
-            if not attrs["_chord_progression"].gete():
-                rows.append([f"{app.tr("RANDOM_")}"])
-            else:
-                rows.append([""])
-            rows[-1][0] += f"<font color='blue'>{app.tr("CHORDS_")}</font>"
-            rows[-1].extend(measures.chord_progression)
-            
-            if attrs["_chord_progression2"].gete() and measures.chord_progression != measures.scale_progression:
-                rows.append([f"<font color='lightblue'>{app.tr("SCALES_")}</font>"])
-                rows[-1].extend(measures.scale_progression)
-                
-        # Yeah I really should do it in another way than html...    
-        music_desc += tabulate(rows, tablefmt='html') \
-            .replace("&gt;",">").replace("&lt;","<").replace("&#x27;","'") \
-            .replace("<td", "<td style='padding-right: 5px; padding-left: 5px;'") \
-            .replace("<table", "<table style=' border: 1px solid white; border-collapse: collapse'")
-            
-                
 
         # randrange(0,79)
         
@@ -519,6 +508,40 @@ def make_midi(filename, app, attrs, type):
         #beats = add_progression(measures, attrs, octave_start=OCTAVE, choices_duration=choices_duration_melody, skip_random=skip_random_melody, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
         #channels.append(mid.Channel(beats=beats, instrument=118, channel_id_override=9)) 
     
+    
+        
+        rows = []
+        
+        if attrs["_scales"].gete():
+            if attrs["_chord_progression2"].gete():            
+                rows.append([f"<font color='darkblue'>{app.tr("LOGIC_")}</font>"])
+                rows[-1].extend(measures.desc)
+                
+            if not attrs["_chord_progression"].gete():
+                rows.append([f"{app.tr("RANDOM_")}"])
+            else:
+                rows.append([""])
+            rows[-1][0] += f"<font color='blue'>{app.tr("CHORDS_")}</font>"
+            rows[-1].extend(measures.chord_progression)
+            
+            if attrs["_chord_progression2"].gete() and measures.chord_progression != measures.scale_progression:
+                rows.append([f"<font color='lightblue'>{app.tr("SCALES_")}</font>"])
+                rows[-1].extend(measures.scale_progression)
+                
+            print("MEASURES:", measures.detailed)
+            for i, track in enumerate(measures.detailed):
+                rows.append([f"<font color='lightblue'>{i}</font>"])
+                rows[-1].extend(track)
+
+            
+        from tabulate import tabulate
+        # Yeah I really should do it in another way than html...    
+        music_desc += tabulate(rows, tablefmt='html') \
+            .replace("&gt;",">").replace("&lt;","<").replace("&#x27;","'") \
+            .replace("<td", "<td style='padding-right: 5px; padding-left: 5px;'") \
+            .replace("<table", "<table style=' border: 1px solid white; border-collapse: collapse'")
+            
+                
     
     
         
