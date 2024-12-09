@@ -45,9 +45,9 @@ def get_rpt_progression(first_chord, first_scale, nb_chords, change_scale=0.0):
                 
                 if len(measure.desc) > 3 and random() < change_scale:
                     try:
-                        first_chord = notes.change_scale(new_chord)# Note that it can be the same scale
+                        first_chord = notes.change_scale(new_chord)
                         if first_chord != new_chord:
-                            measure.desc[-1] = "Pivot"# And make sure we do T, then R(I?)
+                            measure.desc[-1] += f" Pivot to {first_chord}"# And make sure we do T, then R(I?)
                     except:
                         pass
                     

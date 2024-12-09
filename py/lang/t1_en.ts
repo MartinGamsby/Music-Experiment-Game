@@ -142,6 +142,10 @@
         <source>TEMPO_BPM</source>
         <translation>bpm</translation>
     </message>
+    <message>
+        <source>MEASURE_</source>
+        <translation>Measure: </translation>
+    </message>
     
     <!-- settings -->
     <message>

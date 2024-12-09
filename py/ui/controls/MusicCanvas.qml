@@ -32,7 +32,7 @@ Rectangle {
         wrapMode: Text.Wrap
         textFormat: Text.RichText      
     
-        text: model ? model.p_music_description.s : ""
+        text: model ? model.p_music_detailed_desc : ""
         horizontalAlignment: Text.AlignLeft
     }
     

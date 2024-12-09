@@ -39,7 +39,12 @@ def scales_with_notes(notes):
     
 #------------------------------------------------------------------------------
 def change_scale(from_chord):
-    return choice(scales_with_notes(chords.from_shorthand(from_chord)))
+    choices = scales_with_notes(chords.from_shorthand(from_chord))
+    if from_chord in choices:
+        choices.remove(from_chord)
+    to_chord = choice(choices)
+    logger.info(f"from {from_chord} ({chords.from_shorthand(from_chord)}) to {choices} ({to_chord})")
+    return to_chord
 
 #------------------------------------------------------------------------------
 def jazz_scale(chord):

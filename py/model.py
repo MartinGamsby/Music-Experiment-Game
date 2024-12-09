@@ -30,6 +30,7 @@ MS_PER_S = (250 if DEBUG_TIME else 1000)
 class Model(QObject):
     appExiting = Signal()
     model_changed = Signal()
+    detailed_changed = Signal()
     save_config = Save()
     save_progress = Save()
 
@@ -73,7 +74,7 @@ class Model(QObject):
                         self._music_attrs[a] = attr
                         self._music_properties.append( attr )
                         attr.value_updated.connect(self.value_updated)
-        
+        self._measures = None
         
 #------------------------------------------------------------------------------
     def __del__(self):
@@ -178,6 +179,7 @@ class Model(QObject):
         
         from music import builder
         self._music_description.set(builder.describe_music(self.app, self._music_attrs, f"<br /><font color='silver'>{self.app.tr("GENERATING_")}</font>"))
+        self.update_detailed(0,0)
         
         self._last_type = type
     
@@ -204,11 +206,13 @@ class Model(QObject):
                 
                 filename = get_appdata_file("__DefaultOutput.mid", subfolder="Music")# "Midi"?
                 from music import builder
-                desc, self._tempo = builder.make_midi(filename, self.app, self._music_attrs, type=type)
+                self._measures, desc, self._tempo = builder.make_midi(filename, self.app, self._music_attrs, type=type)
                 self._music_description.set(desc)
+                self.update_detailed(0,0)
             else:
                 filename = self.filename
                 self._music_description.set("")
+                self.update_detailed(-1)
             if self._generate_mp3.get():
                 logger.debug("GENERATE WAV FROM MIDI")
                 symusic_midi.midi_to_wav_worker(self.worker, self.thread, filename, force_gen=not self.filename)
@@ -272,10 +276,15 @@ class Model(QObject):
         if at_ms > (self.last_beat_ms-avg_half_frame_ms):
             if self.last_beat_ms > 0:
                 nb_beats = self._music_beat.get()
-                if nb_beats > 0 and not(nb_beats % BEATS_PER_MEASURE):
+                if nb_beats > 0:                
                     if self.state == State.GAME:
-                        self.add_time_listened(int(ms_per_beat*BEATS_PER_MEASURE))
-                        logger.debug(f"at {at_ms} (beats#{nb_beats}, {int(ms_per_beat)}ms/beat (listened a total of: {int(self._time_listened.get()/1000)}s)")
+                        beat_idx = nb_beats % BEATS_PER_MEASURE
+                        if not(beat_idx):
+                            self.add_time_listened(int(ms_per_beat*BEATS_PER_MEASURE))
+                            logger.debug(f"at {at_ms} (beats#{nb_beats}, {int(ms_per_beat)}ms/beat (listened a total of: {int(self._time_listened.get()/1000)}s)")
+                        
+                        # Every beat:
+                        self.update_detailed(int(nb_beats / BEATS_PER_MEASURE), beat_idx)
                         
                 self._music_beat.add(1)
                 
@@ -475,6 +484,19 @@ class Model(QObject):
     p_music_description = Property(QObject, get_music_description, notify=model_changed)
     
 #------------------------------------------------------------------------------
+    def update_detailed(self, measure, beat=-1):
+        self._measure = measure
+        self._measure_beat = beat
+        self.detailed_changed.emit()
+    def get_music_detailed_desc(self):
+        from music import builder
+        return self._music_description.get() + builder.get_desc_from_measure(self.app, self._music_attrs, self._measures, self._measure, self._measure_beat)
+    _measure = 0
+    _measure_beat = -1
+    p_music_detailed_desc = Property(str, get_music_detailed_desc, notify=detailed_changed)
+    
+    
+#------------------------------------------------------------------------------
     _music_progress = Setting(0.0, "music_progress")
     def get_music_progress(self): return self._music_progress
     p_music_progress = Property(QObject, get_music_progress, notify=model_changed)
@@ -548,6 +570,10 @@ class Model(QObject):
     _less_random_test = Setting(False, "Music/less_random_test", save_progress, leftOf=_frequency, dependencies=[_frequency])
     def get_less_random_test(self): return self._less_random_test
     p_less_random_test = Property(QObject, get_less_random_test, notify=model_changed)
+    
+    _ternary_rythmn = Setting(False, "Music/ternary_rythmn", save_progress, leftOf=_less_random_test, dependencies=[_frequency])
+    def get_ternary_rythmn(self): return self._ternary_rythmn
+    p_ternary_rythmn = Property(QObject, get_ternary_rythmn, notify=model_changed)
     
     _scales = Setting(False, "Music/scales", save_progress, over=_frequency, dependencies=[_frequency])
     def get_scales(self): return self._scales
