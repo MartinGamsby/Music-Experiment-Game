@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 #------------------------------------------------------------------------------
 class Backend(QObject):
     
-    def __init__(self, qml_file, app, model: model.Model):
+    def __init__(self, qml_file, app, model: model.Model, engine=None):
         super().__init__()
 
         self.model = model
@@ -34,9 +34,7 @@ class Backend(QObject):
         
         self.app = app
         
-        state.register_for_qml(self.app)
-                
-        self.engine = QQmlApplicationEngine()
+        self.engine = engine
         self.engine.load(os.path.join(pathlib.Path(__file__).parent.resolve(), "ui", qml_file))
         
         self.engine.quit.connect(self.app.quit)

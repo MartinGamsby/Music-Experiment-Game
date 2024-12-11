@@ -12,6 +12,7 @@ from PySide6.QtCore import QObject, Slot, Signal, Property, QTimer, QThread, QLo
 import threading
 import symusic_midi
 from music import midi_helper
+from datetime import datetime
 
 from state import State, MusicState
 
@@ -26,6 +27,9 @@ DEBUG_TIME = False
 BEATS_PER_MEASURE = (1 if DEBUG_TIME else 4)
 MS_PER_S = (250 if DEBUG_TIME else 1000)
 
+UPDATE_EVERY_MEASURE = True # TODO: Needs to be only when we don't play video? (Or could it be in another thread to not slow down the playback?)
+UPDATE_EVERY_BEAT = False # 
+
 #------------------------------------------------------------------------------
 class Model(QObject):
     appExiting = Signal()
@@ -35,12 +39,13 @@ class Model(QObject):
     save_progress = Save()
 
 #------------------------------------------------------------------------------
-    def __init__(self, app):
+    def __init__(self, app, engine=None):
         super().__init__(app)
         self.save_config.init(get_appdata_file("config.ini", subfolder="Config"))
         self.save_progress.init(get_appdata_file("default.sav", subfolder="Save"))
         
         self.app = app
+        self.engine = engine # TODO: Move all of that in backend instead...
         self.start_time = time()
         self.t = None
         
@@ -62,6 +67,7 @@ class Model(QObject):
         self._steps = Steps()
         
         self.thread = None
+        self.update_thread = None
         
         # Hook settings
         self._music_attrs = {}
@@ -81,6 +87,8 @@ class Model(QObject):
         self.save_config.write_config() # TODO: More often than that...
         if self.thread:
             self.thread.deleteLater() #TODO: stop the thread
+        if self.update_thread:
+            self.update_thread.join()
     
 #------------------------------------------------------------------------------
     def init(self):
@@ -170,8 +178,7 @@ class Model(QObject):
         
 #------------------------------------------------------------------------------
     def shutdown(self):
-        import pygame_midi
-        pygame_midi.stop_music()
+        self.stop_music()
         
 #------------------------------------------------------------------------------
     def play_async(self, type, filename=""):
@@ -192,19 +199,23 @@ class Model(QObject):
             self.set_music_state(MusicState.PREPARING) # TODO: Prep state?
             self.t = threading.Thread(target=self._play_prepare, args=(type,))
             self.t.start()
+            
+#------------------------------------------------------------------------------
+    def stop_music(self):
+        import pygame_midi
+        pygame_midi.stop_music()    
+        self._gui_play_video.reset()
+        self._is_video.reset()
         
 #------------------------------------------------------------------------------
     def _play_prepare(self, type):
-        try:
-            import pygame_midi
-            
-            pygame_midi.stop_music()
+        try:            
+            self.stop_music()
             self._tempo = -1
             self.set_music_state(MusicState.GENERATING)
             
             if not self.filename:        
-                
-                filename = get_appdata_file("__DefaultOutput.mid", subfolder="Music")# "Midi"?
+                filename = get_appdata_file(f"{datetime.now().strftime('%Y-%m-%d_%H.%M.%S')}.mid", subfolder="Music")# "Midi"?
                 from music import builder
                 self._measures, desc, self._tempo = builder.make_midi(filename, self.app, self._music_attrs, type=type)
                 self._music_description.set(desc)
@@ -255,10 +266,19 @@ class Model(QObject):
             
         # Return music state from here?
         self.set_music_state(MusicState.PLAYING)
-        pygame_midi.play(self.out_filename, self.music_cb)
+        if self.out_filename.endswith(".mp4"):
+            self._is_video.set(True)
+            logger.info("PLAY MP4")            
+            self._gui_play_video.set(f"file:///{self.out_filename}", force=True)
+            sleep(1.5)#TODO? (Is this why the sound is choppy sometimes?
+            self._gui_play_video.value_updated.emit()
+        else:
+            self._is_video.set(False)
+            pygame_midi.play(self.out_filename, self.music_cb)
     
 #------------------------------------------------------------------------------
-    def music_cb(self, at_ms, to_ms):
+    @Slot(int, int, bool, result=None)
+    def music_cb(self, at_ms, to_ms, mp4=False):
         progress_pc = (at_ms/to_ms)
         self._music_progress.set(progress_pc)
         
@@ -279,20 +299,37 @@ class Model(QObject):
                 if nb_beats > 0:                
                     if self.state == State.GAME:
                         beat_idx = nb_beats % BEATS_PER_MEASURE
+                        
+                        do_update = False                            
                         if not(beat_idx):
                             self.add_time_listened(int(ms_per_beat*BEATS_PER_MEASURE))
                             logger.debug(f"at {at_ms} (beats#{nb_beats}, {int(ms_per_beat)}ms/beat (listened a total of: {int(self._time_listened.get()/1000)}s)")
+                            if UPDATE_EVERY_MEASURE:
+                                do_update = True
+                        if UPDATE_EVERY_BEAT:
+                            do_update = True
                         
                         # Every beat:
-                        self.update_detailed(int(nb_beats / BEATS_PER_MEASURE), beat_idx)
+                        if do_update:
+                            start_thread = (self.update_thread == None)
+                            if self.update_thread:
+                                if not self.update_thread.is_alive():
+                                    start_thread = True
+                            if start_thread:                                
+                                if not UPDATE_EVERY_BEAT:
+                                    beat_idx = -1
+                                self.update_thread = threading.Thread(target = self.update_detailed, args = (int(nb_beats / BEATS_PER_MEASURE), beat_idx))
+                                self.update_thread.start()
                         
-                self._music_beat.add(1)
+                if UPDATE_EVERY_MEASURE:
+                    self._music_beat.add(1)
                 
                 self.last_beat_ms += ms_per_beat
             else:            
                 if self.state == State.GAME:
                     self.add_time_listened(1)
-                self.last_beat_ms += 1#ms_per_beat/2 # TODO: Is this what midi to wav does?
+                # 1000 if we have midi_render.ADD_ONE_SECOND_BUFFER
+                self.last_beat_ms += 1#1000 if mp4 else 1#ms_per_beat/2 # TODO: Is this what midi to wav does?
         elif at_ms < (self.last_beat_ms - ms_per_beat):
             self.last_beat_ms = 0# TODO: This is sketchy...
             self._music_beat.set(0)
@@ -504,6 +541,14 @@ class Model(QObject):
     _music_beat = Setting(0, "music_beat")
     def get_music_beat(self): return self._music_beat
     p_music_beat = Property(QObject, get_music_beat, notify=model_changed)
+    
+    _gui_play_video = Setting("", "gui_play_video")
+    def get_gui_play_video(self): return self._gui_play_video
+    p_gui_play_video = Property(QObject, get_gui_play_video, notify=model_changed)
+    
+    _is_video = Setting(False, "is_video")
+    def get_is_video(self): return self._is_video
+    p_is_video = Property(QObject, get_is_video, notify=model_changed)
     
     
 #------------------------------------------------------------------------------

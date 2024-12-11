@@ -28,7 +28,7 @@ class Worker(QObject):
     def debug_audio(self, audio):        
         for i, p in enumerate(audio):                
             if p:
-                logger.debug(f"{i}, {p}")
+                logger.info(f"{i}, {p}")
             if i == 100:
                 break
                 
@@ -39,9 +39,15 @@ class Worker(QObject):
         if verbose:
             self.debug_audio(left)
         max_value = max(abs(max(left, key=abs)),abs(max(right, key=abs)))
+        
+        logger.info(f"Left: {len(left)} ({abs(max(left, key=abs))})")
+        print(left)
+        logger.info(f"Right: {len(right)} ({abs(max(right, key=abs))})")
+        print(right)
+        
 
         a = 0.99 / max_value
-        if a < 0.1:
+        if a < 0.01:
             logger.warning(f"Could not normalize audio by amplifying %.02fx (%.02f max)" % (a, max_value))
             return False
         logger.debug(f"Normalizing audio by amplifying %.02fx (%.02f max)" % (a, max_value))
@@ -86,11 +92,29 @@ class Worker(QObject):
         return wav_filename
     
 #------------------------------------------------------------------------------
-    def midi_to_wav(self, normalize=True, verbose=False, to_mp3=True):        
+    def audio_to_video(self, midi_filename, audio_filename, mp4_filename):
+        if True: # TODO: Setting
+            try:
+                from music.midi_render import create_video
+                create_video(midi_filename, audio_filename, video_filename=mp4_filename,
+                    image_width  = 512,
+                    image_height = 192,
+                    black_key_height = 2/3,
+                    vertical_speed = 1/2,
+                    fps = 30 )
+                logger.info(f"converted {audio_filename} to {mp4_filename}")
+                os.remove(audio_filename)
+                return mp4_filename
+            except:
+                pass
+        return audio_filename
+#------------------------------------------------------------------------------
+    def midi_to_wav(self, normalize=True, verbose=False, to_mp3=True, to_mp4=True):        
         filename = self.filename
         
         mp3_filename = fh.tempfile_path(filename, ".mp3")
         wav_filename = fh.tempfile_path(filename, ".wav")
+        mp4_filename = fh.tempfile_path(filename, ".mp4")
         
         
         if os.path.isfile(mp3_filename) and not self.force_gen:
@@ -113,15 +137,7 @@ class Worker(QObject):
         if normalize:
             i = 0
             audio = self._synth_from_path(filename)
-            
-            while not self.normalize_stereo_audio(audio, verbose):
-                i += 1
-                del audio
-                if i >= 1: #TODO: Always same results when it fails? why??
-                    logger.warning("FAILED, fallback to mid")
-                    self.out_filename = self.filename
-                    return self.out_filename
-                audio = self._synth_from_path(filename)
+            self.normalize_stereo_audio(audio, verbose)
         else:
             audio = self._synth_from_path(filename)
         
@@ -134,8 +150,11 @@ class Worker(QObject):
         
         
         if to_mp3 and not self.force_gen:
-            self.out_filename = self.wav_to_mp3(wav_filename, mp3_filename)    
-        
+            self.out_filename = self.wav_to_mp3(wav_filename, mp3_filename)
+            
+        if to_mp4:
+            self.out_filename = self.audio_to_video(filename, self.out_filename, mp4_filename)
+    
         return self.out_filename
     
 #------------------------------------------------------------------------------

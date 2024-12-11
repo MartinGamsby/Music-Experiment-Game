@@ -62,6 +62,14 @@
         <source>STATS_INGAME</source>
         <translation>In the game</translation>
     </message>
+    <message>
+        <source>PLAY</source>
+        <translation>Play</translation>
+    </message>
+    <message>
+        <source>PAUSE</source>
+        <translation>Pause</translation>
+    </message>
     
     
     <!-- Music states -->
@@ -102,6 +110,10 @@
     </message>
     
     <!-- Music description -->
+    <message>
+        <source>MUSIC_DESC_TITLE</source>
+        <translation>Music description</translation>
+    </message>
     <message>
         <source>GENERATING_</source>
         <translation>Generating:</translation>
@@ -201,6 +213,10 @@
     <message>
         <source>chord_progression</source>
         <translation>Chord progression (Cycle of fifths)</translation>
+    </message>
+    <message>
+        <source>chord_progression2</source>
+        <translation>Chord progression "RPT"</translation>
     </message>
     
 

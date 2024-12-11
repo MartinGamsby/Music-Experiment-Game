@@ -62,6 +62,14 @@
         <source>STATS_INGAME</source>
         <translation>Dans le jeu</translation>
     </message>
+    <message>
+        <source>PLAY</source>
+        <translation>Lecture</translation>
+    </message>
+    <message>
+        <source>PAUSE</source>
+        <translation>Pause</translation>
+    </message>
     
     
     <!-- Music states -->
@@ -101,7 +109,11 @@
         <translation>fichiers MIDI (*.mid)</translation>
     </message>
     
-    <!-- Music description -->
+    <!-- Music description -->    
+    <message>
+        <source>MUSIC_DESC_TITLE</source>
+        <translation>Description de la musique</translation>
+    </message>
     <message>
         <source>GENERATING_</source>
         <translation>Génération:</translation>
@@ -112,7 +124,7 @@
     </message>
     <message>
         <source>RANDOM_</source>
-        <translation>Aléatoire </translation>
+        <translation>(Aléatoire) </translation>
     </message>
     <message>
         <source>CHORDS_</source>
@@ -201,6 +213,10 @@
     <message>
         <source>chord_progression</source>
         <translation>Progression d'accords (Cycle de quintes)</translation>
+    </message>
+    <message>
+        <source>chord_progression2</source>
+        <translation>Progression d'accords "RPT"</translation>
     </message>
     
     <!-- Game -->

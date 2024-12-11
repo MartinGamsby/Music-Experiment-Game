@@ -13,6 +13,7 @@ from tabulate import tabulate
 import logging
 logger = logging.getLogger(__name__)
 
+SHOW_OCTAVE = False
 
 #------------------------------------------------------------------------------
 class MusicBuildType(Enum):
@@ -106,7 +107,8 @@ def beat_desc(beats):
                 #if(note_names_only.count(n.note) > 1):
                 if last_octave != n.octave:
                     #TODO: setting to show octave? 
-                    descs[-1] += f"<sup> oc{n.octave}</sup>"                    
+                    if SHOW_OCTAVE:
+                        descs[-1] += f"<sup> oc{n.octave}</sup>"                    
                     last_octave = n.octave
                     
                 descs[-1] += n.note
@@ -229,13 +231,14 @@ def add_progression(measures, attrs, scale=False, measure_duration=4, choices_du
                 else:
                     name = sub_notes[i]
                 
-                velocity += randrange(-10,12)#add tempo? and note speed?
-                velocity = clamp(36, velocity, 127)
+                velocity += pick_on_curve( range(-10,12), 0.5)#  randrange(-10,(15 if scale else 12))#add tempo? and note speed?
+                velocity = clamp(64, velocity, 127)
                 note = mid.Note(note=name, octave=octave, velocity=velocity)
                 logger.debug(velocity)
                 
                 if skip_random > 0:
-                    if random() < skip_random:
+                    # TODO: not always true?
+                    if not ((not scale) and ("7" in chord)) and random() < skip_random:
                         # Not always silence, perhaps?
                         if random() >= skip_over_silence:
                             # Add silence
@@ -377,7 +380,7 @@ def pick_on_curve(choices, mode=0.5):
     return choices[int(np.random.triangular(0, int(nb*mode), nb, size=None))]
     
 #------------------------------------------------------------------------------
-def get_desc_from_measure(app, attrs, measures, measure=-1, beat=-1):
+def get_desc_from_measure(app, attrs, measures, measure=-1, beat=-1): # TODO: Optimize for measure changes. But push something working first before breaking everything...
     if measures == None:
         return ""
     rows = []
@@ -385,8 +388,8 @@ def get_desc_from_measure(app, attrs, measures, measure=-1, beat=-1):
     
     if measure < 0:
         return ""
-    if len(measures.chord_progression) != len(measures.desc) or len(measures.scale_progression) != len(measures.desc):
-        logger.error("WHAT IS THAT!?")
+    if len(measures.chord_progression) != len(measures.scale_progression):
+        logger.error(f"WHAT IS THAT!?\nchords:{measures.chord_progression}\nscales:{measures.scale_progression}\ndesc:{measures.desc}")
         return "Error while generating the music"
         
     rows.append([f"<font color='darkblue'>{app.tr("MEASURE_")}</font>"])
@@ -399,7 +402,7 @@ def get_desc_from_measure(app, attrs, measures, measure=-1, beat=-1):
             
         
     if attrs["_scales"].gete():
-        if attrs["_chord_progression2"].gete():            
+        if measures.desc and len(measures.scale_progression) == len(measures.desc):
             rows.append([f"<font color='darkblue'>{app.tr("LOGIC_")}</font>"])
             rows[-1].extend(measures.desc)
             
@@ -410,9 +413,8 @@ def get_desc_from_measure(app, attrs, measures, measure=-1, beat=-1):
         rows[-1][0] += f"<font color='blue'>{app.tr("CHORDS_")}</font>"
         rows[-1].extend(measures.chord_progression)
         
-        if attrs["_chord_progression2"].gete() and measures.chord_progression != measures.scale_progression:
-            rows.append([f"<font color='lightblue'>{app.tr("SCALES_")}</font>"])
-            rows[-1].extend(measures.scale_progression)
+        rows.append([f"<font color='lightblue'>{app.tr("SCALES_")}</font>"])
+        rows[-1].extend(measures.scale_progression)
             
         for i, track in enumerate(measures.detailed):            
             # TODO: Won't always be like that? Make it less bug prone...
@@ -475,7 +477,7 @@ def make_midi(filename, app, attrs, type):
     else: # MusicBuildType.GAME
                   
         
-        nb_chords = randrange(3,13)
+        nb_chords = randrange(5,21)
         if not attrs["_chord_progression"].gete():
             for i in range(nb_chords):
                 measures.chord_progression.append(choice(mid.NOTES))
@@ -621,7 +623,7 @@ def make_midi(filename, app, attrs, type):
         #channels.append(mid.Channel(beats=beats, instrument=instrument_bass2)) 
         
         #5 sometimes? needs to go higher sometimes? (Need a setting, one with octaves first (fixed), then more intelligent.
-        OCTAVE = choice([4,5])
+        OCTAVE = 5#choice([4,5])
         beats = add_progression(measures, attrs, scale=True, octave_start=OCTAVE, choices_duration=choices_duration_melody, skip_random=skip_random_melody, group_chord=False, randomize=randomize, skip_over_silence=skip_over_silence)
         if not s_drops:
             channels.append(mid.Channel(beats=beats, instrument=instrument_melody)) 

@@ -7,3 +7,5 @@ pydub
 mido
 pyinstaller>=3.12
 tabulate
+imageio
+imageio-ffmpeg

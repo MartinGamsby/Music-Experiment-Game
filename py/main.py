@@ -1,6 +1,7 @@
 import sys
 
 from PySide6.QtGui import QGuiApplication
+from PySide6.QtQml import QQmlApplicationEngine
 
 from helpers import log
 import logging
@@ -16,9 +17,13 @@ def main() -> None:
 
     import backend as bak
     import model
+    import state
     
     app = QGuiApplication(sys.argv)
-    backend = bak.Backend( qml_file="main.qml", app=app, model=model.Model(app) )
+    state.register_for_qml(app)
+    engine = QQmlApplicationEngine()
+        
+    backend = bak.Backend( qml_file="main.qml", app=app, engine=engine, model=model.Model(app, engine=engine) )
     logger.info("App initialized, running")
     retval = backend.run()
     logger.info("App ended, exiting")

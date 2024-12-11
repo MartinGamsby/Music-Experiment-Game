@@ -126,7 +126,7 @@ class Setting(QObject):
         return self.get()
         
 #------------------------------------------------------------------------------
-    def set(self, value):
+    def set(self, value, force=False):
         logger.debug(f"{self._name} set to: \"{value}\"")
         if type(value) != self._type:
             raise Exception(f"Wrong type for {self._name}: {type(value)} ({value}) is not {self._type} ({self._value})")
@@ -140,6 +140,8 @@ class Setting(QObject):
                         
                 except:
                     logging.exception("save val")
+            elif force:
+                self.value_updated.emit()                
         except (AttributeError, TypeError) as e:
             # Handle potential exceptions during attribute access or type mismatch
             logger.error(f"Error setting property '{value}': {e}")
@@ -147,6 +149,10 @@ class Setting(QObject):
 #------------------------------------------------------------------------------
     def add(self, add_value):
         self.set(self.get()+add_value)
+        
+#------------------------------------------------------------------------------
+    def reset(self):
+        self.set(self._default_value, force=True)
             
 #------------------------------------------------------------------------------
     def unlocked(self):

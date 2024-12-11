@@ -43,7 +43,7 @@ def change_scale(from_chord):
     if from_chord in choices:
         choices.remove(from_chord)
     to_chord = choice(choices)
-    logger.info(f"from {from_chord} ({chords.from_shorthand(from_chord)}) to {choices} ({to_chord})")
+    logger.debug(f"from {from_chord} ({chords.from_shorthand(from_chord)}) to {choices} ({to_chord})")
     return to_chord
 
 #------------------------------------------------------------------------------
@@ -62,4 +62,9 @@ def jazz_scale(chord):
     #nb7   = mid.Note.from_number(first-2).note
     scale = [chord,n2,nb3,n3,nb5,n5]#,nb7]
     return scale
-        
+       
+#------------------------------------------------------------------------------
+def add_random_tension(measures):
+    return measures
+    
+     
