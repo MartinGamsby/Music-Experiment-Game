@@ -111,6 +111,7 @@ def create_video(input_midi: str,
         vertical_speed = 1/4, # Speed in main-image-heights per second
         fps = 20, 
         video_filename = "output.mp4",
+        progress_cb = None
     ):
     frames_folder = os.path.join(Path.cwd(), "video_frames")
     piano_height = round(image_height/6)
@@ -148,11 +149,15 @@ def create_video(input_midi: str,
         print(f"Loaded {len(tracks[-1])} notes from MIDI file track #{i+1}")
     colors = split_in_colors(tracks, 2)
     dark_colors = split_in_colors(tracks)
+    
+    if progress_cb: progress_cb(1)
+    
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # ~ The rest of the code is about making the video. ~
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
-    if not os.path.isdir(frames_folder):
-        os.mkdir(frames_folder)
+    if not VIDEO_FROM_CACHE:
+        if not os.path.isdir(frames_folder):
+            os.mkdir(frames_folder)
         
     # Delete all previous image frames:
     for f in os.listdir(frames_folder):
@@ -218,6 +223,7 @@ def create_video(input_midi: str,
     else:
         writer = None
             
+    if progress_cb: progress_cb(5)
     save_image(im_frame, frames_folder, 0, writer)
 
 
@@ -228,8 +234,9 @@ def create_video(input_midi: str,
     pixel_start_rounded = 0
 
     print("Generating video frames from notes")
-
-    pbar = tqdm.tqdm(total=end_t, desc='Creating video')
+        
+    if progress_cb: progress_cb(6)
+    else: pbar = tqdm.tqdm(total=end_t, desc='Creating video')
     while not finished:
     
         frame_start += 1/fps
@@ -242,10 +249,11 @@ def create_video(input_midi: str,
         
         pixel_increment = pixel_start_rounded - prev_pixel_start_rounded
         
-        pbar.update(1/fps)
-
-        pbar.set_description(f'Creating video [Frame count = {frame_ct}]')
-        
+        if progress_cb: progress_cb(6+(frame_ct/fps/end_t)*(100-6))
+        else: 
+            pbar.update(1/fps)
+            pbar.set_description(f'Creating video [Frame count = {frame_ct}]')
+            
         # Copy most of the previous frame into the new frame:
         im_frame[pixel_increment:main_height, :] = im_frame[0:(main_height - pixel_increment), :]
         im_frame[0:pixel_increment, :] = im_lines[0:pixel_increment, :]
@@ -295,29 +303,34 @@ def create_video(input_midi: str,
         save_image(im_frame, frames_folder, frame_ct, writer)
         if frame_start >= end_t:
             finished = True
-
-    pbar.close()
     
     sound_file = input_mp3
     if VIDEO_FROM_CACHE:
         writer.close()
         
+        # Running from a terminal, the long filter_complex argument needs to
+        # be in double-quotes, but the list form of subprocess.call requires
+        # _not_ double-quoting.
         if ADD_ONE_SECOND_BUFFER:
             sleep(0.5)# Too fast to write, need to wait until the OS wakes up??
-            subprocess.call(f"ffmpeg -i {temp_mp4_no_audio} -i {sound_file} -f lavfi -t 0.1 -i anullsrc -filter_complex [1]adelay=1000|1000[aud];[2][aud]amix -vcodec copy -y {video_filename}".split())
+            subprocess.call(["ffmpeg", "-i", temp_mp4_no_audio, "-i", sound_file, "-f", "lavfi", "-t", "0.1", "-i", "anullsrc", "-filter_complex", "[1]adelay=1000|1000[aud];[2][aud]amix", "-vcodec", "copy", "-y", video_filename])
         else:
             codec = "copy"
-            subprocess.call(f"ffmpeg -i {temp_mp4_no_audio} -i {sound_file} -c {codec} {video_filename}".split())
+            subprocess.call(["ffmpeg", "-i", temp_mp4_no_audio, "-i", sound_file, "-c", codec, video_filename])
+            # TODO: Check result and don't say that it worked if it didn't... (check_call?)
         os.remove(temp_mp4_no_audio)
     else:    
         sleep(0.5)# Too fast to write, need to wait until the OS wakes up?? (for jpeg I guess)
 
         print("Rendering full video with ffmpeg")
         if ADD_ONE_SECOND_BUFFER:
-            ffmpeg_cmd = f"ffmpeg -framerate {fps} -i {frames_folder}/frame%05d.png -i {sound_file} -f lavfi -t 0.1 -i anullsrc -filter_complex [1]adelay=1000|1000[aud];[2][aud]amix -vcodec libx264 -preset fast -qmin 25 -y {video_filename}"
+            ffmpeg_cmd = ["ffmpeg", "-framerate", str(fps), "-i", f"{frames_folder}/frame%05d.png", "-i", sound_file, "-f", "lavfi", "-t", "0.1", "-i", "anullsrc", "-filter_complex", "[1]adelay=1000|1000[aud];[2][aud]amix", "-vcodec", "libx264", "-preset", "fast", "-qmin", "25", "-y", video_filename]
         else:
-            ffmpeg_cmd = f"ffmpeg -framerate {fps} -i {frames_folder}/frame%05d.png -i {sound_file} -vcodec libx264 -preset fast -qmin 25 -y {video_filename}"
+            ffmpeg_cmd = ["ffmpeg", "-framerate", str(fps), "-i", f"{frames_folder}/frame%05d.png", "-i", sound_file, "-vcodec", "libx264", "-preset", "fast", "-qmin", "25", "-y", video_filename]
 
         print("> ffmpeg_cmd: ", ffmpeg_cmd)
 
-        subprocess.call(ffmpeg_cmd.split())
+        subprocess.call(ffmpeg_cmd)
+
+    if progress_cb: progress_cb(100)
+    else: pbar.close()

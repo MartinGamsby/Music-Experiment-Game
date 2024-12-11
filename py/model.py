@@ -1,5 +1,6 @@
 import sys
 import os
+import random
 import pathlib
 from helpers.file_helper import abspath, tempfile_path, get_appdata_file
 from helpers.setting import Setting
@@ -208,12 +209,17 @@ class Model(QObject):
         self._is_video.reset()
         
 #------------------------------------------------------------------------------
+    def generating_step(self, step):
+        self._generating_step.set(step)
+        self.set_music_state(MusicState.GENERATING)
+        self.music_state_updated.emit()
+        
+#------------------------------------------------------------------------------
     def _play_prepare(self, type):
         try:            
             self.stop_music()
             self._tempo = -1
-            self.set_music_state(MusicState.GENERATING)
-            
+            self.generating_step(0)
             if not self.filename:        
                 filename = get_appdata_file(f"{datetime.now().strftime('%Y-%m-%d_%H.%M.%S')}.mid", subfolder="Music")# "Midi"?
                 from music import builder
@@ -226,7 +232,7 @@ class Model(QObject):
                 self.update_detailed(-1)
             if self._generate_mp3.get():
                 logger.debug("GENERATE WAV FROM MIDI")
-                symusic_midi.midi_to_wav_worker(self.worker, self.thread, filename, force_gen=not self.filename)
+                symusic_midi.midi_to_wav_worker(self.worker, self.thread, filename, force_gen=not self.filename, progress_cb=self.generating_step)
             else:
                 logger.debug("DON'T Generate wav from midi")
                 self.out_filename = filename
@@ -239,7 +245,7 @@ class Model(QObject):
         
 #------------------------------------------------------------------------------
     def worker_finished(self):
-        self.set_music_state(MusicState.PREPARING)
+        #self.set_music_state(MusicState.PREPARING)
         logger.debug(f"_generate_mp3: {self._generate_mp3.get()}")
         if self._generate_mp3.get():
             self.out_filename = self.worker.out_filename
@@ -257,7 +263,8 @@ class Model(QObject):
         import pygame_midi
         pygame_midi.init(2)
         #After init. In class? Make another class that can be either pygame or something else?
-        self.set_music_state(MusicState.PREPARING)
+        if self.music_state != MusicState.GENERATING:
+            self.set_music_state(MusicState.PREPARING)
         
         logger.debug("Play!")
         
@@ -265,12 +272,16 @@ class Model(QObject):
             self.set_state(State.WELCOME)
             
         # Return music state from here?
-        self.set_music_state(MusicState.PLAYING)
         if self.out_filename.endswith(".mp4"):
-            self._is_video.set(True)
             logger.info("PLAY MP4")            
             self._gui_play_video.set(f"file:///{self.out_filename}", force=True)
-            sleep(1.5)#TODO? (Is this why the sound is choppy sometimes?
+            #self.generating_step
+            for i in range(22):
+                sleep(random.randrange(10,20)/100.)#TODO? (Is this why the sound is choppy sometimes?
+                self.generating_step(80+i)# Relative to last step in symusic_midi.on_video_progress
+            
+            self.set_music_state(MusicState.PLAYING)        
+            self._is_video.set(True)
             self._gui_play_video.value_updated.emit()
         else:
             self._is_video.set(False)
@@ -500,7 +511,7 @@ class Model(QObject):
         elif self.music_state == MusicState.PREPARING:
             return self.app.tr("STATE_PREPARING")
         elif self.music_state == MusicState.GENERATING:
-            return self.app.tr("STATE_GENERATING")
+            return f"{self.app.tr("STATE_GENERATING")} {self._generating_step.get()}%"
         elif self.music_state == MusicState.PLAYING:
             return self.app.tr("STATE_PLAYING")
         return self.music_state.name
@@ -549,6 +560,10 @@ class Model(QObject):
     _is_video = Setting(False, "is_video")
     def get_is_video(self): return self._is_video
     p_is_video = Property(QObject, get_is_video, notify=model_changed)
+    
+    _generating_step = Setting(0, "generating_step")
+    def get_generating_step(self): return self._generating_step
+    p_generating_step = Property(QObject, get_generating_step, notify=model_changed)
     
     
 #------------------------------------------------------------------------------

@@ -2,6 +2,7 @@ import sys
 
 from PySide6.QtGui import QGuiApplication
 from PySide6.QtQml import QQmlApplicationEngine
+import PySide6.QtMultimedia # Adding this here, it's not use in this file, but in a qml file, and pyinstaller needs to know.
 
 from helpers import log
 import logging
