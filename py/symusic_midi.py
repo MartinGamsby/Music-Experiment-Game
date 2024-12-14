@@ -129,7 +129,7 @@ class Worker(QObject):
             
 #------------------------------------------------------------------------------
     def on_video_progress(self, step):
-        max_step = 80
+        max_step = 95
         self.on_progress(self.video_from_step+int(step*((max_step-self.video_from_step)/100)))
         
 #------------------------------------------------------------------------------

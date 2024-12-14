@@ -231,8 +231,10 @@ def add_progression(measures, attrs, scale=False, measure_duration=4, choices_du
                 else:
                     name = sub_notes[i]
                 
-                velocity += pick_on_curve( range(-10,12), 0.5)#  randrange(-10,(15 if scale else 12))#add tempo? and note speed?
-                velocity = clamp(64, velocity, 127)
+                #velocity += pick_on_curve( range(-10,12), 0.5)#  randrange(-10,(15 if scale else 12))#add tempo? and note speed?
+                #velocity = clamp(80, velocity, 127)
+                velocity = 100
+                
                 note = mid.Note(note=name, octave=octave, velocity=velocity)
                 logger.debug(velocity)
                 

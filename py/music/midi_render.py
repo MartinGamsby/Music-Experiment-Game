@@ -157,11 +157,10 @@ def create_video(input_midi: str,
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~    
     if not VIDEO_FROM_CACHE:
         if not os.path.isdir(frames_folder):
-            os.mkdir(frames_folder)
-        
-    # Delete all previous image frames:
-    for f in os.listdir(frames_folder):
-        os.remove("{}/{}".format(frames_folder, f))
+            os.mkdir(frames_folder)        
+        # Delete all previous image frames:
+        for f in os.listdir(frames_folder):
+            os.remove("{}/{}".format(frames_folder, f))
 
     im_base = np.zeros((image_height, image_width, 3), dtype=np.uint8)
 
@@ -249,7 +248,7 @@ def create_video(input_midi: str,
         
         pixel_increment = pixel_start_rounded - prev_pixel_start_rounded
         
-        if progress_cb: progress_cb(6+(frame_ct/fps/end_t)*(100-6))
+        if progress_cb: progress_cb(6+(frame_ct/fps/end_t)*(100-6)-5)
         else: 
             pbar.update(1/fps)
             pbar.set_description(f'Creating video [Frame count = {frame_ct}]')
@@ -311,8 +310,14 @@ def create_video(input_midi: str,
         # Running from a terminal, the long filter_complex argument needs to
         # be in double-quotes, but the list form of subprocess.call requires
         # _not_ double-quoting.
+        
+        # Too fast to write, need to wait until the OS wakes up??
+        if progress_cb: 
+            for i in range(6):
+                progress_cb(95+i)
+        else:
+            sleep(0.5)
         if ADD_ONE_SECOND_BUFFER:
-            sleep(0.5)# Too fast to write, need to wait until the OS wakes up??
             subprocess.call(["ffmpeg", "-i", temp_mp4_no_audio, "-i", sound_file, "-f", "lavfi", "-t", "0.1", "-i", "anullsrc", "-filter_complex", "[1]adelay=1000|1000[aud];[2][aud]amix", "-vcodec", "copy", "-y", video_filename])
         else:
             codec = "copy"

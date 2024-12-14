@@ -276,9 +276,9 @@ class Model(QObject):
             logger.info("PLAY MP4")            
             self._gui_play_video.set(f"file:///{self.out_filename}", force=True)
             #self.generating_step
-            for i in range(22):
-                sleep(random.randrange(10,20)/100.)#TODO? (Is this why the sound is choppy sometimes?
-                self.generating_step(80+i)# Relative to last step in symusic_midi.on_video_progress
+            for i in range(6):
+                sleep(0.08)#TODO? (Is this why the sound is choppy sometimes?
+                self.generating_step(95+i)# Relative to last step in symusic_midi.on_video_progress
             
             self.set_music_state(MusicState.PLAYING)        
             self._is_video.set(True)
@@ -501,6 +501,16 @@ class Model(QObject):
         return self.music_state.value
     p_music_state_id = Property(int, get_music_state_id, notify=music_state_updated)
     
+    #------------------------------------------------------------------------------
+    def getProgressBar (self, iteration, total, prefix = '', suffix = '', decimals = 0, length = 42, fill = '█'):
+        """
+        TODO: Better than that ... just do it in the UI ... but this is faster for now.
+        """
+        percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+        filledLength = int(length * iteration // total)
+        bar = fill * filledLength + '░' * (length - filledLength)
+        return (f'{prefix} |{bar}| {percent}% {suffix}')
+            
     # -------------- str property --------------
     @Slot()
     def get_music_state_pretty_name(self):
@@ -511,7 +521,7 @@ class Model(QObject):
         elif self.music_state == MusicState.PREPARING:
             return self.app.tr("STATE_PREPARING")
         elif self.music_state == MusicState.GENERATING:
-            return f"{self.app.tr("STATE_GENERATING")} {self._generating_step.get()}%"
+            return f"{self.app.tr("STATE_GENERATING")} {self.getProgressBar(self._generating_step.get(),100)}" #}{self._generating_step.get()}%"
         elif self.music_state == MusicState.PLAYING:
             return self.app.tr("STATE_PLAYING")
         return self.music_state.name
